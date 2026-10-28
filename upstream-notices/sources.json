@@ -1,0 +1,44 @@
+[
+  {
+    "version": "0.3.4",
+    "file": "LICENSE",
+    "source": "https://raw.githubusercontent.com/Kamilhik/e4steam/v0.3.4/LICENSE",
+    "sizeBytes": 11339,
+    "sha256": "4b6cef4f8f9a16cc15680ec9d7d23d95c9fdd270331610eefd86c7522c975b36"
+  },
+  {
+    "version": "0.3.4",
+    "file": "NOTICE",
+    "source": "https://raw.githubusercontent.com/Kamilhik/e4steam/v0.3.4/NOTICE",
+    "sizeBytes": 500,
+    "sha256": "fa00512d6574d078e308a49fbb2490b72582b6b3165e262277f35d0c91d6b0cd"
+  },
+  {
+    "version": "0.3.4",
+    "file": "THIRD_PARTY_NOTICES.md",
+    "source": "https://raw.githubusercontent.com/Kamilhik/e4steam/v0.3.4/THIRD_PARTY_NOTICES.md",
+    "sizeBytes": 16143,
+    "sha256": "676ed0c56203adff8494490e859d64c078394adadd469b02c88c8ce369339815"
+  },
+  {
+    "version": "0.3.2",
+    "file": "LICENSE",
+    "source": "https://raw.githubusercontent.com/Kamilhik/e4steam/v0.3.2/LICENSE",
+    "sizeBytes": 11339,
+    "sha256": "4b6cef4f8f9a16cc15680ec9d7d23d95c9fdd270331610eefd86c7522c975b36"
+  },
+  {
+    "version": "0.3.2",
+    "file": "NOTICE",
+    "source": "https://raw.githubusercontent.com/Kamilhik/e4steam/v0.3.2/NOTICE",
+    "sizeBytes": 500,
+    "sha256": "fa00512d6574d078e308a49fbb2490b72582b6b3165e262277f35d0c91d6b0cd"
+  },
+  {
+    "version": "0.3.2",
+    "file": "THIRD_PARTY_NOTICES.md",
+    "source": "https://raw.githubusercontent.com/Kamilhik/e4steam/v0.3.2/THIRD_PARTY_NOTICES.md",
+    "sizeBytes": 14940,
+    "sha256": "a0c14ff026bf1740b15ab1fe671ccbc7c4130946c2c4c9b8943b3443c853db11"
+  }
+]
