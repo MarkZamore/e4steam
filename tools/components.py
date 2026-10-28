@@ -66,8 +66,16 @@ def checksums(builds):
 
 
 def version_manifest(document, version):
-    return {**document, 'releaseVersion': version,
-            'builds': [build for build in document['builds'] if build['version'] == version]}
+    # A release inventory is immutable history, independent of the currently
+    # selected active branches and latest-author header in components.json.
+    frozen = load_index(ROOT / 'releases' / ('v' + version + '.json'))
+    if frozen.get('releaseVersion') != version or any(build['version'] != version for build in frozen['builds']):
+        raise ValueError('Invalid frozen release inventory: v' + version)
+    published = {build['fileName']: build for build in frozen['builds']}
+    for build in document['builds']:
+        if build['version'] == version and published.get(build['fileName']) != build:
+            raise ValueError('Active selection differs from frozen release pins: ' + build['fileName'])
+    return frozen
 
 
 def stage(output, cache):

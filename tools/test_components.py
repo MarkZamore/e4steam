@@ -23,14 +23,23 @@ class SharedComponentPublicationTests(unittest.TestCase):
             archive.writestr('META-INF/LICENSE-e4steam.txt', 'retained author license')
             archive.writestr('META-INF/NOTICE-e4steam.txt', 'retained author notice')
         self.build = dict(fileName=self.name, version='0.3.4', sizeBytes=self.jar.stat().st_size,
-                          sha256=hashlib.sha256(self.jar.read_bytes()).hexdigest())
+                          sha256=hashlib.sha256(self.jar.read_bytes()).hexdigest(),
+                          downloadUrl='https://github.com/MarkZamore/e4steam/releases/download/v0.3.4/' + self.name,
+                          upstreamDownloadUrl='https://github.com/Kamilhik/e4steam/releases/download/v0.3.4/' + self.name)
         self.document = dict(schemaVersion=1, componentId='e4steam', builds=[self.build])
-        self.index = mock.patch.object(components, 'load_index', return_value=self.document)
+        (self.root / 'releases').mkdir()
+        (self.root / 'releases/v0.3.4.json').write_text(json.dumps({**self.document, 'releaseVersion': '0.3.4'}))
+        self.root_patch = mock.patch.object(components, 'ROOT', self.root)
+        self.root_patch.start()
+        actual_load = components.load_index
+        self.index = mock.patch.object(components, 'load_index', side_effect=lambda path=None:
+                                       self.document if path is None else actual_load(path))
         self.index.start()
         components.stage(self.output, self.cache)
 
     def tearDown(self):
         self.index.stop()
+        self.root_patch.stop()
         self.temp.cleanup()
 
     def release_probe(self, assets):
@@ -58,6 +67,19 @@ class SharedComponentPublicationTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'Conflicting immutable'):
                 components.publish(self.output)
             github.assert_not_called()
+
+    def test_future_active_catalog_does_not_rewrite_old_version_manifest(self):
+        other = {**self.build, 'fileName': 'e4steam-other-v0.3.4.jar'}
+        other['downloadUrl'] = other['downloadUrl'].replace(self.name, other['fileName'])
+        other['upstreamDownloadUrl'] = other['upstreamDownloadUrl'].replace(self.name, other['fileName'])
+        original = {**self.document, 'releaseVersion': '0.3.4', 'builds': [self.build, other]}
+        (self.root / 'releases/v0.3.4.json').write_text(json.dumps(original))
+        self.document['builds'] = [self.build, other]
+        before = components.version_manifest(self.document, '0.3.4')
+        self.document['latestAuthorRelease'] = '0.3.5'
+        self.document['builds'] = [self.build]
+        self.assertEqual(before, components.version_manifest(self.document, '0.3.4'))
+        self.assertEqual(2, len(before['builds']))
 
 
 if __name__ == '__main__':

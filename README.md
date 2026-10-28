@@ -9,7 +9,7 @@ No JAR is stored in this Git tree or duplicated inside a pack repository. Each d
 | `v0.3.4` | 6 modern author JARs for supported Minecraft 1.17–26.3 branches | Current author release |
 | `v0.3.2` | 13 older author JARs for remaining Forge/Fabric branches | Latest compatible files; the author published no retro JARs in 0.3.4 |
 
-`components.json` is the canonical index of the 19 selected builds: loader, exact Minecraft range, original author URL, MarkZamore delivery URL, size and SHA-256. `SHA256SUMS.txt` covers the same 19 exact files. Each release also carries its own subset manifest and checksums. Old versioned assets remain available after future updates.
+`components.json` is the canonical index of the 19 selected builds: loader, exact Minecraft range, original author URL, MarkZamore delivery URL, size and SHA-256. `SHA256SUMS.txt` covers the same 19 exact files. Frozen `releases/v<VERSION>.json` inventories preserve each release's payload and metadata independently of future active-catalog changes. Each release carries that frozen manifest and its checksums. Old versioned assets remain available after future updates.
 
 The launcher downloads from:
 

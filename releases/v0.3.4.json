@@ -1,0 +1,148 @@
+{
+  "schemaVersion": 1,
+  "componentId": "e4steam",
+  "publisher": "MarkZamore",
+  "upstream": {
+    "author": "Kamilchik",
+    "repository": "https://github.com/Kamilhik/e4steam",
+    "projectPage": "https://www.curseforge.com/minecraft/mc-mods/e4steam",
+    "license": "Apache-2.0 with bundled third-party notices retained"
+  },
+  "releaseVersion": "0.3.4",
+  "builds": [
+    {
+      "version": "0.3.4",
+      "fileName": "e4steam-forge-mc1.17.1-1.18.1-v0.3.4.jar",
+      "sizeBytes": 3820487,
+      "sha256": "b1a6b34ca34edff830414a676de33a7ebe6fd3a43d0f18e687b717d45d87a312",
+      "loaders": [
+        "Forge"
+      ],
+      "minimumMinecraftVersion": [
+        1,
+        17,
+        1
+      ],
+      "exclusiveMaximumMinecraftVersion": [
+        1,
+        18,
+        2
+      ],
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.4/e4steam-forge-mc1.17.1-1.18.1-v0.3.4.jar",
+      "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.4/e4steam-forge-mc1.17.1-1.18.1-v0.3.4.jar",
+      "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.4",
+      "metadataPath": "META-INF/mods.toml"
+    },
+    {
+      "version": "0.3.4",
+      "fileName": "e4steam-forge-mc1.18.2-1.20.2-v0.3.4.jar",
+      "sizeBytes": 3817117,
+      "sha256": "33421acbea4d904ac3cefa62ac1d4bd5f62f9e9169b81a4d16a052d2330bc6fc",
+      "loaders": [
+        "Forge"
+      ],
+      "minimumMinecraftVersion": [
+        1,
+        18,
+        2
+      ],
+      "exclusiveMaximumMinecraftVersion": [
+        1,
+        20,
+        3
+      ],
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.4/e4steam-forge-mc1.18.2-1.20.2-v0.3.4.jar",
+      "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.4/e4steam-forge-mc1.18.2-1.20.2-v0.3.4.jar",
+      "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.4",
+      "metadataPath": "META-INF/mods.toml"
+    },
+    {
+      "version": "0.3.4",
+      "fileName": "e4steam-neoforge-mc1.20.2-26.3-v0.3.4.jar",
+      "sizeBytes": 3815800,
+      "sha256": "b7c388393b7c27d188c17981073a2471c7ac52b95d5cff8b8dc8f19946d67be0",
+      "loaders": [
+        "NeoForge"
+      ],
+      "minimumMinecraftVersion": [
+        1,
+        20,
+        2
+      ],
+      "exclusiveMaximumMinecraftVersion": [
+        26,
+        4
+      ],
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.4/e4steam-neoforge-mc1.20.2-26.3-v0.3.4.jar",
+      "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.4/e4steam-neoforge-mc1.20.2-26.3-v0.3.4.jar",
+      "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.4",
+      "metadataPath": "META-INF/neoforge.mods.toml"
+    },
+    {
+      "version": "0.3.4",
+      "fileName": "e4steam-fabric-quilt-mc1.17-1.18.2-v0.3.4.jar",
+      "sizeBytes": 3816090,
+      "sha256": "0aaef192271c57c9af3be4a8b09e62101592953bb7c97c276df4b26c289aeef3",
+      "loaders": [
+        "Fabric",
+        "Quilt"
+      ],
+      "minimumMinecraftVersion": [
+        1,
+        17
+      ],
+      "exclusiveMaximumMinecraftVersion": [
+        1,
+        19
+      ],
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.4/e4steam-fabric-quilt-mc1.17-1.18.2-v0.3.4.jar",
+      "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.4/e4steam-fabric-quilt-mc1.17-1.18.2-v0.3.4.jar",
+      "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.4",
+      "metadataPath": "fabric.mod.json"
+    },
+    {
+      "version": "0.3.4",
+      "fileName": "e4steam-fabric-quilt-mc1.19-1.21.11-v0.3.4.jar",
+      "sizeBytes": 3812904,
+      "sha256": "ec692ae255704971b24bdff28724ec48224d6c87c7e5d568e4252b4df15a447d",
+      "loaders": [
+        "Fabric",
+        "Quilt"
+      ],
+      "minimumMinecraftVersion": [
+        1,
+        19
+      ],
+      "exclusiveMaximumMinecraftVersion": [
+        26,
+        1
+      ],
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.4/e4steam-fabric-quilt-mc1.19-1.21.11-v0.3.4.jar",
+      "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.4/e4steam-fabric-quilt-mc1.19-1.21.11-v0.3.4.jar",
+      "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.4",
+      "metadataPath": "fabric.mod.json"
+    },
+    {
+      "version": "0.3.4",
+      "fileName": "e4steam-fabric-quilt-mc26.1-26.3-v0.3.4.jar",
+      "sizeBytes": 3813546,
+      "sha256": "ea7ed37c3c2b8b41c7e458043b051725c22e81b9f9fa318a1474831cc484854e",
+      "loaders": [
+        "Fabric",
+        "Quilt"
+      ],
+      "minimumMinecraftVersion": [
+        26,
+        1
+      ],
+      "exclusiveMaximumMinecraftVersion": [
+        26,
+        4
+      ],
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.4/e4steam-fabric-quilt-mc26.1-26.3-v0.3.4.jar",
+      "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.4/e4steam-fabric-quilt-mc26.1-26.3-v0.3.4.jar",
+      "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.4",
+      "metadataPath": "fabric.mod.json"
+    }
+  ]
+}
