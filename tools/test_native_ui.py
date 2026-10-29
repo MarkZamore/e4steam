@@ -62,6 +62,13 @@ class NativeUiDistributionTests(unittest.TestCase):
         self.derive()
         self.assertEqual(first, self.candidate.read_bytes())
 
+    def test_modification_notice_has_platform_independent_zip_metadata(self):
+        self.derive()
+        with zipfile.ZipFile(self.candidate) as z:
+            entry = z.getinfo(ui.NOTICE)
+            self.assertEqual(3, entry.create_system)
+            self.assertEqual((1980, 1, 1, 0, 0, 0), entry.date_time)
+
     def test_corrupted_author_pin_stops_before_creating_output(self):
         with self.assertRaisesRegex(ValueError, "Original SHA256"):
             ui.derive(self.original, self.built, self.candidate, "0" * 64)

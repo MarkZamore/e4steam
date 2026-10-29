@@ -103,6 +103,7 @@ def derive(original: Path, built: Path, target: Path, expected_sha: str):
             for entry in old.infolist():
                 output.writestr(copy.copy(entry), replacement.get(entry.filename, old.read(entry.filename)))
             entry = zipfile.ZipInfo(NOTICE, (1980, 1, 1, 0, 0, 0))
+            entry.create_system = 3
             entry.compress_type = zipfile.ZIP_DEFLATED
             output.writestr(entry, notice(expected_sha))
     return verify_derivative(original, built, target, expected_sha)
