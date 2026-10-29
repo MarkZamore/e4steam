@@ -1,14 +1,10 @@
 {
-  "schemaVersion": 1,
+  "schemaVersion": 2,
   "componentId": "e4steam",
   "publisher": "MarkZamore",
-  "upstream": {
-    "author": "Kamilchik",
-    "repository": "https://github.com/Kamilhik/e4steam",
-    "projectPage": "https://www.curseforge.com/minecraft/mc-mods/e4steam",
-    "license": "Apache-2.0 with bundled third-party notices retained"
-  },
-  "latestAuthorRelease": "0.3.4",
+  "profile": "native-lan-ui-v1",
+  "sourceCommit": "bdcea00e30ca519fa8190c0c5c04785d42b31dbc",
+  "sourcePatchSha256": "3c13a5f977c8bcf4d1332723b067d71360b007c20cfeb7ce58d011d587c92716",
   "builds": [
     {
       "version": "0.3.2",
@@ -29,7 +25,17 @@
       "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.7.x-v0.3.2.jar",
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.7.x-v0.3.2.jar",
       "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.2",
-      "metadataPath": "mcmod.info"
+      "metadataPath": "mcmod.info",
+      "authorVersion": "0.3.2",
+      "authorFileName": "e4steam-forge-mc1.7.x-v0.3.2.jar",
+      "authorSha256": "c44434c31a5bbfcf5cc34a9327f2c6c08e8ae633e34727486146d8f0ffb03c9c",
+      "authorSizeBytes": 2107709,
+      "profile": "native-lan-ui-v1",
+      "deliveryTag": "v0.3.2",
+      "derivation": {
+        "type": "byte-identical-author-artifact",
+        "uiAbsent": true
+      }
     },
     {
       "version": "0.3.2",
@@ -50,7 +56,17 @@
       "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.8.x-v0.3.2.jar",
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.8.x-v0.3.2.jar",
       "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.2",
-      "metadataPath": "mcmod.info"
+      "metadataPath": "mcmod.info",
+      "authorVersion": "0.3.2",
+      "authorFileName": "e4steam-forge-mc1.8.x-v0.3.2.jar",
+      "authorSha256": "35caf65a4d97904066e2f1f6454d1ba4661bc73130305ffdb3917f90b3449972",
+      "authorSizeBytes": 3039265,
+      "profile": "native-lan-ui-v1",
+      "deliveryTag": "v0.3.2",
+      "derivation": {
+        "type": "byte-identical-author-artifact",
+        "uiAbsent": true
+      }
     },
     {
       "version": "0.3.2",
@@ -71,7 +87,17 @@
       "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.9.x-v0.3.2.jar",
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.9.x-v0.3.2.jar",
       "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.2",
-      "metadataPath": "mcmod.info"
+      "metadataPath": "mcmod.info",
+      "authorVersion": "0.3.2",
+      "authorFileName": "e4steam-forge-mc1.9.x-v0.3.2.jar",
+      "authorSha256": "263b4b6f75f06aa0c5c8380d8ae34415e4ae735925bb952f9718c2bc24539e66",
+      "authorSizeBytes": 3038887,
+      "profile": "native-lan-ui-v1",
+      "deliveryTag": "v0.3.2",
+      "derivation": {
+        "type": "byte-identical-author-artifact",
+        "uiAbsent": true
+      }
     },
     {
       "version": "0.3.2",
@@ -92,7 +118,17 @@
       "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.10.x-v0.3.2.jar",
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.10.x-v0.3.2.jar",
       "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.2",
-      "metadataPath": "mcmod.info"
+      "metadataPath": "mcmod.info",
+      "authorVersion": "0.3.2",
+      "authorFileName": "e4steam-forge-mc1.10.x-v0.3.2.jar",
+      "authorSha256": "ede466e6c19878c513419d971ca860b533eaa1ea756bf2c34a0adfbe80ad82ba",
+      "authorSizeBytes": 3038892,
+      "profile": "native-lan-ui-v1",
+      "deliveryTag": "v0.3.2",
+      "derivation": {
+        "type": "byte-identical-author-artifact",
+        "uiAbsent": true
+      }
     },
     {
       "version": "0.3.2",
@@ -113,7 +149,17 @@
       "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.11.x-v0.3.2.jar",
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.11.x-v0.3.2.jar",
       "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.2",
-      "metadataPath": "mcmod.info"
+      "metadataPath": "mcmod.info",
+      "authorVersion": "0.3.2",
+      "authorFileName": "e4steam-forge-mc1.11.x-v0.3.2.jar",
+      "authorSha256": "3371478eac829f01a879962d1c2e0f3b31684aa16ab8e8ac3ec06e46bcf5a26f",
+      "authorSizeBytes": 3038892,
+      "profile": "native-lan-ui-v1",
+      "deliveryTag": "v0.3.2",
+      "derivation": {
+        "type": "byte-identical-author-artifact",
+        "uiAbsent": true
+      }
     },
     {
       "version": "0.3.2",
@@ -134,7 +180,17 @@
       "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.12.x-v0.3.2.jar",
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.12.x-v0.3.2.jar",
       "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.2",
-      "metadataPath": "mcmod.info"
+      "metadataPath": "mcmod.info",
+      "authorVersion": "0.3.2",
+      "authorFileName": "e4steam-forge-mc1.12.x-v0.3.2.jar",
+      "authorSha256": "f554e6d20f037dbf8a2596eb0c3aaa3cf3ba0625d1caca9a3925cad297506e24",
+      "authorSizeBytes": 3038928,
+      "profile": "native-lan-ui-v1",
+      "deliveryTag": "v0.3.2",
+      "derivation": {
+        "type": "byte-identical-author-artifact",
+        "uiAbsent": true
+      }
     },
     {
       "version": "0.3.2",
@@ -155,7 +211,17 @@
       "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.13.x-v0.3.2.jar",
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.13.x-v0.3.2.jar",
       "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.2",
-      "metadataPath": "META-INF/mods.toml"
+      "metadataPath": "META-INF/mods.toml",
+      "authorVersion": "0.3.2",
+      "authorFileName": "e4steam-forge-mc1.13.x-v0.3.2.jar",
+      "authorSha256": "0cdb0ef6ce450faf2583ffd75b43e17426b20b402628e7c38466ce84d080f2ec",
+      "authorSizeBytes": 2901410,
+      "profile": "native-lan-ui-v1",
+      "deliveryTag": "v0.3.2",
+      "derivation": {
+        "type": "byte-identical-author-artifact",
+        "uiAbsent": true
+      }
     },
     {
       "version": "0.3.2",
@@ -176,7 +242,17 @@
       "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.14.x-v0.3.2.jar",
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.14.x-v0.3.2.jar",
       "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.2",
-      "metadataPath": "META-INF/mods.toml"
+      "metadataPath": "META-INF/mods.toml",
+      "authorVersion": "0.3.2",
+      "authorFileName": "e4steam-forge-mc1.14.x-v0.3.2.jar",
+      "authorSha256": "b7d08bbfadbee160f37eeb1e665d55c4a50b4682806dd63f3db5879b8fa5e1c7",
+      "authorSizeBytes": 2903985,
+      "profile": "native-lan-ui-v1",
+      "deliveryTag": "v0.3.2",
+      "derivation": {
+        "type": "byte-identical-author-artifact",
+        "uiAbsent": true
+      }
     },
     {
       "version": "0.3.2",
@@ -197,7 +273,17 @@
       "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.15.x-v0.3.2.jar",
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.15.x-v0.3.2.jar",
       "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.2",
-      "metadataPath": "META-INF/mods.toml"
+      "metadataPath": "META-INF/mods.toml",
+      "authorVersion": "0.3.2",
+      "authorFileName": "e4steam-forge-mc1.15.x-v0.3.2.jar",
+      "authorSha256": "5de9df05e6834a1279631eedfa5879bf8abfa955226dc127fffd2a4292768b91",
+      "authorSizeBytes": 2899585,
+      "profile": "native-lan-ui-v1",
+      "deliveryTag": "v0.3.2",
+      "derivation": {
+        "type": "byte-identical-author-artifact",
+        "uiAbsent": true
+      }
     },
     {
       "version": "0.3.2",
@@ -218,75 +304,17 @@
       "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.16.x-v0.3.2.jar",
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.16.x-v0.3.2.jar",
       "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.2",
-      "metadataPath": "META-INF/mods.toml"
-    },
-    {
-      "version": "0.3.4",
-      "fileName": "e4steam-forge-mc1.17.1-1.18.1-v0.3.4.jar",
-      "sizeBytes": 3820487,
-      "sha256": "b1a6b34ca34edff830414a676de33a7ebe6fd3a43d0f18e687b717d45d87a312",
-      "loaders": [
-        "Forge"
-      ],
-      "minimumMinecraftVersion": [
-        1,
-        17,
-        1
-      ],
-      "exclusiveMaximumMinecraftVersion": [
-        1,
-        18,
-        2
-      ],
-      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.4/e4steam-forge-mc1.17.1-1.18.1-v0.3.4.jar",
-      "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.4/e4steam-forge-mc1.17.1-1.18.1-v0.3.4.jar",
-      "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.4",
-      "metadataPath": "META-INF/mods.toml"
-    },
-    {
-      "version": "0.3.4",
-      "fileName": "e4steam-forge-mc1.18.2-1.20.2-v0.3.4.jar",
-      "sizeBytes": 3817117,
-      "sha256": "33421acbea4d904ac3cefa62ac1d4bd5f62f9e9169b81a4d16a052d2330bc6fc",
-      "loaders": [
-        "Forge"
-      ],
-      "minimumMinecraftVersion": [
-        1,
-        18,
-        2
-      ],
-      "exclusiveMaximumMinecraftVersion": [
-        1,
-        20,
-        3
-      ],
-      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.4/e4steam-forge-mc1.18.2-1.20.2-v0.3.4.jar",
-      "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.4/e4steam-forge-mc1.18.2-1.20.2-v0.3.4.jar",
-      "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.4",
-      "metadataPath": "META-INF/mods.toml"
-    },
-    {
-      "version": "0.3.4",
-      "fileName": "e4steam-neoforge-mc1.20.2-26.3-v0.3.4.jar",
-      "sizeBytes": 3815800,
-      "sha256": "b7c388393b7c27d188c17981073a2471c7ac52b95d5cff8b8dc8f19946d67be0",
-      "loaders": [
-        "NeoForge"
-      ],
-      "minimumMinecraftVersion": [
-        1,
-        20,
-        2
-      ],
-      "exclusiveMaximumMinecraftVersion": [
-        26,
-        4
-      ],
-      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.4/e4steam-neoforge-mc1.20.2-26.3-v0.3.4.jar",
-      "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.4/e4steam-neoforge-mc1.20.2-26.3-v0.3.4.jar",
-      "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.4",
-      "metadataPath": "META-INF/neoforge.mods.toml"
+      "metadataPath": "META-INF/mods.toml",
+      "authorVersion": "0.3.2",
+      "authorFileName": "e4steam-forge-mc1.16.x-v0.3.2.jar",
+      "authorSha256": "a0e6a1ab6b29c36733c929e86905521e58b2943307fab4fda7da05b51b3449ca",
+      "authorSizeBytes": 2899902,
+      "profile": "native-lan-ui-v1",
+      "deliveryTag": "v0.3.2",
+      "derivation": {
+        "type": "byte-identical-author-artifact",
+        "uiAbsent": true
+      }
     },
     {
       "version": "0.3.2",
@@ -307,7 +335,17 @@
       "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.2/e4steam-fabric-mc1.14.x-v0.3.2.jar",
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-fabric-mc1.14.x-v0.3.2.jar",
       "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.2",
-      "metadataPath": "fabric.mod.json"
+      "metadataPath": "fabric.mod.json",
+      "authorVersion": "0.3.2",
+      "authorFileName": "e4steam-fabric-mc1.14.x-v0.3.2.jar",
+      "authorSha256": "c9467b97bfa7691007b4226af0ba7d776393fd013a0ddc908f36e63d818e85f2",
+      "authorSizeBytes": 3590675,
+      "profile": "native-lan-ui-v1",
+      "deliveryTag": "v0.3.2",
+      "derivation": {
+        "type": "byte-identical-author-artifact",
+        "uiAbsent": true
+      }
     },
     {
       "version": "0.3.2",
@@ -328,7 +366,17 @@
       "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.2/e4steam-fabric-mc1.15.x-v0.3.2.jar",
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-fabric-mc1.15.x-v0.3.2.jar",
       "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.2",
-      "metadataPath": "fabric.mod.json"
+      "metadataPath": "fabric.mod.json",
+      "authorVersion": "0.3.2",
+      "authorFileName": "e4steam-fabric-mc1.15.x-v0.3.2.jar",
+      "authorSha256": "61e7c1783a3338bee600660ac630ed3d6fcb220831f110661e01dbdfee7679b2",
+      "authorSizeBytes": 3589233,
+      "profile": "native-lan-ui-v1",
+      "deliveryTag": "v0.3.2",
+      "derivation": {
+        "type": "byte-identical-author-artifact",
+        "uiAbsent": true
+      }
     },
     {
       "version": "0.3.2",
@@ -349,13 +397,151 @@
       "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.2/e4steam-fabric-mc1.16.x-v0.3.2.jar",
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-fabric-mc1.16.x-v0.3.2.jar",
       "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.2",
-      "metadataPath": "fabric.mod.json"
+      "metadataPath": "fabric.mod.json",
+      "authorVersion": "0.3.2",
+      "authorFileName": "e4steam-fabric-mc1.16.x-v0.3.2.jar",
+      "authorSha256": "b387a2b076527dd2f1ccbb3cf44ac97d3f4ce89722becb5e3bc57ad7933ba70f",
+      "authorSizeBytes": 3589535,
+      "profile": "native-lan-ui-v1",
+      "deliveryTag": "v0.3.2",
+      "derivation": {
+        "type": "byte-identical-author-artifact",
+        "uiAbsent": true
+      }
     },
     {
       "version": "0.3.4",
-      "fileName": "e4steam-fabric-quilt-mc1.17-1.18.2-v0.3.4.jar",
-      "sizeBytes": 3816090,
-      "sha256": "0aaef192271c57c9af3be4a8b09e62101592953bb7c97c276df4b26c289aeef3",
+      "fileName": "e4steam-forge-mc1.17.1-1.18.1-v0.3.4-lanmc-native-ui.1.jar",
+      "sizeBytes": 3804498,
+      "sha256": "259e0e17faa4748ed0c3b8adb58d7c7fcfe747c8ed03aa2fbbb5028192627cb9",
+      "loaders": [
+        "Forge"
+      ],
+      "minimumMinecraftVersion": [
+        1,
+        17,
+        1
+      ],
+      "exclusiveMaximumMinecraftVersion": [
+        1,
+        18,
+        2
+      ],
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/native-lan-ui-v1/e4steam-forge-mc1.17.1-1.18.1-v0.3.4-lanmc-native-ui.1.jar",
+      "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.4/e4steam-forge-mc1.17.1-1.18.1-v0.3.4.jar",
+      "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.4",
+      "metadataPath": "META-INF/mods.toml",
+      "authorVersion": "0.3.4",
+      "authorFileName": "e4steam-forge-mc1.17.1-1.18.1-v0.3.4.jar",
+      "authorSha256": "b1a6b34ca34edff830414a676de33a7ebe6fd3a43d0f18e687b717d45d87a312",
+      "authorSizeBytes": 3820487,
+      "profile": "native-lan-ui-v1",
+      "deliveryTag": "native-lan-ui-v1",
+      "derivation": {
+        "type": "source-built-native-ui-removal",
+        "sourceCommit": "bdcea00e30ca519fa8190c0c5c04785d42b31dbc",
+        "changedEntries": [
+          "e4steam.mixins.json",
+          "link/e4steam/mixin/PauseScreenMixin.class"
+        ],
+        "addedEntries": [
+          "META-INF/NOTICE-LANMinecraft-native-ui.txt"
+        ],
+        "unchangedOriginalEntries": 1019,
+        "sourceBuiltPauseSha256": "8f12142733c6137c0999b87a3c5f8e263af787ebb8e593dd99a4427f6b3d33b6",
+        "allOtherEntriesByteIdentical": true
+      }
+    },
+    {
+      "version": "0.3.4",
+      "fileName": "e4steam-forge-mc1.18.2-1.20.2-v0.3.4-lanmc-native-ui.1.jar",
+      "sizeBytes": 3801104,
+      "sha256": "68ba6bdce76868e2cb43359a13416dfa1b011c628c13b6c4266b653c765b5c40",
+      "loaders": [
+        "Forge"
+      ],
+      "minimumMinecraftVersion": [
+        1,
+        18,
+        2
+      ],
+      "exclusiveMaximumMinecraftVersion": [
+        1,
+        20,
+        3
+      ],
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/native-lan-ui-v1/e4steam-forge-mc1.18.2-1.20.2-v0.3.4-lanmc-native-ui.1.jar",
+      "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.4/e4steam-forge-mc1.18.2-1.20.2-v0.3.4.jar",
+      "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.4",
+      "metadataPath": "META-INF/mods.toml",
+      "authorVersion": "0.3.4",
+      "authorFileName": "e4steam-forge-mc1.18.2-1.20.2-v0.3.4.jar",
+      "authorSha256": "33421acbea4d904ac3cefa62ac1d4bd5f62f9e9169b81a4d16a052d2330bc6fc",
+      "authorSizeBytes": 3817117,
+      "profile": "native-lan-ui-v1",
+      "deliveryTag": "native-lan-ui-v1",
+      "derivation": {
+        "type": "source-built-native-ui-removal",
+        "sourceCommit": "bdcea00e30ca519fa8190c0c5c04785d42b31dbc",
+        "changedEntries": [
+          "e4steam.mixins.json",
+          "link/e4steam/mixin/PauseScreenMixin.class"
+        ],
+        "addedEntries": [
+          "META-INF/NOTICE-LANMinecraft-native-ui.txt"
+        ],
+        "unchangedOriginalEntries": 1020,
+        "sourceBuiltPauseSha256": "8ddb76b46524295ba079c323575ade36cd866e7c81ccfbe3cfc142a5caf6df99",
+        "allOtherEntriesByteIdentical": true
+      }
+    },
+    {
+      "version": "0.3.4",
+      "fileName": "e4steam-neoforge-mc1.20.2-26.3-v0.3.4-lanmc-native-ui.1.jar",
+      "sizeBytes": 3799786,
+      "sha256": "d09f4f274e133bd43861f0577a20d83d84d9bea88bb95351f6f5af11f0b1e617",
+      "loaders": [
+        "NeoForge"
+      ],
+      "minimumMinecraftVersion": [
+        1,
+        20,
+        2
+      ],
+      "exclusiveMaximumMinecraftVersion": [
+        26,
+        4
+      ],
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/native-lan-ui-v1/e4steam-neoforge-mc1.20.2-26.3-v0.3.4-lanmc-native-ui.1.jar",
+      "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.4/e4steam-neoforge-mc1.20.2-26.3-v0.3.4.jar",
+      "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.4",
+      "metadataPath": "META-INF/neoforge.mods.toml",
+      "authorVersion": "0.3.4",
+      "authorFileName": "e4steam-neoforge-mc1.20.2-26.3-v0.3.4.jar",
+      "authorSha256": "b7c388393b7c27d188c17981073a2471c7ac52b95d5cff8b8dc8f19946d67be0",
+      "authorSizeBytes": 3815800,
+      "profile": "native-lan-ui-v1",
+      "deliveryTag": "native-lan-ui-v1",
+      "derivation": {
+        "type": "source-built-native-ui-removal",
+        "sourceCommit": "bdcea00e30ca519fa8190c0c5c04785d42b31dbc",
+        "changedEntries": [
+          "e4steam.mixins.json",
+          "link/e4steam/mixin/PauseScreenMixin.class"
+        ],
+        "addedEntries": [
+          "META-INF/NOTICE-LANMinecraft-native-ui.txt"
+        ],
+        "unchangedOriginalEntries": 1020,
+        "sourceBuiltPauseSha256": "c1c573269e85da0445b3624cab118d31aa3b2e1b4f17fdcd791853e869fa938e",
+        "allOtherEntriesByteIdentical": true
+      }
+    },
+    {
+      "version": "0.3.4",
+      "fileName": "e4steam-fabric-quilt-mc1.17-1.18.2-v0.3.4-lanmc-native-ui.1.jar",
+      "sizeBytes": 3800183,
+      "sha256": "34b5cd1e81ec5a1e3ea1238078840c81c6cb3e6dd4ec035389125f34ff693e23",
       "loaders": [
         "Fabric",
         "Quilt"
@@ -368,16 +554,36 @@
         1,
         19
       ],
-      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.4/e4steam-fabric-quilt-mc1.17-1.18.2-v0.3.4.jar",
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/native-lan-ui-v1/e4steam-fabric-quilt-mc1.17-1.18.2-v0.3.4-lanmc-native-ui.1.jar",
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.4/e4steam-fabric-quilt-mc1.17-1.18.2-v0.3.4.jar",
       "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.4",
-      "metadataPath": "fabric.mod.json"
+      "metadataPath": "fabric.mod.json",
+      "authorVersion": "0.3.4",
+      "authorFileName": "e4steam-fabric-quilt-mc1.17-1.18.2-v0.3.4.jar",
+      "authorSha256": "0aaef192271c57c9af3be4a8b09e62101592953bb7c97c276df4b26c289aeef3",
+      "authorSizeBytes": 3816090,
+      "profile": "native-lan-ui-v1",
+      "deliveryTag": "native-lan-ui-v1",
+      "derivation": {
+        "type": "source-built-native-ui-removal",
+        "sourceCommit": "bdcea00e30ca519fa8190c0c5c04785d42b31dbc",
+        "changedEntries": [
+          "e4steam.mixins.json",
+          "link/e4steam/mixin/PauseScreenMixin.class"
+        ],
+        "addedEntries": [
+          "META-INF/NOTICE-LANMinecraft-native-ui.txt"
+        ],
+        "unchangedOriginalEntries": 1015,
+        "sourceBuiltPauseSha256": "92e4e1d3a6badd8051348fc6c7e86e7542193a71eead494c7ab133047b29e5e9",
+        "allOtherEntriesByteIdentical": true
+      }
     },
     {
       "version": "0.3.4",
-      "fileName": "e4steam-fabric-quilt-mc1.19-1.21.11-v0.3.4.jar",
-      "sizeBytes": 3812904,
-      "sha256": "ec692ae255704971b24bdff28724ec48224d6c87c7e5d568e4252b4df15a447d",
+      "fileName": "e4steam-fabric-quilt-mc1.19-1.21.11-v0.3.4-lanmc-native-ui.1.jar",
+      "sizeBytes": 3796976,
+      "sha256": "8a8dfb209bb0d1d15acad996f88a4d6ec7548a8a282c6ea8307a2b62fc4df800",
       "loaders": [
         "Fabric",
         "Quilt"
@@ -390,16 +596,36 @@
         26,
         1
       ],
-      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.4/e4steam-fabric-quilt-mc1.19-1.21.11-v0.3.4.jar",
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/native-lan-ui-v1/e4steam-fabric-quilt-mc1.19-1.21.11-v0.3.4-lanmc-native-ui.1.jar",
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.4/e4steam-fabric-quilt-mc1.19-1.21.11-v0.3.4.jar",
       "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.4",
-      "metadataPath": "fabric.mod.json"
+      "metadataPath": "fabric.mod.json",
+      "authorVersion": "0.3.4",
+      "authorFileName": "e4steam-fabric-quilt-mc1.19-1.21.11-v0.3.4.jar",
+      "authorSha256": "ec692ae255704971b24bdff28724ec48224d6c87c7e5d568e4252b4df15a447d",
+      "authorSizeBytes": 3812904,
+      "profile": "native-lan-ui-v1",
+      "deliveryTag": "native-lan-ui-v1",
+      "derivation": {
+        "type": "source-built-native-ui-removal",
+        "sourceCommit": "bdcea00e30ca519fa8190c0c5c04785d42b31dbc",
+        "changedEntries": [
+          "e4steam.mixins.json",
+          "link/e4steam/mixin/PauseScreenMixin.class"
+        ],
+        "addedEntries": [
+          "META-INF/NOTICE-LANMinecraft-native-ui.txt"
+        ],
+        "unchangedOriginalEntries": 1016,
+        "sourceBuiltPauseSha256": "d48335a60bb6452c834c2900cafe91775f099fb52ff2ab696b9d1155410653bf",
+        "allOtherEntriesByteIdentical": true
+      }
     },
     {
       "version": "0.3.4",
-      "fileName": "e4steam-fabric-quilt-mc26.1-26.3-v0.3.4.jar",
-      "sizeBytes": 3813546,
-      "sha256": "ea7ed37c3c2b8b41c7e458043b051725c22e81b9f9fa318a1474831cc484854e",
+      "fileName": "e4steam-fabric-quilt-mc26.1-26.3-v0.3.4-lanmc-native-ui.1.jar",
+      "sizeBytes": 3797595,
+      "sha256": "d55953ff626dab390c0c29076a11d32b764ea543f3979c81f3bfce9889caa909",
       "loaders": [
         "Fabric",
         "Quilt"
@@ -412,10 +638,30 @@
         26,
         4
       ],
-      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.4/e4steam-fabric-quilt-mc26.1-26.3-v0.3.4.jar",
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/native-lan-ui-v1/e4steam-fabric-quilt-mc26.1-26.3-v0.3.4-lanmc-native-ui.1.jar",
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.4/e4steam-fabric-quilt-mc26.1-26.3-v0.3.4.jar",
       "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.4",
-      "metadataPath": "fabric.mod.json"
+      "metadataPath": "fabric.mod.json",
+      "authorVersion": "0.3.4",
+      "authorFileName": "e4steam-fabric-quilt-mc26.1-26.3-v0.3.4.jar",
+      "authorSha256": "ea7ed37c3c2b8b41c7e458043b051725c22e81b9f9fa318a1474831cc484854e",
+      "authorSizeBytes": 3813546,
+      "profile": "native-lan-ui-v1",
+      "deliveryTag": "native-lan-ui-v1",
+      "derivation": {
+        "type": "source-built-native-ui-removal",
+        "sourceCommit": "bdcea00e30ca519fa8190c0c5c04785d42b31dbc",
+        "changedEntries": [
+          "e4steam.mixins.json",
+          "link/e4steam/mixin/PauseScreenMixin.class"
+        ],
+        "addedEntries": [
+          "META-INF/NOTICE-LANMinecraft-native-ui.txt"
+        ],
+        "unchangedOriginalEntries": 1016,
+        "sourceBuiltPauseSha256": "c1c573269e85da0445b3624cab118d31aa3b2e1b4f17fdcd791853e869fa938e",
+        "allOtherEntriesByteIdentical": true
+      }
     }
   ]
 }

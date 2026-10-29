@@ -1,0 +1,164 @@
+{
+  "schemaVersion": 1,
+  "scope": "Canonical actual JVM code including CP field/method/string references, branch targets, invokedynamic bootstrap arguments and recursively resolved callback lambda bodies. Removes only leading extra settings instructions and its settings callback; no game/UI execution.",
+  "artifactCount": 6,
+  "nativeInvitationCodeEquivalent": true,
+  "artifacts": [
+    {
+      "fileName": "e4steam-forge-mc1.17.1-1.18.1-v0.3.4-lanmc-native-ui.1.jar",
+      "sha256": "259e0e17faa4748ed0c3b8adb58d7c7fcfe747c8ed03aa2fbbb5028192627cb9",
+      "preservedNativeMethods": [
+        {
+          "method": "<init>",
+          "descriptor": "(Lnet/minecraft/network/chat/Component;)V",
+          "canonicalCodeSha256": "dd37323fcfc0952aa12cbef2093a618d4ef8cba55c29046d045aed7c5f274d63"
+        },
+        {
+          "method": "e4steam$openInviteOverlay",
+          "descriptor": "()V",
+          "canonicalCodeSha256": "bfb6bb534d2687365588fa2032a9d877b1316ea1f7d16f7f3cafaa3b68e8cbd7"
+        },
+        {
+          "method": "e4steam$refreshInviteButton",
+          "descriptor": "()V",
+          "canonicalCodeSha256": "54ef73c562bdc8aaab52d717549d8e2c6babd1d23c9b3512585c39e54d013b5c"
+        }
+      ],
+      "steamInviteButtonBodyCanonicalSha256": "848200f4ae1afa3fafd69ea5c20344b9904dacd34d6c57e4f75cf4038fe57fc0",
+      "removedLeadingSettingsInstructions": 21,
+      "preservedLambdaCount": 3,
+      "removedSettingsCallback": "lambda$e4steam$addInviteButton$0",
+      "allRemainingLambdaBodiesAndBootstrapBindingsEquivalent": true
+    },
+    {
+      "fileName": "e4steam-forge-mc1.18.2-1.20.2-v0.3.4-lanmc-native-ui.1.jar",
+      "sha256": "68ba6bdce76868e2cb43359a13416dfa1b011c628c13b6c4266b653c765b5c40",
+      "preservedNativeMethods": [
+        {
+          "method": "<init>",
+          "descriptor": "(Lnet/minecraft/network/chat/Component;)V",
+          "canonicalCodeSha256": "dd37323fcfc0952aa12cbef2093a618d4ef8cba55c29046d045aed7c5f274d63"
+        },
+        {
+          "method": "e4steam$openInviteOverlay",
+          "descriptor": "()V",
+          "canonicalCodeSha256": "bfb6bb534d2687365588fa2032a9d877b1316ea1f7d16f7f3cafaa3b68e8cbd7"
+        },
+        {
+          "method": "e4steam$refreshInviteButton",
+          "descriptor": "()V",
+          "canonicalCodeSha256": "54ef73c562bdc8aaab52d717549d8e2c6babd1d23c9b3512585c39e54d013b5c"
+        }
+      ],
+      "steamInviteButtonBodyCanonicalSha256": "848200f4ae1afa3fafd69ea5c20344b9904dacd34d6c57e4f75cf4038fe57fc0",
+      "removedLeadingSettingsInstructions": 21,
+      "preservedLambdaCount": 3,
+      "removedSettingsCallback": "lambda$e4steam$addInviteButton$0",
+      "allRemainingLambdaBodiesAndBootstrapBindingsEquivalent": true
+    },
+    {
+      "fileName": "e4steam-neoforge-mc1.20.2-26.3-v0.3.4-lanmc-native-ui.1.jar",
+      "sha256": "d09f4f274e133bd43861f0577a20d83d84d9bea88bb95351f6f5af11f0b1e617",
+      "preservedNativeMethods": [
+        {
+          "method": "<init>",
+          "descriptor": "(Lnet/minecraft/network/chat/Component;)V",
+          "canonicalCodeSha256": "dd37323fcfc0952aa12cbef2093a618d4ef8cba55c29046d045aed7c5f274d63"
+        },
+        {
+          "method": "e4steam$openInviteOverlay",
+          "descriptor": "()V",
+          "canonicalCodeSha256": "b0e32c627de3dd94fba8af46d2802b3c3ad9700a7dd4fb39fae6d00be071cca8"
+        },
+        {
+          "method": "e4steam$refreshInviteButton",
+          "descriptor": "()V",
+          "canonicalCodeSha256": "95a36e4c9c15817cfb9012b6a58dc4cb2e174b6c7764e31870905120a9b53247"
+        }
+      ],
+      "steamInviteButtonBodyCanonicalSha256": "aeca528b11f6d626e943cba3f450b8e9c9e28daebdb3cda6ef822be52aa9dc9e",
+      "removedLeadingSettingsInstructions": 21,
+      "preservedLambdaCount": 3,
+      "removedSettingsCallback": "lambda$e4steam$addInviteButton$0",
+      "allRemainingLambdaBodiesAndBootstrapBindingsEquivalent": true
+    },
+    {
+      "fileName": "e4steam-fabric-quilt-mc1.17-1.18.2-v0.3.4-lanmc-native-ui.1.jar",
+      "sha256": "34b5cd1e81ec5a1e3ea1238078840c81c6cb3e6dd4ec035389125f34ff693e23",
+      "preservedNativeMethods": [
+        {
+          "method": "<init>",
+          "descriptor": "(Lnet/minecraft/class_2561;)V",
+          "canonicalCodeSha256": "5e5ac7bfe60e8b28bc0311ccc2b6b7903b5133b9d22811835ee9db5b027e6fdd"
+        },
+        {
+          "method": "e4steam$openInviteOverlay",
+          "descriptor": "()V",
+          "canonicalCodeSha256": "d1b24f548dcfc83e5d0c0d0a70bd23ce807e1975d809f9e703965a42b5cc1606"
+        },
+        {
+          "method": "e4steam$refreshInviteButton",
+          "descriptor": "()V",
+          "canonicalCodeSha256": "9456815eec44766eddc2170dbcf8c9ab2d5e93b44d29b48777478de4bb85e60d"
+        }
+      ],
+      "steamInviteButtonBodyCanonicalSha256": "dbeaf7ee0057c075f955f90478ea991e002b8f5aeb445f257b9076473c5c5f55",
+      "removedLeadingSettingsInstructions": 21,
+      "preservedLambdaCount": 3,
+      "removedSettingsCallback": "lambda$e4steam$addInviteButton$0",
+      "allRemainingLambdaBodiesAndBootstrapBindingsEquivalent": true
+    },
+    {
+      "fileName": "e4steam-fabric-quilt-mc1.19-1.21.11-v0.3.4-lanmc-native-ui.1.jar",
+      "sha256": "8a8dfb209bb0d1d15acad996f88a4d6ec7548a8a282c6ea8307a2b62fc4df800",
+      "preservedNativeMethods": [
+        {
+          "method": "<init>",
+          "descriptor": "(Lnet/minecraft/class_2561;)V",
+          "canonicalCodeSha256": "5e5ac7bfe60e8b28bc0311ccc2b6b7903b5133b9d22811835ee9db5b027e6fdd"
+        },
+        {
+          "method": "e4steam$openInviteOverlay",
+          "descriptor": "()V",
+          "canonicalCodeSha256": "d1b24f548dcfc83e5d0c0d0a70bd23ce807e1975d809f9e703965a42b5cc1606"
+        },
+        {
+          "method": "e4steam$refreshInviteButton",
+          "descriptor": "()V",
+          "canonicalCodeSha256": "9456815eec44766eddc2170dbcf8c9ab2d5e93b44d29b48777478de4bb85e60d"
+        }
+      ],
+      "steamInviteButtonBodyCanonicalSha256": "dbeaf7ee0057c075f955f90478ea991e002b8f5aeb445f257b9076473c5c5f55",
+      "removedLeadingSettingsInstructions": 21,
+      "preservedLambdaCount": 3,
+      "removedSettingsCallback": "lambda$e4steam$addInviteButton$0",
+      "allRemainingLambdaBodiesAndBootstrapBindingsEquivalent": true
+    },
+    {
+      "fileName": "e4steam-fabric-quilt-mc26.1-26.3-v0.3.4-lanmc-native-ui.1.jar",
+      "sha256": "d55953ff626dab390c0c29076a11d32b764ea543f3979c81f3bfce9889caa909",
+      "preservedNativeMethods": [
+        {
+          "method": "<init>",
+          "descriptor": "(Lnet/minecraft/network/chat/Component;)V",
+          "canonicalCodeSha256": "dd37323fcfc0952aa12cbef2093a618d4ef8cba55c29046d045aed7c5f274d63"
+        },
+        {
+          "method": "e4steam$openInviteOverlay",
+          "descriptor": "()V",
+          "canonicalCodeSha256": "b0e32c627de3dd94fba8af46d2802b3c3ad9700a7dd4fb39fae6d00be071cca8"
+        },
+        {
+          "method": "e4steam$refreshInviteButton",
+          "descriptor": "()V",
+          "canonicalCodeSha256": "95a36e4c9c15817cfb9012b6a58dc4cb2e174b6c7764e31870905120a9b53247"
+        }
+      ],
+      "steamInviteButtonBodyCanonicalSha256": "aeca528b11f6d626e943cba3f450b8e9c9e28daebdb3cda6ef822be52aa9dc9e",
+      "removedLeadingSettingsInstructions": 21,
+      "preservedLambdaCount": 3,
+      "removedSettingsCallback": "lambda$e4steam$addInviteButton$0",
+      "allRemainingLambdaBodiesAndBootstrapBindingsEquivalent": true
+    }
+  ]
+}

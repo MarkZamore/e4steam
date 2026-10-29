@@ -1,0 +1,56 @@
+{
+  "schemaVersion": 1,
+  "profile": "native-lan-ui-v1",
+  "nativeSourceCommit": "bdcea00e30ca519fa8190c0c5c04785d42b31dbc",
+  "downstreamCodeCommit": "f54954845a941bc58b66934e26531e5383103393",
+  "sourcePatchSha256": "3c13a5f977c8bcf4d1332723b067d71360b007c20cfeb7ce58d011d587c92716",
+  "profileManifestSha256": "a6fdcd486165399118f3e95b44701628453e5a690af5da34d503fd9678231674",
+  "ci": {
+    "url": "https://github.com/MarkZamore/e4steam/actions/runs/40964713070",
+    "linux": "SUCCESS",
+    "windows": "SUCCESS",
+    "gates": [
+      "native source tests",
+      "API and license checks",
+      "dedicated headless graphs",
+      "six native artifact targets",
+      "nineteen pinned author inputs",
+      "profile derivation and byte reproduction"
+    ]
+  },
+  "packagingTests": {
+    "total": 18,
+    "passed": 18,
+    "failed": 0,
+    "skipped": 0
+  },
+  "localSourceJunit": {
+    "total": 491,
+    "passed": 479,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 12,
+    "skipScope": "Existing author live-Steam opt-ins and unavailable Windows filesystem-link capabilities, duplicated by the Java16 legacy test set."
+  },
+  "independentArtifactAudit": {
+    "selectedArtifacts": 19,
+    "byteIdenticalAuthorRetro": 13,
+    "modernDerivatives": 6,
+    "changedOriginalEntriesPerDerivative": 2,
+    "addedNoticeEntriesPerDerivative": 1,
+    "allOtherUncompressedAuthorEntriesByteIdentical": true,
+    "actualSourceBuiltPauseClassIdentity": true,
+    "retainedNativeInvitationMethodsAndRecursiveLambdasEquivalent": true,
+    "canonicalLocalWindowsAllTenFilesEqualSuccessfulLinuxCi": true
+  },
+  "metadata": {
+    "authorModVersionUnchanged": true,
+    "allOriginalResourceMetadataUnchanged": true,
+    "currentForge1201ResourcePath": "Native ordinary-mod aggregate synthesizes format15; raw author cross-version pack.mcmeta remains18. Direct resource-ZIP loading is not the mod-loading route."
+  },
+  "limits": [
+    "No new complete two-account Steam gameplay matrix is claimed.",
+    "No runtime UI execution or all-version native resource-provider execution is inferred from byte and source gates.",
+    "Historical immutable author assets are retained; the active profile is separately identified."
+  ]
+}

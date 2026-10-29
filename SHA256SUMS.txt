@@ -1,9 +1,9 @@
 c9467b97bfa7691007b4226af0ba7d776393fd013a0ddc908f36e63d818e85f2  e4steam-fabric-mc1.14.x-v0.3.2.jar
 61e7c1783a3338bee600660ac630ed3d6fcb220831f110661e01dbdfee7679b2  e4steam-fabric-mc1.15.x-v0.3.2.jar
 b387a2b076527dd2f1ccbb3cf44ac97d3f4ce89722becb5e3bc57ad7933ba70f  e4steam-fabric-mc1.16.x-v0.3.2.jar
-0aaef192271c57c9af3be4a8b09e62101592953bb7c97c276df4b26c289aeef3  e4steam-fabric-quilt-mc1.17-1.18.2-v0.3.4.jar
-ec692ae255704971b24bdff28724ec48224d6c87c7e5d568e4252b4df15a447d  e4steam-fabric-quilt-mc1.19-1.21.11-v0.3.4.jar
-ea7ed37c3c2b8b41c7e458043b051725c22e81b9f9fa318a1474831cc484854e  e4steam-fabric-quilt-mc26.1-26.3-v0.3.4.jar
+34b5cd1e81ec5a1e3ea1238078840c81c6cb3e6dd4ec035389125f34ff693e23  e4steam-fabric-quilt-mc1.17-1.18.2-v0.3.4-lanmc-native-ui.1.jar
+8a8dfb209bb0d1d15acad996f88a4d6ec7548a8a282c6ea8307a2b62fc4df800  e4steam-fabric-quilt-mc1.19-1.21.11-v0.3.4-lanmc-native-ui.1.jar
+d55953ff626dab390c0c29076a11d32b764ea543f3979c81f3bfce9889caa909  e4steam-fabric-quilt-mc26.1-26.3-v0.3.4-lanmc-native-ui.1.jar
 ede466e6c19878c513419d971ca860b533eaa1ea756bf2c34a0adfbe80ad82ba  e4steam-forge-mc1.10.x-v0.3.2.jar
 3371478eac829f01a879962d1c2e0f3b31684aa16ab8e8ac3ec06e46bcf5a26f  e4steam-forge-mc1.11.x-v0.3.2.jar
 f554e6d20f037dbf8a2596eb0c3aaa3cf3ba0625d1caca9a3925cad297506e24  e4steam-forge-mc1.12.x-v0.3.2.jar
@@ -11,9 +11,9 @@ f554e6d20f037dbf8a2596eb0c3aaa3cf3ba0625d1caca9a3925cad297506e24  e4steam-forge-
 b7d08bbfadbee160f37eeb1e665d55c4a50b4682806dd63f3db5879b8fa5e1c7  e4steam-forge-mc1.14.x-v0.3.2.jar
 5de9df05e6834a1279631eedfa5879bf8abfa955226dc127fffd2a4292768b91  e4steam-forge-mc1.15.x-v0.3.2.jar
 a0e6a1ab6b29c36733c929e86905521e58b2943307fab4fda7da05b51b3449ca  e4steam-forge-mc1.16.x-v0.3.2.jar
-b1a6b34ca34edff830414a676de33a7ebe6fd3a43d0f18e687b717d45d87a312  e4steam-forge-mc1.17.1-1.18.1-v0.3.4.jar
-33421acbea4d904ac3cefa62ac1d4bd5f62f9e9169b81a4d16a052d2330bc6fc  e4steam-forge-mc1.18.2-1.20.2-v0.3.4.jar
+259e0e17faa4748ed0c3b8adb58d7c7fcfe747c8ed03aa2fbbb5028192627cb9  e4steam-forge-mc1.17.1-1.18.1-v0.3.4-lanmc-native-ui.1.jar
+68ba6bdce76868e2cb43359a13416dfa1b011c628c13b6c4266b653c765b5c40  e4steam-forge-mc1.18.2-1.20.2-v0.3.4-lanmc-native-ui.1.jar
 c44434c31a5bbfcf5cc34a9327f2c6c08e8ae633e34727486146d8f0ffb03c9c  e4steam-forge-mc1.7.x-v0.3.2.jar
 35caf65a4d97904066e2f1f6454d1ba4661bc73130305ffdb3917f90b3449972  e4steam-forge-mc1.8.x-v0.3.2.jar
 263b4b6f75f06aa0c5c8380d8ae34415e4ae735925bb952f9718c2bc24539e66  e4steam-forge-mc1.9.x-v0.3.2.jar
-b7c388393b7c27d188c17981073a2471c7ac52b95d5cff8b8dc8f19946d67be0  e4steam-neoforge-mc1.20.2-26.3-v0.3.4.jar
+d09f4f274e133bd43861f0577a20d83d84d9bea88bb95351f6f5af11f0b1e617  e4steam-neoforge-mc1.20.2-26.3-v0.3.4-lanmc-native-ui.1.jar
