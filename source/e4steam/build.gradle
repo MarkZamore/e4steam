@@ -1,0 +1,844 @@
+plugins {
+    id "architectury-plugin" version "3.4.164"
+    id "dev.architectury.loom" version "1.13.469" apply false
+    id 'com.gradleup.shadow' version '8.3.6' apply false
+}
+
+architectury {
+    minecraft = rootProject.minecraft_version
+}
+
+def minecraftProjectNames = ["common", "fabric", "forge", "neoforge"] as Set
+
+configure(subprojects.findAll { minecraftProjectNames.contains(it.name) }) {
+    apply plugin: "dev.architectury.loom"
+    apply plugin: "architectury-plugin"
+
+    loom {
+        silentMojangMappingsLicense()
+    }
+
+    dependencies {
+        minecraft "com.mojang:minecraft:${rootProject.minecraft_version}"
+        // The following line declares the mojmap mappings, you may use other mappings as well
+        mappings loom.officialMojangMappings()
+        // The following line declares the yarn mappings you may select this one as well.
+        // mappings "net.fabricmc:yarn:1.18.2+build.4:v2"
+    }
+}
+
+allprojects {
+    apply plugin: "java"
+    base {
+        archivesName = rootProject.archives_base_name + "-" + project.name
+    }
+
+    version = rootProject.mod_version
+    group = rootProject.maven_group
+
+    repositories {
+        // Add repositories to retrieve artifacts from in here.
+        // You should only use this when depending on other mods because
+        // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
+        // See https://docs.gradle.org/current/userguide/declaring_repositories.html
+        // for more information about repositories.
+        mavenCentral()
+        maven { url "https://maven.neoforged.net/releases/" }
+        maven { url 'https://repo.sleeping.town/' }
+    }
+
+    tasks.withType(JavaCompile) {
+        options.encoding = "UTF-8"
+        options.release = providers.gradleProperty("java_release")
+                .map { Integer.parseInt(it) }
+                .getOrElse(17)
+    }
+
+    java {
+        withSourcesJar()
+    }
+}
+
+tasks.register("apiChecks") {
+    group = "verification"
+    description = "Compile and audit the Java 8 addon API, testkit, and example addon."
+    dependsOn(
+            ":api:check",
+            ":api:apiJarAudit",
+            ":api:javadoc",
+            ":api-testkit:check",
+            ":example-addon:check"
+    )
+}
+
+ext.getLatestChangelog = {
+    Collection<String> lines = file("$rootDir/CHANGELOG.md").readLines()
+    String changelog = ""
+    Boolean atSegment = false
+    for (String line : lines) {
+        if (line.startsWith("## ")) {
+            if (atSegment) break // hit next segment
+            atSegment = true
+        }
+        if (atSegment) changelog += "$line\n"
+    }
+    return changelog.trim()
+}
+
+tasks.register("viewLatestChangelog") {
+    group "documentation"
+    description "Print the topmost single version section from the full CHANGELOG.md file."
+    doLast {
+        println(getLatestChangelog())
+    }
+}
+
+tasks.register("legacyReleaseJars", GradleBuild) {
+    group = "build"
+    description = "Build the separate Minecraft 1.17/Java 16 legacy variants."
+    dir = file("legacy")
+    tasks = ["clean", "releaseJars"]
+}
+
+tasks.register("retroReleaseJars", GradleBuild) {
+    group = "build"
+    description = "Build and audit all thirteen Java 8 retro branch variants."
+    dir = file("retro")
+    tasks = ["clean", "auditRetroArtifacts"]
+}
+
+tasks.register("headlessEntrypointAudit") {
+    group = "verification"
+    description = "Reject client/UI class references reachable from dedicated server entrypoints."
+    dependsOn(
+            ":common:classes",
+            ":fabric:classes",
+            ":forge:classes",
+            ":neoforge:classes"
+    )
+
+    doLast {
+        List<File> roots = [
+                file("common/build/classes/java/main"),
+                file("fabric/build/classes/java/main"),
+                file("forge/build/classes/java/main"),
+                file("neoforge/build/classes/java/main"),
+                file("api/build/classes/java/main")
+        ].findAll { it.isDirectory() }
+        Map<String, byte[]> classes = [:]
+        roots.each { root ->
+            fileTree(root) { include "**/*.class" }.files.each { classFile ->
+                String relative = root.toPath().relativize(classFile.toPath()).toString()
+                        .replace(File.separatorChar, '/' as char)
+                classes[relative.substring(0, relative.length() - ".class".length())] =
+                        classFile.bytes
+            }
+        }
+
+        List<String> entrypoints = [
+                "link/e4steam/fabric/E4steamFabric",
+                "link/e4steam/forge/E4steamForge",
+                "link/e4steam/neoforge/E4steamNeoForge",
+                "link/e4steam/mixin/ServerConnectionListenerMixin",
+                "link/e4steam/mixin/ServerLoginPacketListenerImplMixin"
+        ]
+        List<String> forbidden = [
+                "net/minecraft/client/",
+                "java/awt/",
+                "javax/swing/",
+                "javafx/",
+                "link/e4steam/E4steamClient",
+                "link/e4steam/MinecraftUiCompat",
+                "link/e4steam/Mirror",
+                "link/e4steam/Doctor",
+                "link/e4steam/steam/SteamRuntime",
+                "link/e4steam/steam/SteamLobbyManager",
+                "link/e4steam/steam/SteamSession"
+        ]
+        def references = { byte[] bytes ->
+            String constants = new String(bytes, java.nio.charset.StandardCharsets.ISO_8859_1)
+            LinkedHashSet<String> found = new LinkedHashSet<>()
+            java.util.regex.Matcher matcher = java.util.regex.Pattern
+                    .compile('(?:\\[L)?([a-zA-Z_$][a-zA-Z0-9_$]*(?:/[a-zA-Z0-9_$]+)+)')
+                    .matcher(constants)
+            while (matcher.find()) found.add(matcher.group(1))
+            return found
+        }
+
+        entrypoints.each { entrypoint ->
+            if (!classes.containsKey(entrypoint)) {
+                throw new GradleException("Missing headless entrypoint class ${entrypoint}")
+            }
+            LinkedHashSet<String> visited = new LinkedHashSet<>()
+            ArrayDeque<String> pending = new ArrayDeque<>()
+            Map<String, String> parent = [:]
+            pending.add(entrypoint)
+            while (!pending.isEmpty()) {
+                String name = pending.removeFirst()
+                if (!visited.add(name)) continue
+                byte[] bytes = classes[name]
+                if (bytes == null) continue
+                references(bytes).each { reference ->
+                    String violation = forbidden.find { prefix ->
+                        prefix.endsWith('/')
+                                ? reference.startsWith(prefix)
+                                : reference == prefix || reference.startsWith(prefix + '$')
+                    }
+                    if (violation != null) {
+                        List<String> path = [name, reference]
+                        String cursor = name
+                        while (parent.containsKey(cursor)) {
+                            cursor = parent[cursor]
+                            path.add(0, cursor)
+                        }
+                        throw new GradleException("Headless client reference via ${path.join(' -> ')}")
+                    }
+                    if (classes.containsKey(reference) && !visited.contains(reference)) {
+                        parent.putIfAbsent(reference, name)
+                        pending.addLast(reference)
+                    }
+                }
+            }
+            println("Headless graph audit passed for ${entrypoint} (${visited.size()} local classes).")
+        }
+
+        [
+                file("common/src/main/resources/e4steam.mixins.json"),
+                file("legacy/common/src/main/resources/e4steam.mixins.json")
+        ].each { mixinFile ->
+            Map parsed = new groovy.json.JsonSlurper().parse(mixinFile) as Map
+            List commonMixins = (parsed.mixins ?: []) as List
+            commonMixins.each { name ->
+                File source = file("common/src/main/java/link/e4steam/mixin/${name}.java")
+                if (!source.isFile()) {
+                    source = file("legacy/common/src/main/java/link/e4steam/mixin/${name}.java")
+                }
+                if (source.isFile()) {
+                    String text = source.getText("UTF-8")
+                    if (text.contains("net.minecraft.client")
+                            || text.contains("E4steamClient")
+                            || text.contains("MinecraftUiCompat")) {
+                        throw new GradleException(
+                                "Client-only Mixin ${name} is listed in the common/server section"
+                        )
+                    }
+                }
+            }
+        }
+    }
+}
+
+tasks.register("dependencyLicenseAudit") {
+    group = "verification"
+    description = "Verify the checked-in dependency/license inventory and mandatory notices."
+
+    doLast {
+        def requiredText = [
+                (file("NOTICE")): ["e4mc-retro", "Apache License"],
+                (file("THIRD_PARTY_NOTICES.md")): [
+                        "steamworks4j 1.10.0",
+                        "Kaleido Config 0.3.3+1.3.2",
+                        "Valve Steamworks redistributables",
+                        "xhyrom/e4mc-retro"
+                ],
+                (file("docs/DEPENDENCY_LICENSE_REPORT.md")): [
+                        "steamworks4j | 1.10.0",
+                        "steamworks4j-server | 1.10.0",
+                        "Kaleido Config | 0.3.3+1.3.2",
+                        "UniMixins 0.1.20",
+                        "exactly nine selected 64-bit Steam native files"
+                ]
+        ]
+        requiredText.each { document, fragments ->
+            if (!document.isFile()) {
+                throw new GradleException("Missing dependency/license document: ${document}")
+            }
+            String content = document.getText("UTF-8")
+            fragments.each { fragment ->
+                if (!content.contains(fragment)) {
+                    throw new GradleException("${document} is missing dependency/license entry: ${fragment}")
+                }
+            }
+        }
+        if (rootProject.steamworks4j_version != "1.10.0") {
+            throw new GradleException(
+                    "Update the dependency/license report for steamworks4j ${rootProject.steamworks4j_version}"
+            )
+        }
+    }
+}
+
+def includeRetroInRelease = providers.gradleProperty("includeRetro").map { it.toBoolean() }.getOrElse(false)
+
+tasks.register("releaseJars") {
+    group = "build"
+    description = "Build and audit six Minecraft 1.17+ runtime JARs; opt into retro with -PincludeRetro=true."
+    dependsOn(
+            legacyReleaseJars,
+            (includeRetroInRelease ? [retroReleaseJars] : []),
+            headlessEntrypointAudit,
+            dependencyLicenseAudit,
+            (findProject(":stdin-agent") != null ? [":stdin-agent:check"] : []),
+            ":common:test",
+            ":api:jar",
+            ":api:sourcesJar",
+            ":fabric:remapJar",
+            ":fabric:modernRemapJar",
+            ":forge:remapJar",
+            ":neoforge:remapJar"
+    )
+
+    doLast {
+        def version = rootProject.mod_version
+        def variants = [
+                [
+                        label: "Fabric/Quilt 1.17-1.18.2",
+                        publicName: "e4steam-fabric-quilt-mc1.17-1.18.2-v${version}.jar",
+                        file: file("legacy/fabric/build/libs/e4steam-fabric-${version}-mc1.17-1.18.2.jar"),
+                        major: 60,
+                        loginMixin: "LegacyServerLoginPacketListenerImplMixin",
+                        metadata: ["fabric.mod.json": [
+                                '"id": "e4steam"',
+                                '"icon": "assets/e4steam_minecraft/icon.png"',
+                                '"minecraft": ">=1.17 <1.19"',
+                                '"java": ">=16"'
+                        ]]
+                ],
+                [
+                        label: "Forge legacy17",
+                        publicName: "e4steam-forge-mc1.17.1-1.18.1-v${version}.jar",
+                        file: file("legacy/forge/build/libs/e4steam-forge-${version}-legacy17.jar"),
+                        major: 60,
+                        loginMixin: "LegacyServerLoginPacketListenerImplMixin",
+                        metadata: ["META-INF/mods.toml": [
+                                'modId = "e4steam"',
+                                'logoFile = "assets/e4steam_minecraft/icon.png"',
+                                'versionRange = "[1.17.1,1.18.2)"'
+                        ]]
+                ],
+                [
+                        label: "Fabric/Quilt",
+                        publicName: "e4steam-fabric-quilt-mc1.19-1.21.11-v${version}.jar",
+                        file: file("fabric/build/libs/e4steam-fabric-${version}.jar"),
+                        major: 61,
+                        loginMixin: "ServerLoginPacketListenerImplMixin",
+                        metadata: ["fabric.mod.json": [
+                                '"id": "e4steam"',
+                                '"icon": "assets/e4steam_minecraft/icon.png"',
+                                '"minecraft": ">=1.19 <26.1-"',
+                                '"java": ">=17"'
+                        ]]
+                ],
+                [
+                        label: "Fabric/Quilt Modern",
+                        publicName: "e4steam-fabric-quilt-mc26.1-26.3-v${version}.jar",
+                        file: file("fabric/build/libs/e4steam-fabric-${version}-modern.jar"),
+                        major: 61,
+                        loginMixin: "ServerLoginPacketListenerImplMixin",
+                        metadata: ["fabric.mod.json": [
+                                '"id": "e4steam"',
+                                '"icon": "assets/e4steam_minecraft/icon.png"',
+                                '"minecraft": ">=26.1- <26.4-"',
+                                '"java": ">=25"'
+                        ]]
+                ],
+                [
+                        label: "Forge",
+                        publicName: "e4steam-forge-mc1.18.2-1.20.2-v${version}.jar",
+                        file: file("forge/build/libs/e4steam-forge-${version}.jar"),
+                        major: 61,
+                        loginMixin: "ServerLoginPacketListenerImplMixin",
+                        metadata: ["META-INF/mods.toml": [
+                                'modId = "e4steam"',
+                                'logoFile = "assets/e4steam_minecraft/icon.png"',
+                                'versionRange = "[1.18.2,1.20.3)"'
+                        ]]
+                ],
+                [
+                        label: "NeoForge",
+                        publicName: "e4steam-neoforge-mc1.20.2-26.3-v${version}.jar",
+                        file: file("neoforge/build/libs/e4steam-neoforge-${version}.jar"),
+                        major: 61,
+                        loginMixin: "ServerLoginPacketListenerImplMixin",
+                        metadata: [
+                                "META-INF/mods.toml": [
+                                        'modId = "e4steam"',
+                                        'logoFile = "assets/e4steam_minecraft/icon.png"',
+                                        'versionRange = "[1.20.2,26.4)"'
+                                ],
+                                "META-INF/neoforge.mods.toml": [
+                                        'modId = "e4steam"',
+                                        'logoFile = "assets/e4steam_minecraft/icon.png"',
+                                        'versionRange = "[1.20.2,26.4)"'
+                                ]
+                        ]
+                ]
+        ]
+        def retroVariants = [
+                [project: "forge-1.7.10", branch: "1.7.x"],
+                [project: "forge-1.8.9", branch: "1.8.x"],
+                [project: "forge-1.9.4", branch: "1.9.x"],
+                [project: "forge-1.10.2", branch: "1.10.x"],
+                [project: "forge-1.11.2", branch: "1.11.x"],
+                [project: "forge-1.12.2", branch: "1.12.x"],
+                [project: "forge-1.13.2", branch: "1.13.x"],
+                [project: "forge-1.14.4", branch: "1.14.x"],
+                [project: "forge-1.15.2", branch: "1.15.x"],
+                [project: "forge-1.16.5", branch: "1.16.x"],
+                [project: "fabric-1.14.4", branch: "1.14.x"],
+                [project: "fabric-1.15.2", branch: "1.15.x"],
+                [project: "fabric-1.16.5", branch: "1.16.x"]
+        ].collect { target ->
+            String projectName = target.project
+            String loader = projectName.substring(0, projectName.indexOf('-'))
+            String minecraftVersion = projectName.substring(projectName.indexOf('-') + 1)
+            String publicName = "e4steam-${loader}-mc${target.branch}-v${version}.jar"
+            return [
+                    label: "Retro ${loader} ${target.branch} (built on ${minecraftVersion})",
+                    publicName: publicName,
+                    file: file("retro/${projectName}/build/libs/${publicName}")
+            ]
+        }
+        if (!includeRetroInRelease) retroVariants = []
+        def requiredNatives = [
+                "steam_api64.dll": [
+                        size: 319584L,
+                        sha256: "e082bf5c9f881c822b1540a76b74f9d15e18019a73ebd206a559595badcb7f65"
+                ],
+                "steamworks4j64.dll": [
+                        size: 310784L,
+                        sha256: "5b7e1860775001b47efcd0378c3de8dec4d633967b1c70b5e469f7488539deaa"
+                ],
+                "steamworks4j-server64.dll": [
+                        size: 152064L,
+                        sha256: "0c7e676870bcf33d4a4b5269931d670bed2890e39e115656dfbd680533ec4b29"
+                ],
+                "libsteam_api.so": [
+                        size: 388288L,
+                        sha256: "0f2c41c20644503c17e13498203986493332fc8296dbd78493bc1fed352ec0cc"
+                ],
+                "libsteamworks4j.so": [
+                        size: 310528L,
+                        sha256: "4d255292c9ee257087053f8b1c0f0ab5a8f831193d3e6f37a10e5c046d6e1886"
+                ],
+                "libsteamworks4j-server.so": [
+                        size: 92704L,
+                        sha256: "268d16c2fac4beda0f649ac5809a557cce50fd7662ad3de5733f8bd84a12afab"
+                ],
+                "libsteam_api.dylib": [
+                        size: 415344L,
+                        sha256: "d828cbd6365daa2b16d3bd7dc2969c60e97f497c0996a6def0b7b174a7e19953"
+                ],
+                "libsteamworks4j.dylib": [
+                        size: 681280L,
+                        sha256: "f596487a0edce464c21c551c1a29a29aedaf4965d0a21b6d58ab3a55bce5c97e"
+                ],
+                "libsteamworks4j-server.dylib": [
+                        size: 251248L,
+                        sha256: "2204191a95ca5d9a9da3f46cb420fc9cec9a68c92d7184e7d9e77ecf9807fad7"
+                ]
+        ]
+        def forbiddenNatives = [
+                "steam_api.dll",
+                "steamworks4j.dll",
+                "steamworks4j-server.dll",
+                "steamworks4j-encryptedappticket.dll",
+                "steamworks4j-encryptedappticket64.dll",
+                "libsteamworks4j-encryptedappticket.so",
+                "libsteamworks4j-encryptedappticket.dylib"
+        ]
+
+        variants.each { variant ->
+            File jarFile = variant.file
+            if (!jarFile.isFile()) {
+                throw new GradleException("Missing ${variant.label} runtime JAR: ${jarFile}")
+            }
+
+            def zip = new java.util.zip.ZipFile(jarFile)
+            try {
+                requiredNatives.each { name, manifest ->
+                    def entries = Collections.list(zip.entries()).findAll {
+                        it.name == name
+                    }
+                    if (entries.size() != 1) {
+                        throw new GradleException("${variant.label} is missing bundled native ${name}")
+                    }
+                    def entry = entries[0]
+                    if (entry.size != manifest.size) {
+                        throw new GradleException(
+                                "${variant.label} native ${name} has an unexpected size"
+                        )
+                    }
+                    def digest = java.security.MessageDigest.getInstance("SHA-256")
+                    zip.getInputStream(entry).withCloseable { input ->
+                        byte[] buffer = new byte[8192]
+                        int read
+                        while ((read = input.read(buffer)) >= 0) {
+                            if (read > 0) digest.update(buffer, 0, read)
+                        }
+                    }
+                    String actualHash = digest.digest().encodeHex().toString()
+                    if (actualHash != manifest.sha256) {
+                        throw new GradleException(
+                                "${variant.label} native ${name} does not match the pinned SHA-256"
+                        )
+                    }
+                }
+                forbiddenNatives.each { name ->
+                    if (zip.getEntry(name) != null) {
+                        throw new GradleException("${variant.label} unexpectedly bundles ${name}")
+                    }
+                }
+                if (zip.getEntry("steam_appid.txt") != null) {
+                    throw new GradleException("${variant.label} must not package steam_appid.txt")
+                }
+                if (zip.getEntry("META-INF/LICENSE-e4steam.txt") == null
+                        || zip.getEntry("META-INF/NOTICE-e4steam.txt") == null
+                        || zip.getEntry("META-INF/THIRD_PARTY_NOTICES.md") == null) {
+                    throw new GradleException("${variant.label} is missing packaged legal notices")
+                }
+                [
+                        "link/e4steam/api/ApiConstants.class",
+                        "link/e4steam/api/directory/PublicDirectoryService.class",
+                        "link/e4steam/internal/api/CorePublicDirectoryService.class",
+                        "link/e4steam/steam/SteamCustomAccessGate.class"
+                ].each { requiredApiEntry ->
+                    if (zip.getEntry(requiredApiEntry) == null) {
+                        throw new GradleException(
+                                "${variant.label} is missing Addon API 1.1 runtime entry ${requiredApiEntry}"
+                        )
+                    }
+                }
+                def runtimeVersionEntry = zip.getEntry("e4steam-version.properties")
+                if (runtimeVersionEntry == null || zip.getInputStream(runtimeVersionEntry)
+                        .getText("UTF-8").trim() != "version=${version}") {
+                    throw new GradleException(
+                            "${variant.label} does not embed the current core version"
+                    )
+                }
+                if (Collections.list(zip.entries()).any {
+                    it.name.toLowerCase(Locale.ROOT) ==~
+                            /(?:^|.*\/)e4steam-api-[^\/]*[.]jar/
+                }) {
+                    throw new GradleException(
+                            "${variant.label} contains a nested API JAR instead of one runtime class identity"
+                    )
+                }
+                def mixinsEntry = zip.getEntry("e4steam.mixins.json")
+                if (mixinsEntry == null) {
+                    throw new GradleException("${variant.label} is missing e4steam.mixins.json")
+                }
+                String mixinsConfig = zip.getInputStream(mixinsEntry).getText("UTF-8")
+                if (mixinsConfig.contains('"ClientTerrainDiagnosticsMixin"')
+                        || zip.getEntry("link/e4steam/mixin/ClientTerrainDiagnosticsMixin.class") != null) {
+                    throw new GradleException("${variant.label} includes the version-specific terrain diagnostic mixin")
+                }
+                if (!mixinsConfig.contains('"' + variant.loginMixin + '"')) {
+                    throw new GradleException(
+                            "${variant.label} does not enable authenticated offline-launcher login"
+                    )
+                }
+                ["ShareToLanScreenMixin", "MultiplayerOptionsScreenMixin", "WorldOptionsScreenMixin"].each { uiMixin ->
+                    if (mixinsConfig.contains('"' + uiMixin + '"')) {
+                        throw new GradleException(
+                                "${variant.label} still redirects a native screen through ${uiMixin}"
+                        )
+                    }
+                }
+                if (!mixinsConfig.contains('"PauseScreenMixin"') ||
+                        zip.getEntry("link/e4steam/mixin/PauseScreenMixin.class") == null) {
+                    throw new GradleException("${variant.label} lost its Steam invitation screen hook")
+                }
+                String pauseConstants = new String(zip.getInputStream(
+                        zip.getEntry("link/e4steam/mixin/PauseScreenMixin.class")).readAllBytes(),
+                        java.nio.charset.StandardCharsets.ISO_8859_1)
+                if (pauseConstants.contains("LanSettingsScreen") ||
+                        pauseConstants.contains("text.e4steam_minecraft.lan.settings") ||
+                        !pauseConstants.contains("openInviteOverlayAsync")) {
+                    throw new GradleException("${variant.label} must keep invitations without the extra LAN settings entry")
+                }
+                String commandEntrypoint
+                if (variant.label.startsWith("Fabric/Quilt 1.17")) {
+                    commandEntrypoint =
+                            "link/e4steam/fabric/E4steamClientFabricLegacy.class"
+                } else if (variant.label.startsWith("Fabric/Quilt")) {
+                    commandEntrypoint = "link/e4steam/fabric/E4steamClientFabric.class"
+                } else if (variant.label == "NeoForge") {
+                    commandEntrypoint =
+                            "link/e4steam/neoforge/E4steamClientNeoForge.class"
+                } else {
+                    commandEntrypoint = "link/e4steam/forge/E4steamClientForge.class"
+                }
+                def commandEntry = zip.getEntry(commandEntrypoint)
+                if (commandEntry == null) {
+                    throw new GradleException(
+                            "${variant.label} is missing its command registration entrypoint"
+                    )
+                }
+                String commandConstants = new String(
+                        zip.getInputStream(commandEntry).readAllBytes(),
+                        java.nio.charset.StandardCharsets.ISO_8859_1
+                )
+                if (!commandConstants.contains("registerCommands")) {
+                    throw new GradleException(
+                            "${variant.label} does not register the e4steam command tree"
+                    )
+                }
+                if (zip.getEntry("assets/e4steam_minecraft/icon.png") == null) {
+                    throw new GradleException("${variant.label} is missing the e4steam mod icon")
+                }
+
+                if (zip.getEntry("folk/sisby/kaleido/api/KaleidoConfig.class") != null) {
+                    throw new GradleException(
+                            "${variant.label} exposes an unrelocated Kaleido copy that can conflict with other mods"
+                    )
+                }
+                if (zip.getEntry("link/e4steam/internal/kaleido/api/KaleidoConfig.class") == null) {
+                    throw new GradleException("${variant.label} is missing its isolated Kaleido runtime")
+                }
+
+                def classEntry = zip.getEntry("link/e4steam/steam/SteamAddress.class")
+                if (classEntry == null) {
+                    throw new GradleException("${variant.label} is missing SteamAddress.class")
+                }
+                if (zip.getEntry("link/e4steam/steam/SteamNetworkingMessagesTransport.class") == null) {
+                    throw new GradleException(
+                            "${variant.label} is missing the Steam Networking Messages transport"
+                    )
+                }
+                if (zip.getEntry("link/e4steam/steam/SteamPacketTransport.class") != null) {
+                    throw new GradleException(
+                            "${variant.label} still contains the deprecated ISteamNetworking transport"
+                    )
+                }
+                String loginMixinEntry = "link/e4steam/mixin/${variant.loginMixin}.class"
+                if (zip.getEntry(loginMixinEntry) == null) {
+                    throw new GradleException(
+                            "${variant.label} is missing authenticated offline-launcher support"
+                    )
+                }
+                if (variant.loginMixin == "ServerLoginPacketListenerImplMixin") {
+                    String loginConstants = new String(
+                            zip.getInputStream(zip.getEntry(loginMixinEntry)).readAllBytes(),
+                            java.nio.charset.StandardCharsets.ISO_8859_1
+                    )
+                    if (loginConstants.contains("getName")) {
+                        throw new GradleException(
+                                "${variant.label} directly links the Authlib 6 GameProfile.getName accessor"
+                        )
+                    }
+                    def identityEntry = zip.getEntry(
+                            "link/e4steam/steam/SteamMinecraftIdentity.class"
+                    )
+                    if (identityEntry == null) {
+                        throw new GradleException(
+                                "${variant.label} is missing the Authlib compatibility bridge"
+                        )
+                    }
+                    String identityConstants = new String(
+                            zip.getInputStream(identityEntry).readAllBytes(),
+                            java.nio.charset.StandardCharsets.ISO_8859_1
+                    )
+                    if (!identityConstants.contains("profileName")
+                            || !identityConstants.contains("getName")
+                            || !identityConstants.contains("name")) {
+                        throw new GradleException(
+                                "${variant.label} cannot read both legacy and record-style GameProfile names"
+                        )
+                    }
+                }
+                if (zip.getEntry("link/e4steam/mixin/MultiplayerOptionsScreenMixin.class") == null) {
+                    throw new GradleException(
+                            "${variant.label} is missing the Minecraft 26.x LAN GUI compatibility mixin"
+                    )
+                }
+                def stream = new DataInputStream(zip.getInputStream(classEntry))
+                try {
+                    long classMagic = Integer.toUnsignedLong(stream.readInt())
+                    if (classMagic != 3405691582L) {
+                        throw new GradleException("${variant.label} contains an invalid class file")
+                    }
+                    stream.readUnsignedShort()
+                    int major = stream.readUnsignedShort()
+                    if (major != variant.major) {
+                        throw new GradleException(
+                                "${variant.label} classfile major is ${major}; expected ${variant.major}"
+                        )
+                    }
+                } finally {
+                    stream.close()
+                }
+
+                def clientEntry = zip.getEntry("link/e4steam/E4steamClient.class")
+                if (clientEntry == null) {
+                    throw new GradleException("${variant.label} is missing E4steamClient.class")
+                }
+                String clientConstants = new String(
+                        zip.getInputStream(clientEntry).readAllBytes(),
+                        java.nio.charset.StandardCharsets.ISO_8859_1
+                )
+                if (clientConstants.contains("net/minecraft/client/gui/screens/GenericDirtMessageScreen")) {
+                    throw new GradleException(
+                            "${variant.label} directly links the pre-1.21 GenericDirtMessageScreen class"
+                    )
+                }
+
+                def udpBridgeEntry = zip.getEntry("link/e4steam/steam/SteamUdpBridge.class")
+                def udpEndpointEntry = zip.getEntry("link/e4steam/steam/VoiceChatUdpEndpoint.class")
+                def protocolEntry = zip.getEntry("link/e4steam/steam/SteamProtocol.class")
+                def configEntry = zip.getEntry("link/e4steam/Config.class")
+                if (udpBridgeEntry == null || udpEndpointEntry == null
+                        || protocolEntry == null || configEntry == null) {
+                    throw new GradleException("${variant.label} is missing TCP/UDP tunnel support")
+                }
+                String protocolConstants = new String(
+                        zip.getInputStream(protocolEntry).readAllBytes(),
+                        java.nio.charset.StandardCharsets.ISO_8859_1
+                )
+                String configConstants = new String(
+                        zip.getInputStream(configEntry).readAllBytes(),
+                        java.nio.charset.StandardCharsets.ISO_8859_1
+                )
+                if (!protocolConstants.contains("encodeDatagram")
+                        || !protocolConstants.contains("encodeOpenAck")
+                        || !protocolConstants.contains("encodeBridgeReady")
+                        || !configConstants.contains("voiceChatPort")) {
+                    throw new GradleException(
+                            "${variant.label} is missing the UDP tunnel or first-join handshake"
+                    )
+                }
+
+                variant.metadata.each { path, expectedFragments ->
+                    def entry = zip.getEntry(path)
+                    if (entry == null) {
+                        throw new GradleException("${variant.label} is missing ${path}")
+                    }
+                    String text = zip.getInputStream(entry).getText("UTF-8")
+                    String unicodeEscape = Character.toString((char) 92) + "u"
+                    text = text
+                            .replace(unicodeEscape + "003e", ">")
+                            .replace(unicodeEscape + "003d", "=")
+                            .replace(unicodeEscape + "003c", "<")
+                    expectedFragments.each { fragment ->
+                        if (!text.contains(fragment)) {
+                            throw new GradleException(
+                                    "${variant.label} ${path} is missing expected range ${fragment}"
+                            )
+                        }
+                    }
+                }
+            } finally {
+                zip.close()
+            }
+        }
+        retroVariants.each { variant ->
+            if (!variant.file.isFile()) {
+                throw new GradleException("Missing ${variant.label} runtime JAR: ${variant.file}")
+            }
+            def zip = new java.util.zip.ZipFile(variant.file)
+            try {
+                if (zip.getEntry("link/e4steam/steam/SteamCustomAccessGate.class") == null) {
+                    throw new GradleException(
+                            "${variant.label} is missing the fail-closed addon access boundary"
+                    )
+                }
+                def runtimeVersionEntry = zip.getEntry("e4steam-version.properties")
+                if (runtimeVersionEntry == null || zip.getInputStream(runtimeVersionEntry)
+                        .getText("UTF-8").trim() != "version=${version}") {
+                    throw new GradleException(
+                            "${variant.label} does not embed the current core version"
+                    )
+                }
+            } finally {
+                zip.close()
+            }
+        }
+        [
+                file("api/build/libs/e4steam-api-${api_version}.jar"),
+                file("api/build/libs/e4steam-api-${api_version}-sources.jar")
+        ].each { apiArtifact ->
+            if (!apiArtifact.isFile()) {
+                throw new GradleException("Missing API artifact for native isolation audit: ${apiArtifact}")
+            }
+            def zip = new java.util.zip.ZipFile(apiArtifact)
+            try {
+                requiredNatives.keySet().each { name ->
+                    if (zip.getEntry(name) != null) {
+                        throw new GradleException(
+                                "${apiArtifact.name} must not contain runtime native ${name}"
+                        )
+                    }
+                }
+            } finally {
+                zip.close()
+            }
+        }
+        File publicDirectory = file("release/${version}")
+        delete(fileTree(publicDirectory) { include "*.jar" })
+        File toolsDirectory = new File(publicDirectory, "tools")
+        delete(fileTree(toolsDirectory) { include "*.jar" })
+        variants.each { variant ->
+            copy {
+                from variant.file
+                into publicDirectory
+                rename { variant.publicName }
+            }
+        }
+        retroVariants.each { variant ->
+            copy {
+                from variant.file
+                into publicDirectory
+                rename { variant.publicName }
+            }
+        }
+        String agentName = "e4steam-stdin-agent-v${version}.jar"
+        if (findProject(":stdin-agent") != null) copy {
+            from file("stdin-agent/build/libs/e4steam-stdin-agent-${version}.jar")
+            into toolsDirectory
+            rename { agentName }
+        }
+        Set<String> expectedNames = (variants + retroVariants)
+                .collect { it.publicName } as Set<String>
+        Set<String> actualNames = fileTree(publicDirectory) { include "*.jar" }
+                .files.collect { it.name } as Set<String>
+        if (actualNames != expectedNames) {
+            throw new GradleException(
+                    "Could not assemble the complete public release set in ${publicDirectory}; "
+                            + "missing=${expectedNames - actualNames}, unexpected=${actualNames - expectedNames}"
+            )
+        }
+        File agentArtifact = new File(toolsDirectory, agentName)
+        if (findProject(":stdin-agent") != null && !agentArtifact.isFile()) {
+            throw new GradleException("Missing Unix overlay stdin agent: ${agentArtifact}")
+        }
+        fileTree(publicDirectory) { include "**/*.jar" }.files.each { artifact ->
+            def zip = new java.util.zip.ZipFile(artifact)
+            try {
+                Collections.list(zip.entries()).each { entry ->
+                    String lower = entry.name.toLowerCase(Locale.ROOT)
+                    if (lower ==~ /.*(^|\/)(src|build|[.]gradle|[.]git|[.]idea)\/.*/
+                            || lower ==~ /.*[.](tmp|bak|orig)$/) {
+                        throw new GradleException(
+                                "${artifact.name} contains development-only path ${entry.name}"
+                        )
+                    }
+                    boolean textEntry = lower ==~ /.*[.](json|toml|properties|xml|mf|md|txt|lang|cfg|accesswidener)$/
+                            || lower.startsWith("meta-inf/services/")
+                    if (!entry.directory && textEntry && entry.size >= 0L && entry.size <= 1_048_576L) {
+                        String text = zip.getInputStream(entry).getText("UTF-8")
+                        if (text.contains("-----BEGIN OPENSSH PRIVATE KEY-----")
+                                || text ==~ /(?s).*mrp_[A-Za-z0-9]{30,}.*/
+                                || text ==~ /(?s).*(C:[\\\/]Users[\\\/]|file:\/\/\/[A-Za-z]:[\\\/]Users[\\\/]).*/) {
+                            throw new GradleException(
+                                    "${artifact.name} contains a secret or absolute workstation path in ${entry.name}"
+                            )
+                        }
+                    }
+                }
+            } finally {
+                zip.close()
+            }
+        }
+        println("Artifact audit passed and collected ${variants.size() + retroVariants.size()} runtime JAR variants plus the optional Unix overlay agent in ${publicDirectory}.")
+    }
+}

@@ -1,2 +1,5 @@
-* text=auto eol=lf
-*.jar -text
+/tools/native_ui.py text eol=lf
+/tools/test_native_ui.py text eol=lf
+/source/native-ui.patch text eol=lf whitespace=-blank-at-eol
+/source/UPSTREAM.json text eol=lf
+/.github/workflows/native-ui.yml text eol=lf

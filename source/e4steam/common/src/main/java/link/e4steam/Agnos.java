@@ -1,0 +1,37 @@
+package link.e4steam;
+
+import dev.architectury.injectables.annotations.ExpectPlatform;
+
+import java.nio.file.Path;
+
+public class Agnos {
+    @ExpectPlatform
+    public static boolean isClient() {
+        return false;
+    }
+
+    @ExpectPlatform
+    public static Path configDir() {
+        return null;
+    }
+
+    @ExpectPlatform
+    public static Path jarPath() {
+        return null;
+    }
+
+    @ExpectPlatform
+    public static boolean proactivelyAcceptSteamPeerSessions() {
+        return false;
+    }
+
+    @ExpectPlatform
+    public static boolean autoRestartBrokenSteamSessionForHandshake() {
+        return false;
+    }
+
+    @ExpectPlatform
+    public static boolean paceMinecraftTrafficForLoader() {
+        return false;
+    }
+}

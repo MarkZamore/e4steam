@@ -1,0 +1,13 @@
+# Native LAN UI profile v1
+
+This downstream profile removes e4steam's additional LAN Settings button and the intermediate combined LAN/Steam form, across all six modern loader artifacts. Native Minecraft screens and the launcher's existing direct LAN publication/reporting workflow remain responsible for the game menu. Steam invitations, P2P/Valve relay transport, authentication, admission and native libraries are retained.
+
+The thirteen older selected artifacts contain no equivalent e4steam settings panel and remain exact author bytes at their historical URLs. The profile inventory covers all nineteen selected loader/Minecraft targets. It does not invent a player-reporting screen on Minecraft versions that never had one.
+
+The original author is Kamilchik, [Kamilhik/e4steam](https://github.com/Kamilhik/e4steam). Author releases `v0.3.2` and `v0.3.4`, their inventories, licenses and assets remain unchanged. Modified modern filenames have the explicit `-lanmc-native-ui.1` suffix and are published under the separate `native-lan-ui-v1` tag. In-JAR author version metadata remains unchanged for API compatibility; this is a declared downstream distribution with distinct hashes and behavior.
+
+Each modern derivative starts from its exact pinned author JAR. Only `PauseScreenMixin.class` from the pinned patched source build and `e4steam.mixins.json` are replaced; a downstream modification notice is added. Every other original uncompressed JAR entry, including all network/authentication classes, metadata, native libraries and third-party notices, must remain byte-identical. The existing Steam invitation button is kept. The three redirects for ShareToLanScreen, MultiplayerOptionsScreen and WorldOptionsScreen are disabled; no live/per-launch JAR transformation installs this policy.
+
+Pinned author source, upstream provenance and the small patch are in `source`. The source build retains its native test, dependency/license, headless and six-artifact gates, updated to require the requested UI behavior. `tools/native_ui.py` reproduces and compares the complete derived profile before uploading any asset. Publication never overwrites or deletes an existing release asset and publishes the profile manifest last.
+
+Automated byte/packaging tests and source build gates are distinct from full two-account Steam gameplay tests. This UI-only distribution does not claim a new complete manual test matrix for every Minecraft version or operating system. Windows x64 remains the author's primary platform; Linux/macOS retain the author's experimental status. Raw game logs, credentials, Steam IDs and personal paths are not release assets.

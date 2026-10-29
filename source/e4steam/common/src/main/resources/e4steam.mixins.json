@@ -1,0 +1,29 @@
+{
+  "required": true,
+  "package": "link.e4steam.mixin",
+  "compatibilityLevel": "JAVA_17",
+  "minVersion": "0.8",
+  "mixins": [
+    "ServerLoginPacketListenerImplMixin",
+    "ServerConnectionListenerMixin",
+    "ConnectionDiagnosticsMixin",
+    "SkinRestorationLoginMixin"
+  ],
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "client": [
+    "BanListCommandsMixin",
+    "IntegratedServerConnectionListenerMixin",
+    "BanPlayerCommandsMixin",
+    "ConnectScreenMixin",
+    "ClientJoinLifecycleMixin",
+    "JoinMultiplayerScreenMixin",
+    "PardonCommandMixin",
+    "PauseScreenMixin",
+    "PlayerListMixin",
+    "ServerNameResolverMixin",
+    "IntegratedServerLanMixin",
+    "LanSettingsRenderMixin"
+  ]
+}

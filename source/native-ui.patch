@@ -1,0 +1,89 @@
+--- a/common/src/main/java/link/e4steam/mixin/PauseScreenMixin.java
++++ b/common/src/main/java/link/e4steam/mixin/PauseScreenMixin.java
+@@ -25,13 +25,6 @@
+ 
+     @Inject(method = "init", at = @At("TAIL"))
+     private void e4steam$addInviteButton(CallbackInfo ci) {
+-        if (minecraft != null && minecraft.getSingleplayerServer() != null) {
+-            addRenderableWidget(MinecraftUiCompat.button(
+-                    Mirror.translatable("text.e4steam_minecraft.lan.settings"),
+-                    button -> MinecraftUiCompat.setScreen(minecraft,
+-                            new link.e4steam.lan.LanSettingsScreen(this)),
+-                    4, 6, 150, 20));
+-        }
+         SteamSession session = E4steamClient.session;
+         if (session == null
+                 || session.state == SteamSession.State.STOPPED
+--- a/common/src/main/resources/e4steam.mixins.json
++++ b/common/src/main/resources/e4steam.mixins.json
+@@ -19,14 +19,11 @@
+     "ConnectScreenMixin",
+     "ClientJoinLifecycleMixin",
+     "JoinMultiplayerScreenMixin",
+-    "MultiplayerOptionsScreenMixin",
+     "PardonCommandMixin",
+     "PauseScreenMixin",
+-    "ShareToLanScreenMixin",
+     "PlayerListMixin",
+     "ServerNameResolverMixin",
+     "IntegratedServerLanMixin",
+-    "WorldOptionsScreenMixin",
+     "LanSettingsRenderMixin"
+   ]
+ }
+--- a/legacy/common/src/main/resources/e4steam.mixins.json
++++ b/legacy/common/src/main/resources/e4steam.mixins.json
+@@ -18,10 +18,8 @@
+     "ConnectScreenMixin",
+     "ClientJoinLifecycleMixin",
+     "JoinMultiplayerScreenMixin",
+-    "MultiplayerOptionsScreenMixin",
+     "PardonCommandMixin",
+     "PauseScreenMixin",
+-    "ShareToLanScreenMixin",
+     "PlayerListMixin",
+     "ServerNameResolverMixin",
+     "IntegratedServerLanMixin",
+--- a/build.gradle
++++ b/build.gradle
+@@ -538,22 +538,24 @@
+                             "${variant.label} does not enable authenticated offline-launcher login"
+                     )
+                 }
+-                if (!mixinsConfig.contains("MultiplayerOptionsScreenMixin")) {
+-                    throw new GradleException(
+-                            "${variant.label} does not support the Minecraft 26.x multiplayer options screen"
+-                    )
+-                }
+-                ["PauseScreenMixin", "ShareToLanScreenMixin"].each { uiMixin ->
+-                    if (!mixinsConfig.contains('"' + uiMixin + '"')) {
+-                        throw new GradleException(
+-                                "${variant.label} does not enable required UI hook ${uiMixin}"
+-                        )
+-                    }
+-                    if (zip.getEntry("link/e4steam/mixin/${uiMixin}.class") == null) {
+-                        throw new GradleException(
+-                                "${variant.label} is missing required UI class ${uiMixin}"
+-                        )
+-                    }
++                ["ShareToLanScreenMixin", "MultiplayerOptionsScreenMixin", "WorldOptionsScreenMixin"].each { uiMixin ->
++                    if (mixinsConfig.contains('"' + uiMixin + '"')) {
++                        throw new GradleException(
++                                "${variant.label} still redirects a native screen through ${uiMixin}"
++                        )
++                    }
++                }
++                if (!mixinsConfig.contains('"PauseScreenMixin"') ||
++                        zip.getEntry("link/e4steam/mixin/PauseScreenMixin.class") == null) {
++                    throw new GradleException("${variant.label} lost its Steam invitation screen hook")
++                }
++                String pauseConstants = new String(zip.getInputStream(
++                        zip.getEntry("link/e4steam/mixin/PauseScreenMixin.class")).readAllBytes(),
++                        java.nio.charset.StandardCharsets.ISO_8859_1)
++                if (pauseConstants.contains("LanSettingsScreen") ||
++                        pauseConstants.contains("text.e4steam_minecraft.lan.settings") ||
++                        !pauseConstants.contains("openInviteOverlayAsync")) {
++                    throw new GradleException("${variant.label} must keep invitations without the extra LAN settings entry")
+                 }
+                 String commandEntrypoint
+                 if (variant.label.startsWith("Fabric/Quilt 1.17")) {

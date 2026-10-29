@@ -1,0 +1,72 @@
+package link.e4steam.mixin;
+
+import link.e4steam.E4steamClient;
+import link.e4steam.MinecraftUiCompat;
+import link.e4steam.steam.SteamAddress;
+import link.e4steam.steam.SteamClientBridge;
+import link.e4steam.steam.SteamDedicatedAddress;
+import link.e4steam.steam.SteamDedicatedClientBridge;
+import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.ConnectScreen;
+import net.minecraft.client.multiplayer.resolver.ResolvedServerAddress;
+import net.minecraft.client.multiplayer.resolver.ServerAddress;
+import net.minecraft.client.multiplayer.resolver.ServerAddressResolver;
+import net.minecraft.client.multiplayer.resolver.ServerNameResolver;
+import org.spongepowered.asm.mixin.Mixin;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Redirect;
+
+import java.io.IOException;
+import java.net.InetSocketAddress;
+import java.util.Optional;
+
+@Mixin(ServerNameResolver.class)
+public class ServerNameResolverMixin {
+    @Redirect(
+            method = "resolveAddress",
+            at = @At(
+                    value = "INVOKE",
+                    target = "Lnet/minecraft/client/multiplayer/resolver/ServerAddressResolver;resolve(Lnet/minecraft/client/multiplayer/resolver/ServerAddress;)Ljava/util/Optional;"
+            )
+    )
+    private Optional<ResolvedServerAddress> e4steam$resolveSteamAddress(
+            ServerAddressResolver instance,
+            ServerAddress serverAddress
+    ) {
+        Optional<SteamAddress> steamAddress = SteamAddress.tryParse(serverAddress.getHost());
+        Optional<SteamDedicatedAddress> dedicatedAddress =
+                SteamDedicatedAddress.tryParse(serverAddress.getHost());
+        if (steamAddress.isEmpty() && dedicatedAddress.isEmpty()) {
+            // Server-list pings also use this resolver. Only stop an active
+            // e4steam sharing session on Minecraft's connection screen.
+            Minecraft minecraft = Minecraft.getInstance();
+            if (MinecraftUiCompat.currentScreen(minecraft) instanceof ConnectScreen) {
+                E4steamClient.stopSteamForDirectServerConnection();
+            }
+            return instance.resolve(serverAddress);
+        }
+
+        // Server-list status pings use the same resolver as a real join.
+        // Opening a Steam bridge for a ping creates a throwaway connection
+        // immediately before the user's actual connection and can poison the
+        // implicit ISteamNetworkingMessages route (especially on 26.2).
+        // ConnectScreen is present only for the real Minecraft connection.
+        Minecraft minecraft = Minecraft.getInstance();
+        if (!(MinecraftUiCompat.currentScreen(minecraft) instanceof ConnectScreen)) {
+            return Optional.empty();
+        }
+
+        try {
+            InetSocketAddress localAddress = steamAddress.isPresent()
+                    ? SteamClientBridge.open(steamAddress.get())
+                    : SteamDedicatedClientBridge.open(dedicatedAddress.get());
+            return Optional.of(ResolvedServerAddress.from(localAddress));
+        } catch (IOException exception) {
+            E4steamClient.LOGGER.error(
+                    "Failed to create the local Steam bridge for an e4steam endpoint",
+                    exception
+            );
+            return Optional.empty();
+        }
+    }
+}

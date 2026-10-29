@@ -20,7 +20,7 @@ def digest(path):
         return hashlib.file_digest(handle, 'sha256').hexdigest()
 
 
-def load_index(path=ROOT / 'components.json'):
+def load_index(path=ROOT / 'author-components.json'):
     document = json.loads(path.read_text(encoding='utf-8'))
     if document.get('schemaVersion') != 1 or document.get('componentId') != 'e4steam':
         raise ValueError('Unsupported component index')

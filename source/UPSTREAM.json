@@ -1,0 +1,17 @@
+{
+  "upstreamRepository": "https://github.com/Kamilhik/e4steam",
+  "upstreamTag": "v0.3.4",
+  "upstreamCommit": "bdcea00e30ca519fa8190c0c5c04785d42b31dbc",
+  "upstreamTree": "3e99c57ac22bd43298b5180be92a30e2092f2a1d",
+  "vendoredPath": "source/e4steam",
+  "originalSourceFileCount": 612,
+  "sourceArchiveSha256": "ed5063ec7fcc1fd785e7c29918a97470fe3e3a3af192c88f020834149538da73",
+  "nativeUiPatch": "source/native-ui.patch",
+  "patchSha256": "3c13a5f977c8bcf4d1332723b067d71360b007c20cfeb7ce58d011d587c92716",
+  "modifiedSourcePaths": [
+    "common/src/main/java/link/e4steam/mixin/PauseScreenMixin.java",
+    "common/src/main/resources/e4steam.mixins.json",
+    "legacy/common/src/main/resources/e4steam.mixins.json",
+    "build.gradle"
+  ]
+}

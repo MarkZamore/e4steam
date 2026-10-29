@@ -35,3 +35,18 @@ python -B tools/components.py verify-remote
 Staging checks every JAR's exact bytes and retained license/notice entries. Publishing uploads all JARs first, checksums next and the release manifest last. Existing versioned assets are never overwritten or deleted; a conflicting existing file stops publication. Remote verification downloads every selected JAR from this account's release URLs and hashes the received bytes before launcher delivery URLs are activated.
 
 The original author license, NOTICE and third-party notices for both source releases are preserved in `upstream-notices`, with source URLs and SHA-256 in `upstream-notices/sources.json`. The original JARs retain all embedded notices, including bundled dependency notices and the MIT SkinRestorer notice where present. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Mirroring these files does not claim authorship of e4steam or certify gameplay compatibility; no Minecraft client or world was started to prepare this delivery repository.
+
+## Native LAN UI profile source
+
+The separate [native-lan-ui-v1 profile](NATIVE-UI.md) removes the extra LAN Settings button and combined form while retaining Steam transport and invitations. Its pinned author source and small downstream patch are in `source`; `tools/native_ui.py` only prepares declared derivative artifacts at build time. Original author releases remain immutable. `author-components.json` preserves the source inventory used by the original mirror tool; no per-launch JAR edit implements this UI policy.
+
+```powershell
+# JDK 21.0.12.1+1; the workflow also builds on Linux and Windows.
+cd source/e4steam
+.\gradlew.bat --no-daemon apiChecks test headlessEntrypointAudit releaseJars
+cd ../..
+python -B -m unittest discover -s tools -p "test_*.py"
+python -B tools/components.py stage --out dist/originals
+python -B tools/native_ui.py stage --originals dist/originals
+python -B tools/native_ui.py verify --originals dist/originals
+```

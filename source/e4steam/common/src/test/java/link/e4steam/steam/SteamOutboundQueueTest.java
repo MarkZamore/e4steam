@@ -1,0 +1,88 @@
+package link.e4steam.steam;
+
+import com.codedisaster.steamworks.SteamResult;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
+
+class SteamOutboundQueueTest {
+    @Test
+    void rejectsOverflowWithoutStealingAnotherCategoryCapacity() {
+        SteamOutboundQueue<String> queue = new SteamOutboundQueue<>(5, 2, 1, 1, 1, 1);
+
+        assertTrue(queue.offerData(1, 1, new byte[]{1}, "bridge"));
+        assertTrue(queue.offerData(1, 1, new byte[]{2}, "bridge"));
+        assertFalse(queue.offerData(1, 1, new byte[]{3}, "bridge"));
+
+        assertTrue(queue.offerDatagram(1, 1, new byte[]{4}, "bridge"));
+        assertFalse(queue.offerDatagram(1, 1, new byte[]{5}, "bridge"));
+        assertTrue(queue.offerControl(1, 1, new byte[]{6}, SteamOutboundQueue.Kind.RESET, null));
+    }
+
+    @Test
+    void addonTrafficHasItsOwnBudgetAndCannotConsumeTerminalReserve() {
+        SteamOutboundQueue<String> queue = new SteamOutboundQueue<>(5, 4, 4, 2, 4, 1);
+
+        assertTrue(queue.offerAddonData(1, 1, new byte[]{1}, false, "bridge"));
+        assertTrue(queue.offerAddonData(1, 1, new byte[]{2}, true, "bridge"));
+        assertFalse(queue.offerAddonData(1, 1, new byte[]{3}, false, "bridge"));
+        assertTrue(queue.offerData(1, 1, new byte[]{4}, "bridge"));
+        assertTrue(queue.offerDatagram(1, 1, new byte[]{5}, "bridge"));
+        assertFalse(queue.offerData(1, 1, new byte[]{6}, "bridge"));
+        assertTrue(queue.offerControl(1, 1, new byte[]{7}, SteamOutboundQueue.Kind.FIN, "bridge"));
+    }
+
+    @Test
+    void purgeAndClearReturnCapacityForRestart() {
+        SteamOutboundQueue<String> queue = new SteamOutboundQueue<>(3, 1, 1, 1, 1, 1);
+        String first = new String("first");
+        String second = new String("second");
+
+        assertTrue(queue.offerData(1, 1, new byte[]{1}, first));
+        assertTrue(queue.offerDatagram(2, 2, new byte[]{2}, second));
+        queue.purge(first);
+        assertTrue(queue.offerData(1, 3, new byte[]{3}, first));
+        queue.clear();
+        assertTrue(queue.isEmpty());
+        assertTrue(queue.offerDatagram(2, 4, new byte[]{4}, second));
+    }
+
+    @Test
+    void pollPreservesOrderAndReleasesPermit() {
+        SteamOutboundQueue<String> queue = new SteamOutboundQueue<>(2, 1, 1, 1, 1, 1);
+        assertTrue(queue.offerData(9, 10, new byte[]{7}, "bridge"));
+        SteamOutboundQueue.Packet<String> packet = queue.poll();
+        assertNotNull(packet);
+        assertEquals(9, packet.remoteSteamId());
+        assertEquals(SteamOutboundQueue.Kind.DATA, packet.kind());
+        assertTrue(queue.offerData(9, 11, new byte[]{8}, "bridge"));
+    }
+
+    @Test
+    void oneBridgeCannotBuildAnUnboundedReliableBacklog() {
+        SteamOutboundQueue<Object> queue = new SteamOutboundQueue<>(32, 32, 1, 1, 1, 1);
+        Object slowBridge = new Object();
+        Object healthyBridge = new Object();
+
+        for (int index = 0; index < 8; index++) {
+            assertTrue(queue.offerData(1, 1, new byte[]{1}, slowBridge));
+        }
+        assertFalse(queue.offerData(1, 1, new byte[]{1}, slowBridge));
+        assertTrue(queue.offerData(2, 2, new byte[]{2}, healthyBridge));
+
+        assertNotNull(queue.poll());
+        assertTrue(queue.offerData(1, 1, new byte[]{3}, slowBridge));
+    }
+
+    @Test
+    void steamBackpressureResultsAreRetriedInsteadOfDisconnectingMinecraft() {
+        assertTrue(SteamRuntime.isRetryableSendFailure(SteamResult.LimitExceeded));
+        assertTrue(SteamRuntime.isRetryableSendFailure(SteamResult.Busy));
+        assertTrue(SteamRuntime.isRetryableSendFailure(SteamResult.NoConnection));
+        assertTrue(SteamRuntime.isRetryableSendFailure(SteamResult.ServiceUnavailable));
+        assertFalse(SteamRuntime.isRetryableSendFailure(SteamResult.InvalidParam));
+        assertEquals(SteamResult.UnknownErrorCode_NotImplementedByAPI, SteamRuntime.steamResult(-1));
+        assertEquals(SteamResult.UnknownErrorCode_NotImplementedByAPI, SteamRuntime.steamResult(4));
+        assertEquals(SteamResult.UnknownErrorCode_NotImplementedByAPI, SteamRuntime.steamResult(10_000));
+    }
+}

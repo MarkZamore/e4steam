@@ -1,0 +1,32 @@
+{
+  "schemaVersion": 1,
+  "id": "e4steam",
+  "version": "${version}+modern",
+  "name": "e4steam",
+  "description": "Share an integrated Minecraft LAN world through Steam P2P and Valve relays using App ID 480. Created by Kamilchik.",
+  "authors": [
+    "Kamilchik"
+  ],
+  "license": "Apache-2.0",
+  "icon": "assets/e4steam_minecraft/icon.png",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "link.e4steam.fabric.E4steamFabric"
+    ],
+    "client": [
+      "link.e4steam.fabric.E4steamClientFabric"
+    ]
+  },
+  "mixins": [
+    "e4steam.mixins.json"
+  ],
+  "depends": {
+    "fabric-api": "*",
+    "minecraft": ">=26.1- <26.4-",
+    "java": ">=25"
+  },
+  "provides": [
+    "e4steam_minecraft"
+  ]
+}

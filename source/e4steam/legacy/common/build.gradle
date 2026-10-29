@@ -1,0 +1,100 @@
+architectury {
+    common(rootProject.enabled_platforms.split(","))
+}
+
+sourceSets {
+    main {
+        java {
+            srcDir("../../common/src/main/java")
+            srcDir("../../api/src/main/java")
+            // 1.17-1.18.2 completes offline profiles in
+            // handleAcceptedLogin(), before startClientVerification existed.
+            exclude "link/e4steam/mixin/ServerLoginPacketListenerImplMixin.java"
+            srcDir("src/main/java")
+        }
+        resources.setSrcDirs(["src/main/resources"])
+    }
+    test {
+        java.srcDir("../../common/src/test/java")
+        // The legacy build is intentionally standalone, so compile the
+        // Java-8-compatible addon testkit sources directly for shared tests.
+        java.srcDir("../../api-testkit/src/main/java")
+    }
+}
+
+dependencies {
+    modImplementation "net.fabricmc:fabric-loader:${rootProject.fabric_loader_version}"
+    implementation "folk.sisby:kaleido-config:0.3.3+1.3.2"
+    implementation("com.code-disaster.steamworks4j:steamworks4j:${rootProject.steamworks4j_version}") {
+        transitive = false
+    }
+    implementation("com.code-disaster.steamworks4j:steamworks4j-server:${rootProject.steamworks4j_version}") {
+        transitive = false
+    }
+    compileOnly "net.java.dev.jna:jna:5.10.0"
+    testImplementation platform("org.junit:junit-bom:5.10.2")
+    testImplementation "org.junit.jupiter:junit-jupiter"
+    testRuntimeOnly "org.junit.platform:junit-platform-launcher"
+}
+
+test {
+    useJUnitPlatform()
+    environment "SteamAppId", "480"
+    environment "SteamGameId", "480"
+}
+
+processResources {
+    inputs.property "version", project.version
+    filesMatching("e4steam-version.properties") {
+        expand "version": project.version
+    }
+    from("../../common/src/main/resources") {
+        exclude "e4steam.mixins.json"
+    }
+    from(rootProject.file("../LICENSE")) {
+        into "META-INF"
+        rename { "LICENSE-e4steam.txt" }
+    }
+    from(rootProject.file("../THIRD_PARTY_NOTICES.md")) {
+        into "META-INF"
+    }
+    from(rootProject.file("../NOTICE")) {
+        into "META-INF"
+        rename { "NOTICE-e4steam.txt" }
+    }
+}
+
+sourcesJar {
+    from(rootProject.file("../LICENSE")) {
+        into "META-INF"
+        rename { "LICENSE-e4steam.txt" }
+    }
+    from(rootProject.file("../THIRD_PARTY_NOTICES.md")) {
+        into "META-INF"
+    }
+    from(rootProject.file("../NOTICE")) {
+        into "META-INF"
+        rename { "NOTICE-e4steam.txt" }
+    }
+}
+
+configurations {
+    consumable("unstubbedJar")
+}
+
+tasks.register("unstubbedJar", Jar) {
+    archiveClassifier = "unstubbed"
+    from zipTree(jar.archiveFile)
+    exclude("link/e4steam/Agnos.class")
+}
+
+tasks.register("unstubbedSourcesJar", Jar) {
+    archiveClassifier = "unstubbed-sources"
+    dependsOn sourcesJar
+    from sourcesJar.archiveFile.map { zipTree(it) }
+    exclude("link/e4steam/Agnos.java")
+}
+
+artifacts {
+    add("unstubbedJar", unstubbedJar)
+}
