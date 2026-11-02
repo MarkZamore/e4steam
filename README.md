@@ -1,53 +1,70 @@
 # Shared e4steam component for LANMinecraft
 
-This is MarkZamore's single GitHub delivery location for e4steam used by LANMinecraft packs. The active `native-lan-ui-v1` profile removes the extra LAN Settings button and intermediate form from six modern artifacts while retaining Steam connections and invitations. Thirteen retro artifacts already lack that UI and retain exact author bytes. The author is Kamilchik, [Kamilhik/e4steam](https://github.com/Kamilhik/e4steam); the official project page is [e4steam on CurseForge](https://www.curseforge.com/minecraft/mc-mods/e4steam).
+This is MarkZamore's GitHub delivery location for the shared e4steam component.
+The active `native-lan-ui-v2` index selects nineteen loader/Minecraft targets.
+Six modern derivatives hide the extra LAN Settings button/form and apply only
+current configured `lanOnlineMode` before native integrated publication.
+The thirteen older variants never had that form/applier and retain exact author
+bytes. Native game mode, commands, PvP, capacity and port are preserved by this
+hook. Steam authentication, transport, invitations and native libraries retain
+their author bytes.
 
-Runtime JARs are release assets; pinned source and build tooling are in this Git tree. Historical author binaries remain immutable. Modified modern artifacts use distinct filenames, hashes and a separate release tag; original in-JAR mod version metadata remains unchanged for API compatibility and does not identify a derivative as unmodified. Forge, NeoForge and Fabric/Quilt retain separate platform artifacts.
+The author is Kamilchik, [Kamilhik/e4steam](https://github.com/Kamilhik/e4steam).
+The official page is [e4steam on CurseForge](https://www.curseforge.com/minecraft/mc-mods/e4steam).
+Derivative filenames, hashes, source patches and delivery tags are explicit;
+in-JAR author version metadata remains unchanged for API compatibility. These
+are declared downstream distributions, not unmodified author releases.
 
-| Release | Payload | Reason |
-| --- | --- | --- |
-| `v0.3.4` | 6 modern author JARs for supported Minecraft 1.17–26.3 branches | Current author release |
-| `v0.3.2` | 13 older author JARs for remaining Forge/Fabric branches | Latest compatible files; the author published no retro JARs in 0.3.4 |
-| `native-lan-ui-v1` | 6 explicit modern UI derivatives, plus a profile index selecting all 19 targets | Static build-time UI removal; retro references still use exact historical assets |
+| Release | Status |
+| --- | --- |
+| `v0.3.2` | Immutable thirteen selected retro author JARs |
+| `v0.3.4` | Immutable six modern author JARs |
+| `native-lan-ui-v1` | Immutable historical six UI derivatives and nineteen-target index |
+| `native-lan-ui-v2` | Current six UI/authentication-lifecycle derivatives and nineteen-target index |
 
-`components.json` is the canonical schema-2 index of all 19 selections. It separates author version/filename/SHA/URL from delivery tag/filename/SHA/URL and records the exact derivation. `SHA256SUMS.txt` covers these same selections; `profiles/native-lan-ui-v1.json` freezes this profile. `author-components.json` and frozen `releases/v<VERSION>.json` preserve the original source inventory independently. Historical assets are never replaced or deleted.
+`components.json` is the canonical schema2 index, and `SHA256SUMS.txt` covers its
+exact selections. Rows retain author provenance separately from delivery
+filename/SHA/size/URL/tag. Three capabilities preserve hidden or absent extra LAN
+UI, configured modern native-publish online mode, and original Steam authentication.
+[The frozen V2 profile](profiles/native-lan-ui-v2.json) must match the active
+selection. Author inventories and older profiles remain immutable history.
 
-The launcher downloads from:
+The canonical index is
+`https://raw.githubusercontent.com/MarkZamore/e4steam/main/components.json`.
+Modern payloads use this account's `native-lan-ui-v2` URLs; unchanged retro payloads
+retain `v0.3.2` URLs. A compatible launcher verifies/caches this shared index and
+JAR pins. Launcher429 predates the index consumer and requires the separate
+launcher update; publishing V2 does not change its compiled V1 pins. UI/auth
+behavior belongs to the delivered JAR, without a per-launch JAR rewrite or
+pack-name rule.
 
-```text
-https://github.com/MarkZamore/e4steam/releases/download/native-lan-ui-v1/<DERIVATIVE-FILENAME>
-```
-
-Unchanged retro entries retain their `v0.3.2/<AUTHOR-FILENAME>` URLs. The launcher verifies size and SHA-256, caches each selected component globally under `Minecraft/Launcher/ManagedComponents/e4steam`, and installs it into the prepared instance's `mods` directory. The UI policy is already part of the delivered artifact; the launcher does not patch its JAR at startup. Minecraft and the loader remain separately versioned runtime components.
-
-## Historical exact-author mirror
-
-Python 3.12+, Git, and GitHub CLI are sufficient. No game launch, account change, Steam call or private API key is required.
+[V2 behavior and checks](NATIVE-UI-V2.md) describe the exact four changed modern
+entries. [Upstream updates](UPSTREAM-UPDATE.md) retain the last verified patched
+selection when author bytes, required behavior or target compatibility change.
+The receipt pins both source patches and author inventory. Linux/Windows CI,
+frozen-profile reproduction, immutable conflicts and actual public-byte checks
+precede activation. New author releases require explicit review instead of
+silently replacing patched delivery.
 
 ```powershell
-python -B tools/components.py stage --cache <verified-author-jar-cache>
-# Without --cache, fetch the exact author URLs named by components.json.
-python -B tools/components.py verify
-python -B -m unittest discover -s tools -p test_components.py
-python -B tools/components.py publish
-python -B tools/components.py verify-remote
-```
-
-Staging checks every JAR's exact bytes and retained license/notice entries. Publishing uploads all JARs first, checksums next and the release manifest last. Existing versioned assets are never overwritten or deleted; a conflicting existing file stops publication. Remote verification downloads every selected JAR from this account's release URLs and hashes the received bytes before launcher delivery URLs are activated.
-
-Author license, NOTICE and third-party records for both source releases are preserved in `upstream-notices`, with source URLs and SHA-256 in `upstream-notices/sources.json`. Derivatives keep every embedded author/dependency notice and add a downstream modification notice. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md) and [NATIVE-UI.md](NATIVE-UI.md). This repository does not claim authorship of e4steam or a new complete manual Steam gameplay matrix.
-
-## Native LAN UI profile source
-
-The separate [native-lan-ui-v1 profile](NATIVE-UI.md) removes the extra LAN Settings button and combined form while retaining Steam transport and invitations. Its pinned author source and small downstream patch are in `source`; `tools/native_ui.py` only prepares declared derivative artifacts at build time. Original author releases remain immutable. `author-components.json` preserves the source inventory used by the original mirror tool; no per-launch JAR edit implements this UI policy.
-
-```powershell
-# JDK 21.0.12.1+1; the workflow also builds on Linux and Windows.
+# JDK21, including the source build's Java16 legacy targets.
 cd source/e4steam
 .\gradlew.bat --no-daemon apiChecks test headlessEntrypointAudit releaseJars
 cd ../..
 python -B -m unittest discover -s tools -p "test_*.py"
 python -B tools/components.py stage --out dist/originals
-python -B tools/native_ui.py stage --originals dist/originals
-python -B tools/native_ui.py verify --originals dist/originals
+python -B tools/native_ui_v2.py stage --originals dist/originals
+python -B tools/native_ui_v2.py verify --originals dist/originals
+python -B tools/native_ui_v2.py verify-active
 ```
+
+[Validation scope](profiles/native-lan-ui-v2-validation.json) separates source,
+native target application and complete public-download evidence from gameplay.
+All nineteen selected JARs were downloaded and verified; all eleven V2 release
+assets were checked by full size/SHA and actual metadata bytes. This does not
+claim a new complete two-account/full-game matrix across every version and OS.
+Raw user logs, identifiers and personal worlds are not release assets.
+
+Author license/NOTICE/third-party records remain in every JAR and `upstream-notices`.
+See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), [historical V1](NATIVE-UI.md),
+and source provenance in `source`.

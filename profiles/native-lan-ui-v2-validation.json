@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "profile": "native-lan-ui-v2",
-  "status": "CANDIDATE_SOURCE_BUILD_AND_EXACT_BYTE_REPRODUCTION_PASS_NOT_PUBLISHED",
+  "status": "PUBLISHED_IMMUTABLE_PROFILE_ACTUAL_PUBLIC_BYTES_PASS_NO_GAME_ACCEPTANCE",
   "upstreamSourceCommit": "bdcea00e30ca519fa8190c0c5c04785d42b31dbc",
   "baselineDownstreamSourceCommit": "cdeaec17f9218a6e18e6f2993615fa61057cf4bc",
   "profileManifestSha256": "14cc429d3c16d95307f6cbac3b92da605ec2c22927c803abfcd36e20e58c4a9f",
@@ -75,5 +75,28 @@
     "cancellable": false,
     "gameStarted": false,
     "nativeAuthSetterExecuted": false
+  },
+  "sourceBuildCi": {
+    "commit": "e41b3a3598bfd252005771994d1a8f6796cc8802",
+    "runId": 41495096381,
+    "url": "https://github.com/MarkZamore/e4steam/actions/runs/41495096381",
+    "linux": "SUCCESS",
+    "windows": "SUCCESS"
+  },
+  "actualPublicVerification": {
+    "selectedJarDownloads": 19,
+    "v2ApiFullDigestsAndSizesAndMetadataDownloads": 11,
+    "manifestSha256": "14cc429d3c16d95307f6cbac3b92da605ec2c22927c803abfcd36e20e58c4a9f",
+    "proofSha256": "5f9f422cbd8fd04258288ec3b73d8382c0592367a3a1bb49000ce197a16f98a2",
+    "releaseTagCommit": "e41b3a3598bfd252005771994d1a8f6796cc8802",
+    "allModernNonDeclaredAuthorEntriesUnchanged": true,
+    "allRetroAuthorBytesUnchanged": true,
+    "gameTestsClaimed": false
+  },
+  "actualSixDeliveredMixinApplications": {
+    "artifactCount": 6,
+    "publishOverloads": 8,
+    "proofSha256": "07e0a35602920a58d216cf1db3ea5401bf8cf6d909463d71c91dba8c6d15f2f0",
+    "scope": "Actual Mixin engines apply six delivered classes to native SRG1.20.1/intermediary1.18.2+1.20.2/named26.3 target bytes. LegacyForge uses cross-range1.20.1 ABI check; modern26.3 is native vanilla bytes before loader transformation. No game/authsetter execution."
   }
 }
