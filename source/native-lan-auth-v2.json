@@ -69,18 +69,18 @@
   "authorInventory": [
     {
       "path": "author-components.json",
-      "sizeBytes": 15640,
-      "sha256": "d95767ad0b908ac8b9be3562f7ede0881ff1247e03002fcc4e19bc72dc4070e7"
+      "sizeBytes": 15219,
+      "sha256": "9c24fd5a9fcbafa18e8ca649895430e9fe14887396cda765288abfbf7fd79281"
     },
     {
       "path": "releases/v0.3.2.json",
-      "sizeBytes": 10604,
-      "sha256": "b72d626d726dc25b895689850e1414c331b33025070958390663f779d2d87b86"
+      "sizeBytes": 10317,
+      "sha256": "f2875add3beb6508aa53d292816c928481cf72b972d375f825f4e9568ce2ac1c"
     },
     {
       "path": "releases/v0.3.4.json",
-      "sizeBytes": 5424,
-      "sha256": "8da3c91f4020194cd11616e553c10051174ab09733172c876e804d6655969309"
+      "sizeBytes": 5276,
+      "sha256": "8031c05738f3999eaf7a6058ab61685e76f1388f47119052bd9ed958a0430e4a"
     }
   ]
 }

@@ -8,5 +8,7 @@
 /source/UPSTREAM.json text eol=lf
 /.github/workflows/native-ui.yml text eol=lf
 /components.json text eol=lf
+/author-components.json text eol=lf
+/releases/*.json text eol=lf
 /profiles/*.json text eol=lf
 /SHA256SUMS.txt text eol=lf

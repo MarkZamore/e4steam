@@ -7,7 +7,7 @@
   "profileManifestSha256": "14cc429d3c16d95307f6cbac3b92da605ec2c22927c803abfcd36e20e58c4a9f",
   "sourceProvenance": {
     "path": "source/native-lan-auth-v2.json",
-    "sha256": "e83be1307b213df0a8d082190ddad1b447b9bceb51595210528d9c4fdea8bf8d"
+    "sha256": "d869347039d5b0123934df2eef1c005b3d37a23dcfc681927e790f8eb8038d6a"
   },
   "localNativeSourceBuild": {
     "jdk": "21.0.12.1+1",
