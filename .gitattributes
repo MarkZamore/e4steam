@@ -1,6 +1,10 @@
 /tools/native_ui.py text eol=lf
 /tools/test_native_ui.py text eol=lf
+/tools/native_ui_v2.py text eol=lf
+/tools/test_native_ui_v2.py text eol=lf
 /source/native-ui.patch text eol=lf whitespace=-blank-at-eol
+/source/native-lan-auth-v2.patch text eol=lf whitespace=-blank-at-eol
+/source/native-lan-auth-v2.json text eol=lf
 /source/UPSTREAM.json text eol=lf
 /.github/workflows/native-ui.yml text eol=lf
 /components.json text eol=lf
