@@ -1,0 +1,86 @@
+{
+  "schemaVersion": 1,
+  "profile": "native-lan-ui-v2",
+  "upstreamRepository": "https://github.com/Kamilhik/e4steam",
+  "upstreamCommit": "bdcea00e30ca519fa8190c0c5c04785d42b31dbc",
+  "basedOnDownstreamSource": "cdeaec17f9218a6e18e6f2993615fa61057cf4bc",
+  "patchApplicationRoot": "source/e4steam",
+  "sourcePatches": [
+    {
+      "path": "source/native-ui.patch",
+      "sizeBytes": 4326,
+      "sha256": "3c13a5f977c8bcf4d1332723b067d71360b007c20cfeb7ce58d011d587c92716"
+    },
+    {
+      "path": "source/native-lan-auth-v2.patch",
+      "sizeBytes": 5379,
+      "sha256": "39f0df42c787ecc7aac55838d67dbf2ace37119cf836c0303e69774deda0633b"
+    }
+  ],
+  "sourceFiles": [
+    {
+      "path": "source/e4steam/common/src/main/java/link/e4steam/lan/LanServerSettingsApplier.java",
+      "sizeBytes": 8557,
+      "sha256": "3c122bd70c4a6ac32a8a67d8bccf68eedaac1f7c27dd7c394c5a3c27cf66f977"
+    },
+    {
+      "path": "source/e4steam/common/src/main/java/link/e4steam/mixin/IntegratedServerLanMixin.java",
+      "sizeBytes": 2935,
+      "sha256": "1e3a96b97599964bd3ef2819f982cacad2f0e23c311122edcf8ae38041bc208d"
+    },
+    {
+      "path": "source/e4steam/common/src/test/java/link/e4steam/lan/LanServerSettingsApplierTest.java",
+      "sizeBytes": 9930,
+      "sha256": "189c3fb0f6326766cbfe5d25cafe08a9db5df79556dbef227b47795a702b0267"
+    },
+    {
+      "path": "source/e4steam/common/src/main/java/link/e4steam/mixin/PauseScreenMixin.java",
+      "sizeBytes": 3999,
+      "sha256": "0e9034a140968fc29f1fc0f9e1b8e36777bfbe73dd7019eb450630f2c176142c"
+    },
+    {
+      "path": "source/e4steam/common/src/main/resources/e4steam.mixins.json",
+      "sizeBytes": 707,
+      "sha256": "b0ee7cb8b68b8a44e9105ed2603645e84a9b4151df892d8b01d360da35601628"
+    },
+    {
+      "path": "source/e4steam/legacy/common/src/main/resources/e4steam.mixins.json",
+      "sizeBytes": 693,
+      "sha256": "0064ea52e54047b82ee5f11d68cc97f375f978183724f917eea8c0dec0368b89"
+    },
+    {
+      "path": "source/e4steam/build.gradle",
+      "sizeBytes": 40623,
+      "sha256": "e014f1cf7c724d1013a8182fbb49d6fae2f8103266b185fddab0dfa4f848e503"
+    }
+  ],
+  "runtimeScope": "Before modern integrated native publish, apply current configured lanOnlineMode only; retain native game options and all author Steam authentication and transport entries.",
+  "failureSemantics": "Missing mapped setter fails visibly before native bind. If native publication subsequently fails, the configured online flag remains on that unpublished integrated server.",
+  "variants": {
+    "modernSourceDerivatives": 6,
+    "retroAuthorBytesUnchanged": 13
+  },
+  "acceptanceLimits": "Source/unit/packaging gates only; separate actual target/runtime acceptance must not be inferred from a successful build.",
+  "requiredFeatures": {
+    "nativeLanSettingsUiAbsent": true,
+    "configuredOnlineModeAtNativePublish": true,
+    "authorSteamAuthenticationAndTransportRetained": true
+  },
+  "authorInventory": [
+    {
+      "path": "author-components.json",
+      "sizeBytes": 15640,
+      "sha256": "d95767ad0b908ac8b9be3562f7ede0881ff1247e03002fcc4e19bc72dc4070e7"
+    },
+    {
+      "path": "releases/v0.3.2.json",
+      "sizeBytes": 10604,
+      "sha256": "b72d626d726dc25b895689850e1414c331b33025070958390663f779d2d87b86"
+    },
+    {
+      "path": "releases/v0.3.4.json",
+      "sizeBytes": 5424,
+      "sha256": "8da3c91f4020194cd11616e553c10051174ab09733172c876e804d6655969309"
+    }
+  ]
+}

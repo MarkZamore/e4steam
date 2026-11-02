@@ -1,0 +1,79 @@
+{
+  "schemaVersion": 1,
+  "profile": "native-lan-ui-v2",
+  "status": "CANDIDATE_SOURCE_BUILD_AND_EXACT_BYTE_REPRODUCTION_PASS_NOT_PUBLISHED",
+  "upstreamSourceCommit": "bdcea00e30ca519fa8190c0c5c04785d42b31dbc",
+  "baselineDownstreamSourceCommit": "cdeaec17f9218a6e18e6f2993615fa61057cf4bc",
+  "profileManifestSha256": "14cc429d3c16d95307f6cbac3b92da605ec2c22927c803abfcd36e20e58c4a9f",
+  "sourceProvenance": {
+    "path": "source/native-lan-auth-v2.json",
+    "sha256": "e83be1307b213df0a8d082190ddad1b447b9bceb51595210528d9c4fdea8bf8d"
+  },
+  "localNativeSourceBuild": {
+    "jdk": "21.0.12.1+1",
+    "gradleTasks": [
+      "apiChecks",
+      "test",
+      "headlessEntrypointAudit",
+      "releaseJars"
+    ],
+    "result": "SUCCESS",
+    "executedTasks": 54,
+    "nativeModernArtifacts": 6,
+    "java16LegacyArtifactsIncluded": true,
+    "headlessAndApiBinaryAndLicenseGatesPassed": true
+  },
+  "junit": {
+    "total": 499,
+    "passed": 487,
+    "failed": 0,
+    "errors": 0,
+    "skipped": 12,
+    "newOnlineOnlyTests": 4,
+    "newCaseExecutionsAcrossModernAndLegacy": 8,
+    "existingSkipScope": "Existing author live-Steam opt-ins and unavailable Windows filesystem-link capabilities, duplicated by the Java16 legacy set."
+  },
+  "pythonPackagingTests": {
+    "total": 34,
+    "passed": 34,
+    "failed": 0,
+    "skipped": 0
+  },
+  "profileByteAudit": {
+    "selectedArtifacts": 19,
+    "modernDerivatives": 6,
+    "byteIdenticalAuthorRetro": 13,
+    "changedOriginalEntriesPerDerivative": 4,
+    "addedModificationNoticeEntries": 1,
+    "allOtherUncompressedAuthorEntriesByteIdentical": true,
+    "steamAuthenticationTransportConfigAndNativeLibrariesUnchanged": true,
+    "completeProfileReproductionPassed": true
+  },
+  "behaviorScope": "Apply only current configured lanOnlineMode before native integrated publish bind; preserve native game mode/commands/port/PvP/capacity. The full author settings apply is not called.",
+  "failureSemantics": "Missing mapped setter fails visibly before bind. A subsequently failed publish leaves the configured authentication flag on that unpublished integrated server.",
+  "limits": [
+    "No target-game bootstrap, live native Mixin execution or two-account network acceptance is inferred from source/build/byte gates.",
+    "All19 catalog targets are preserved, but all Minecraft versions inside their declared ranges have not been run.",
+    "No live game, installed instance, launcher or active delivery selection was changed.",
+    "Historical author and native-lan-ui-v1 assets remain immutable."
+  ],
+  "durableUpdateGate": {
+    "authorInventoryPinned": true,
+    "bothRetainedFeaturesRequired": true,
+    "builtProfileMustEqualFrozenSelection": true,
+    "bothPlatformExactCommitCiRequiredBeforePublication": true,
+    "activeIndexAuthorFallbackRejected": true,
+    "immutableAssetsAndManifestLast": true
+  },
+  "actualForge1201MixinApplication": {
+    "status": "PASS_ACTUAL_NATIVE_TARGET_MIXIN_APPLICATION_NOT_GAME",
+    "targetMethod": "m_7386_",
+    "targetDescriptor": "(Lnet/minecraft/world/level/GameType;ZI)Z",
+    "requiredHeadInjections": 1,
+    "callbackDescriptor": "(Lorg/spongepowered/asm/mixin/injection/callback/CallbackInfoReturnable;)V",
+    "hookBeforeOriginalCalls": true,
+    "cancellable": false,
+    "gameStarted": false,
+    "nativeAuthSetterExecuted": false
+  }
+}

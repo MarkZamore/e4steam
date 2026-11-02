@@ -29,6 +29,9 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
       - name: Test publication and byte-preservation guards
         run: python -B -m unittest discover -s tools -p "test_*.py"
+      - name: Require the reviewed patched active selection
+        if: github.ref == 'refs/heads/main'
+        run: python -B tools/native_ui_v2.py verify-active
       - name: Build and test all six modern native targets
         shell: bash
         working-directory: source/e4steam
@@ -42,7 +45,14 @@ jobs:
         run: |
           python -B tools/native_ui.py stage --originals dist/originals
           python -B tools/native_ui.py verify --originals dist/originals
+      - name: Derive and verify the configured LAN authentication lifecycle profile
+        shell: bash
+        run: |
+          python -B tools/native_ui_v2.py stage --originals dist/originals
+          python -B tools/native_ui_v2.py verify --originals dist/originals
       - uses: actions/upload-artifact@v4
         with:
           name: native-lan-ui-${{ matrix.os }}
-          path: dist/native-lan-ui-v1
+          path: |
+            dist/native-lan-ui-v1
+            dist/native-lan-ui-v2

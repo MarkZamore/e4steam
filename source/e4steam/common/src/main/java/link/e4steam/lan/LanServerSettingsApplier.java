@@ -7,6 +7,14 @@ import java.lang.reflect.Method;
 public final class LanServerSettingsApplier {
     private LanServerSettingsApplier() { }
 
+    /** Apply only the configured authentication flag before a native LAN bind. */
+    public static void applyOnlineMode(Object server, boolean onlineMode) {
+        if (server == null) throw new IllegalStateException("No integrated server");
+        Method online = required(server, 1, "setUsesAuthentication", "setOnlineMode",
+                "method_3864", "func_71189_e", "m_129985_");
+        LanReflection.call(server, online, onlineMode);
+    }
+
     public static Object playerList(Object server) {
         return LanReflection.read(server, "getPlayerList", "getConfigurationManager",
                 "method_3760", "func_71203_ab", "m_6846_");

@@ -61,6 +61,44 @@ class LanServerSettingsApplierTest {
         }
     }
 
+    @Test void nativePublishOnlineModeChangesOnlyAuthenticationWithoutApplyingSavedWorldOptions() {
+        Integrated server = new Integrated();
+        server.pvp = false;
+        server.players.cheats = true;
+        server.mode = Mode.ADVENTURE;
+        server.port = 30123;
+        LanServerSettingsApplier.applyOnlineMode(server, false);
+        assertFalse(server.online);
+        assertFalse(server.pvp);
+        assertTrue(server.players.cheats);
+        assertEquals(Mode.ADVENTURE, server.mode);
+        assertEquals(8, server.players.maxPlayers);
+        assertEquals(30123, server.port);
+        assertNull(LanSettings.active(server));
+        LanServerSettingsApplier.applyOnlineMode(server, true);
+        assertTrue(server.online);
+    }
+
+    @Test void nativePublishOnlineModeUsesTheInheritedIntermediarySetter() {
+        class Base { boolean value = true; public void method_3864(boolean value) { this.value = value; } }
+        class FabricServer extends Base { }
+        FabricServer server = new FabricServer();
+        LanServerSettingsApplier.applyOnlineMode(server, false);
+        assertFalse(server.value);
+    }
+
+    @Test void nativePublishOnlineModeUsesTheSrgSetter() {
+        class ForgeServer { boolean value = true; public void m_129985_(boolean value) { this.value = value; } }
+        ForgeServer server = new ForgeServer();
+        LanServerSettingsApplier.applyOnlineMode(server, false);
+        assertFalse(server.value);
+    }
+
+    @Test void nativePublishOnlineModeRefusesMissingServerOrMissingSetter() {
+        assertThrows(IllegalStateException.class, () -> LanServerSettingsApplier.applyOnlineMode(null, false));
+        assertThrows(IllegalStateException.class, () -> LanServerSettingsApplier.applyOnlineMode(new Object(), false));
+    }
+
     @Test void appliesInheritedServerHooksAndTheActualPlayerListLimit() {
         Integrated server = new Integrated();
         LanSettings.Snapshot settings = LanSettings.defaults().withMaxPlayers(20).withPort(30000)

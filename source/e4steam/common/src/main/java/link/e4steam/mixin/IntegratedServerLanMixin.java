@@ -1,6 +1,8 @@
 package link.e4steam.mixin;
 
 import link.e4steam.lan.LanSettings;
+import link.e4steam.lan.LanServerSettingsApplier;
+import link.e4steam.Config;
 import link.e4steam.steam.SteamMinecraftAuthentication;
 import net.minecraft.client.server.IntegratedServer;
 import net.minecraft.server.MinecraftServer;
@@ -14,6 +16,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 /** Integrated-only capacity and occupancy; dedicated servers retain their own settings. */
 @Mixin(IntegratedServer.class)
 public abstract class IntegratedServerLanMixin {
+    // The native publish path is also used when the optional e4steam form is
+    // absent. Apply only online mode before its listening socket is opened;
+    // native game mode/commands/port and other world options remain untouched.
+    @Inject(method = "/^(publishServer|method_3763|m_7386_|func_195457_a)$/",
+            at = @At("HEAD"), require = 1, remap = false)
+    private void e4steam$applyPublishOnlineMode(CallbackInfoReturnable<Boolean> cir) {
+        LanServerSettingsApplier.applyOnlineMode(this, Config.INSTANCE.lanOnlineMode.value());
+    }
+
     // This override first exists on 26.x. Earlier versions read PlayerList.maxPlayers.
     @Inject(method = "/^getMaxPlayers$/", at = @At("HEAD"), cancellable = true, require = 0, remap = false)
     private void e4steam$modernCapacity(CallbackInfoReturnable<Integer> cir) {

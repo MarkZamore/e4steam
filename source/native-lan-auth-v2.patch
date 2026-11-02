@@ -1,0 +1,97 @@
+diff --git a/common/src/main/java/link/e4steam/lan/LanServerSettingsApplier.java b/common/src/main/java/link/e4steam/lan/LanServerSettingsApplier.java
+index 5d5581b..5b28791 100644
+--- a/common/src/main/java/link/e4steam/lan/LanServerSettingsApplier.java
++++ b/common/src/main/java/link/e4steam/lan/LanServerSettingsApplier.java
+@@ -7,6 +7,14 @@ import java.lang.reflect.Method;
+ public final class LanServerSettingsApplier {
+     private LanServerSettingsApplier() { }
+ 
++    /** Apply only the configured authentication flag before a native LAN bind. */
++    public static void applyOnlineMode(Object server, boolean onlineMode) {
++        if (server == null) throw new IllegalStateException("No integrated server");
++        Method online = required(server, 1, "setUsesAuthentication", "setOnlineMode",
++                "method_3864", "func_71189_e", "m_129985_");
++        LanReflection.call(server, online, onlineMode);
++    }
++
+     public static Object playerList(Object server) {
+         return LanReflection.read(server, "getPlayerList", "getConfigurationManager",
+                 "method_3760", "func_71203_ab", "m_6846_");
+diff --git a/common/src/main/java/link/e4steam/mixin/IntegratedServerLanMixin.java b/common/src/main/java/link/e4steam/mixin/IntegratedServerLanMixin.java
+index 5d6ec83..ac5d633 100644
+--- a/common/src/main/java/link/e4steam/mixin/IntegratedServerLanMixin.java
++++ b/common/src/main/java/link/e4steam/mixin/IntegratedServerLanMixin.java
+@@ -1,6 +1,8 @@
+ package link.e4steam.mixin;
+ 
+ import link.e4steam.lan.LanSettings;
++import link.e4steam.lan.LanServerSettingsApplier;
++import link.e4steam.Config;
+ import link.e4steam.steam.SteamMinecraftAuthentication;
+ import net.minecraft.client.server.IntegratedServer;
+ import net.minecraft.server.MinecraftServer;
+@@ -14,6 +16,15 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
+ /** Integrated-only capacity and occupancy; dedicated servers retain their own settings. */
+ @Mixin(IntegratedServer.class)
+ public abstract class IntegratedServerLanMixin {
++    // The native publish path is also used when the optional e4steam form is
++    // absent. Apply only online mode before its listening socket is opened;
++    // native game mode/commands/port and other world options remain untouched.
++    @Inject(method = "/^(publishServer|method_3763|m_7386_|func_195457_a)$/",
++            at = @At("HEAD"), require = 1, remap = false)
++    private void e4steam$applyPublishOnlineMode(CallbackInfoReturnable<Boolean> cir) {
++        LanServerSettingsApplier.applyOnlineMode(this, Config.INSTANCE.lanOnlineMode.value());
++    }
++
+     // This override first exists on 26.x. Earlier versions read PlayerList.maxPlayers.
+     @Inject(method = "/^getMaxPlayers$/", at = @At("HEAD"), cancellable = true, require = 0, remap = false)
+     private void e4steam$modernCapacity(CallbackInfoReturnable<Integer> cir) {
+diff --git a/common/src/test/java/link/e4steam/lan/LanServerSettingsApplierTest.java b/common/src/test/java/link/e4steam/lan/LanServerSettingsApplierTest.java
+index 4be7706..39b167c 100644
+--- a/common/src/test/java/link/e4steam/lan/LanServerSettingsApplierTest.java
++++ b/common/src/test/java/link/e4steam/lan/LanServerSettingsApplierTest.java
+@@ -61,6 +61,44 @@ class LanServerSettingsApplierTest {
+         }
+     }
+ 
++    @Test void nativePublishOnlineModeChangesOnlyAuthenticationWithoutApplyingSavedWorldOptions() {
++        Integrated server = new Integrated();
++        server.pvp = false;
++        server.players.cheats = true;
++        server.mode = Mode.ADVENTURE;
++        server.port = 30123;
++        LanServerSettingsApplier.applyOnlineMode(server, false);
++        assertFalse(server.online);
++        assertFalse(server.pvp);
++        assertTrue(server.players.cheats);
++        assertEquals(Mode.ADVENTURE, server.mode);
++        assertEquals(8, server.players.maxPlayers);
++        assertEquals(30123, server.port);
++        assertNull(LanSettings.active(server));
++        LanServerSettingsApplier.applyOnlineMode(server, true);
++        assertTrue(server.online);
++    }
++
++    @Test void nativePublishOnlineModeUsesTheInheritedIntermediarySetter() {
++        class Base { boolean value = true; public void method_3864(boolean value) { this.value = value; } }
++        class FabricServer extends Base { }
++        FabricServer server = new FabricServer();
++        LanServerSettingsApplier.applyOnlineMode(server, false);
++        assertFalse(server.value);
++    }
++
++    @Test void nativePublishOnlineModeUsesTheSrgSetter() {
++        class ForgeServer { boolean value = true; public void m_129985_(boolean value) { this.value = value; } }
++        ForgeServer server = new ForgeServer();
++        LanServerSettingsApplier.applyOnlineMode(server, false);
++        assertFalse(server.value);
++    }
++
++    @Test void nativePublishOnlineModeRefusesMissingServerOrMissingSetter() {
++        assertThrows(IllegalStateException.class, () -> LanServerSettingsApplier.applyOnlineMode(null, false));
++        assertThrows(IllegalStateException.class, () -> LanServerSettingsApplier.applyOnlineMode(new Object(), false));
++    }
++
+     @Test void appliesInheritedServerHooksAndTheActualPlayerListLimit() {
+         Integrated server = new Integrated();
+         LanSettings.Snapshot settings = LanSettings.defaults().withMaxPlayers(20).withPort(30000)
