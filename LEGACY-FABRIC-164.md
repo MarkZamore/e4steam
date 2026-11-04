@@ -95,6 +95,23 @@ The new target uses the immutable `legacy-fabric-164-v1` delivery tag; its
 receipt has its own size/SHA. Publish payload and receipt before the index.
 Do not activate the profile or the pack card merely because compilation passed.
 
+CI keeps the existing modern Java 21 Linux/Windows build matrix and its V1/V2
+reproduction steps. `tools/active_profile.py` dispatches historical V2 validation
+to the unchanged V2 verifier and checks V3 against exact frozen index/checksum
+bytes and receipt provenance. A separate Linux/Windows job uses Microsoft JDK
+25.0.2 and Python 3.12.10, builds into a fresh directory, and runs:
+
+```text
+python -B tools/legacy_fabric_164_profile.py --out <fresh-build-output> --verify-frozen
+```
+
+ZIP host metadata, compression level, POSIX source ordering and JSON key order
+are explicit. The published JAR remains the same `a35e...` artifact; canonical
+receipt/profile bytes also have to match across both CI operating systems.
+V3 publication requires a successful exact-commit run covering all four matrix
+jobs. The historical V2 publisher retains its original two-job release guard
+and is not the V3 publication entrypoint.
+
 ## Observed validation, 4 November 2026
 
 Source/recipe revision `a835c939e0315206b89bca870ed97f6b88f4a359` produces

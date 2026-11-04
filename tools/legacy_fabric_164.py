@@ -30,11 +30,13 @@ DEPENDENCIES=[
 
 def sha(data):return hashlib.sha256(data).hexdigest()
 
+def ordered_paths(paths):return sorted(paths,key=lambda path:path.relative_to(ROOT).as_posix())
+
 def source_bytes(path):
     data=path.read_bytes()
     # Git's NOTICE input is LF; Windows autocrlf previously materialized it
     # differently. Pin the committed input and declare ZIP materialization.
-    return data.replace(b'\r\n',b'\n') if path==SOURCE/'NOTICE' else data
+    return data.replace(b'\r\n',b'\n') if path in {SOURCE/'NOTICE',SOURCE/'retro/core/build.gradle.kts'} else data
 
 def dependency(row,cache):
     group,artifact,version,expected,_=row
@@ -47,7 +49,8 @@ def dependency(row,cache):
         if path.is_file() and sha(path.read_bytes())==expected:return path
     base='https://maven.fabricmc.net' if group=='net.fabricmc' else ('https://repo.spongepowered.org/repository/maven-public' if group=='org.spongepowered' else 'https://repo.maven.apache.org/maven2')
     url=f'{base}/{group.replace(".","/")}/{artifact}/{version}/{filename}'
-    data=urllib.request.urlopen(url,timeout=60).read()
+    request=urllib.request.Request(url,headers={'User-Agent':'LANMinecraft-source-reproduction/1.0'})
+    with urllib.request.urlopen(request,timeout=60) as response:data=response.read()
     if sha(data)!=expected:raise ValueError('Dependency SHA mismatch: '+filename)
     path=cache/filename;path.write_bytes(data);return path
 
@@ -58,20 +61,22 @@ def excluded(name):
     return name in {'steam_api.dll','steamworks4j.dll','steamworks4j-server.dll'} or 'encryptedappticket' in name
 
 def build(output,java_home):
+    javac=java_home/('bin/javac.exe' if os.name=='nt' else 'bin/javac')
+    java=java_home/('bin/java.exe' if os.name=='nt' else 'bin/java')
+    compiler=subprocess.check_output([str(javac),'-version'],text=True).strip()
+    if compiler!='javac 25.0.2':raise ValueError('The frozen source port requires javac 25.0.2')
     output.mkdir(parents=True,exist_ok=True)
     cache=output/'deps';cache.mkdir(exist_ok=True)
     deps=[(row,dependency(row,cache)) for row in DEPENDENCIES]
     core=SOURCE/'retro/core'
     shared=re.findall(r'"(link/e4steam/[^"\n]+\.java)"',(core/'build.gradle.kts').read_text(encoding='utf-8'))
     shared+=['link/e4steam/steam/SteamReliableDataPacer.java','link/e4steam/steam/SteamAddonLobbyDirectory.java','link/e4steam/lan/LanSettings.java']
-    sources=sorted((core/'src/main/java').rglob('*.java'))+[SOURCE/'common/src/main/java'/name for name in shared]+sorted((SOURCE/'api/src/main/java').rglob('*.java'))+sorted((MODULE/'src/main/java').rglob('*.java'))
+    sources=ordered_paths((core/'src/main/java').rglob('*.java'))+[SOURCE/'common/src/main/java'/name for name in shared]+ordered_paths((SOURCE/'api/src/main/java').rglob('*.java'))+ordered_paths((MODULE/'src/main/java').rglob('*.java'))
     classes=output/'classes'
     if classes.exists():
         if classes.resolve().parent!=output.resolve():raise ValueError('Unexpected build classes target')
         shutil.rmtree(classes)
     classes.mkdir()
-    javac=java_home/('bin/javac.exe' if os.name=='nt' else 'bin/javac')
-    java=java_home/('bin/java.exe' if os.name=='nt' else 'bin/java')
     arguments=['--release','17','-encoding','UTF-8','-proc:none','-classpath',os.pathsep.join(str(path) for _,path in deps),'-d',str(classes)]+[str(path) for path in sources]
     argfile=output/'javac.args';argfile.write_text('\n'.join('"'+v.replace('\\','/')+'"' for v in arguments),encoding='utf-8',newline='\n')
     subprocess.run([str(javac),'@'+str(argfile)],check=True)
@@ -82,7 +87,7 @@ def build(output,java_home):
             for name in jar.namelist():
                 if not excluded(name):entries.setdefault(name,jar.read(name))
     for path in classes.rglob('*.class'):entries[path.relative_to(classes).as_posix()]=path.read_bytes()
-    resources=sorted(path for path in (MODULE/'src/main/resources').rglob('*') if path.is_file())
+    resources=ordered_paths(path for path in (MODULE/'src/main/resources').rglob('*') if path.is_file())
     for path in resources:entries[path.relative_to(MODULE/'src/main/resources').as_posix()]=path.read_bytes()
     entries['e4steam-version.properties']=b'version=0.3.4\n'
     entries['e4steam-retro.properties']=b'minecraftVersion=1.6.4\nminecraftBranch=1.6.4\n'
@@ -97,11 +102,12 @@ def build(output,java_home):
     with zipfile.ZipFile(target,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as jar:
         for name,data in sorted(entries.items()):
             info=zipfile.ZipInfo(name,(2026,11,4,0,0,0));info.compress_type=zipfile.ZIP_DEFLATED;info.external_attr=0o100644<<16
+            info.create_system=0;info._compresslevel=6
             jar.writestr(info,data)
-    tests=sorted((MODULE/'src/test/java').rglob('*.java'))
-    inputs=sources+tests+resources+[SOURCE/name for name in ('LICENSE','NOTICE','THIRD_PARTY_NOTICES.md')]
-    receipt={'schemaVersion':1,'type':'source-built-legacy-port','upstreamSourceCommit':UPSTREAM,'fileName':NAME,'sizeBytes':target.stat().st_size,'sha256':sha(target.read_bytes()),'recipeSha256':sha(Path(__file__).read_bytes()),'compiler':subprocess.check_output([str(javac),'-version'],text=True).strip(),'sources':{path.relative_to(ROOT).as_posix():sha(source_bytes(path)) for path in inputs},'sourceTransforms':{'source/e4steam/NOTICE':'committed-LF-to-ZIP-CRLF'},'sourceBuiltClassSha256':{name:sha(data) for name,data in sorted(entries.items()) if name.endswith('.class') and name.startswith('link/e4steam/')},'dependencies':[{'group':row[0],'artifact':row[1],'version':row[2],'sha256':row[3],'bundled':row[4]} for row,_ in deps]}
-    (output/'build-receipt.json').write_text(json.dumps(receipt,indent=2)+'\n',encoding='utf-8',newline='\n')
+    tests=ordered_paths((MODULE/'src/test/java').rglob('*.java'))
+    inputs=sources+tests+resources+[SOURCE/name for name in ('LICENSE','NOTICE','THIRD_PARTY_NOTICES.md')]+[core/'build.gradle.kts']
+    receipt={'schemaVersion':1,'type':'source-built-legacy-port','upstreamSourceCommit':UPSTREAM,'fileName':NAME,'sizeBytes':target.stat().st_size,'sha256':sha(target.read_bytes()),'recipeSha256':sha(Path(__file__).read_bytes()),'compiler':compiler,'sources':{path.relative_to(ROOT).as_posix():sha(source_bytes(path)) for path in inputs},'sourceTransforms':{'source/e4steam/NOTICE':'committed-LF-to-ZIP-CRLF','source/e4steam/retro/core/build.gradle.kts':'UTF8-universal-newlines-for-source-list'},'sourceBuiltClassSha256':{name:sha(data) for name,data in sorted(entries.items()) if name.endswith('.class') and name.startswith('link/e4steam/')},'dependencies':[{'group':row[0],'artifact':row[1],'version':row[2],'sha256':row[3],'bundled':row[4]} for row,_ in deps]}
+    (output/'build-receipt.json').write_text(json.dumps(receipt,indent=2,sort_keys=True)+'\n',encoding='utf-8',newline='\n')
     testclasses=output/'test-classes';testclasses.mkdir(exist_ok=True)
     testcp=os.pathsep.join([str(target),str(testclasses)]+[str(path) for row,path in deps if row[0]=='org.apache.logging.log4j'])
     subprocess.run([str(javac),'--release','17','-encoding','UTF-8','-proc:none','-classpath',testcp,'-d',str(testclasses),*[str(path) for path in tests]],check=True)

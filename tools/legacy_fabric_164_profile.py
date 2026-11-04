@@ -60,12 +60,28 @@ def stage(directory,source_commit):
     for old,new in zip(base['builds'],result['builds']):
         expected=copy.deepcopy(old);expected['profile']=PROFILE
         if new!=expected:raise ValueError('Existing target provenance or bytes changed')
-    payload=json.dumps(result,ensure_ascii=False,indent=2)+'\n'
+    payload=json.dumps(result,ensure_ascii=False,indent=2,sort_keys=True)+'\n'
     (directory/'components.json').write_text(payload,encoding='utf-8',newline='\n')
     (directory/f'{PROFILE}.json').write_text(payload,encoding='utf-8',newline='\n')
     (directory/'SHA256SUMS.txt').write_text(''.join(row['sha256']+'  '+row['fileName']+'\n' for row in sorted(result['builds'],key=lambda r:r['fileName'])),encoding='utf-8',newline='\n')
     print(json.dumps({'profile':PROFILE,'targets':20,'sourceCommit':source_commit,'staging':str(directory)}))
 
+def verify_frozen(directory):
+    frozen_path=ROOT/'profiles'/f'{PROFILE}.json'
+    frozen=frozen_path.read_bytes();document=json.loads(frozen)
+    receipt_path=ROOT/'releases'/TAG/'build-receipt.json'
+    if (directory/'build-receipt.json').read_bytes()!=receipt_path.read_bytes():raise ValueError('Fresh source-port receipt differs from frozen bytes')
+    stage(directory,document['sourceCommit'])
+    if (directory/'components.json').read_bytes()!=frozen or (directory/f'{PROFILE}.json').read_bytes()!=frozen:raise ValueError('Fresh source-port profile differs from frozen bytes')
+    expected=''.join(row['sha256']+'  '+row['fileName']+'\n' for row in sorted(document['builds'],key=lambda row:row['fileName'])).encode()
+    if (directory/'SHA256SUMS.txt').read_bytes()!=expected:raise ValueError('Fresh source-port checksums differ from frozen selection')
+    print('Fresh Legacy Fabric JAR, receipt, committed inputs and frozen profile: PASS')
+
 if __name__=='__main__':
-    p=argparse.ArgumentParser();p.add_argument('--out',type=Path,default=ROOT/'dist'/TAG);p.add_argument('--source-commit',required=True)
-    args=p.parse_args();stage(args.out.resolve(),args.source_commit)
+    p=argparse.ArgumentParser();p.add_argument('--out',type=Path,default=ROOT/'dist'/TAG);p.add_argument('--source-commit');p.add_argument('--verify-frozen',action='store_true')
+    args=p.parse_args()
+    if args.verify_frozen:
+        if args.source_commit:p.error('--verify-frozen reads the reviewed source commit from the frozen profile')
+        verify_frozen(args.out.resolve())
+    elif args.source_commit:stage(args.out.resolve(),args.source_commit)
+    else:p.error('--source-commit is required when staging a new reviewed candidate')

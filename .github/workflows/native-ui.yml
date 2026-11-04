@@ -31,7 +31,7 @@ jobs:
         run: python -B -m unittest discover -s tools -p "test_*.py"
       - name: Require the reviewed patched active selection
         if: github.ref == 'refs/heads/main'
-        run: python -B tools/native_ui_v2.py verify-active
+        run: python -B tools/active_profile.py
       - name: Build and test all six modern native targets
         shell: bash
         working-directory: source/e4steam
@@ -56,3 +56,30 @@ jobs:
           path: |
             dist/native-lan-ui-v1
             dist/native-lan-ui-v2
+  legacy-port:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12.10'
+      - uses: actions/setup-java@v5
+        with:
+          distribution: microsoft
+          java-version: '25.0.2'
+      - name: Build pinned Legacy Fabric port in a fresh directory
+        shell: bash
+        run: python -B tools/legacy_fabric_164.py --java-home "$JAVA_HOME" --out dist/ci-legacy-${{ runner.os }}
+      - name: Compare exact JAR, receipt and profile to the frozen selection
+        run: python -B tools/legacy_fabric_164_profile.py --out dist/ci-legacy-${{ runner.os }} --verify-frozen
+      - uses: actions/upload-artifact@v4
+        with:
+          name: legacy-fabric-164-${{ matrix.os }}
+          path: dist/ci-legacy-${{ runner.os }}
