@@ -51,6 +51,14 @@ bridge. Shutdown closes the relay and local proof. Discovery adds transient
 Steam friends' worlds to the real multiplayer list; stale synthetic addresses
 are consumed and never sent to DNS. Friendship, lobby owner, protocol and exact
 Minecraft compatibility are checked before the normal author join path.
+The shared `lanminecraft_player`, `lanminecraft_world` and
+`lanminecraft_display=1` lobby protocol supplies the verified launcher host
+label and captured native world title. Publication captures client/server data
+on their own ticks, then rechecks the current world and exact Steam hosting
+generation before writing metadata. Steam persona names are not substituted.
+Only the managed screen's automatic LAN collection is replaced; saved/manual
+servers remain native. Synthetic rows show the world, host and Steam service,
+and their internal DNS-shaped join keys are never drawn as addresses.
 
 Log4j 2.19.0 remains the platform's explicitly declared dependency. The port
 does not bundle Log4j classes or downgrade BTW's nested libraries. Steamworks4j

@@ -9,10 +9,19 @@ import java.util.concurrent.*;
 public final class LegacyDiscovery {
     private static final String PREFIX="e4steam-legacy-";
     private static final Map<Object,Poll> POLLS=Collections.synchronizedMap(new WeakHashMap<>());
-    private record World(long lobby,long friend,String name){String address(){return PREFIX+Long.toUnsignedString(lobby)+".invalid";}}
+    private static final Map<Object,Poll> MANAGED_LISTS=Collections.synchronizedMap(new WeakHashMap<>());
+    private static final Map<Object,World> DISPLAY_ENTRIES=Collections.synchronizedMap(new WeakHashMap<>());
+    private record World(long lobby,long friend,String player,String world){String address(){return PREFIX+Long.toUnsignedString(lobby)+".invalid";}}
     private LegacyDiscovery(){}
-    public static void begin(Object screen){synchronized(POLLS){if(POLLS.containsKey(screen))return;Poll p=new Poll(screen);POLLS.put(screen,p);p.thread.start();}}
-    public static void end(Object screen){Poll p=POLLS.remove(screen);if(p!=null)p.close();}
+    public static void begin(Object screen){synchronized(POLLS){Poll existing=POLLS.get(screen);if(existing!=null){existing.apply(existing.worlds);return;}Poll p=new Poll(screen);POLLS.put(screen,p);p.apply(Map.of());p.thread.start();}}
+    public static void end(Object screen){Poll p=POLLS.remove(screen);if(p!=null){p.close();synchronized(MANAGED_LISTS){MANAGED_LISTS.values().removeIf(value->value==p);}}}
+    public static boolean nativeDiscoveryManaged(Object list){Poll p=MANAGED_LISTS.get(list);return p!=null&&p.active&&p.screen.get()!=null;}
+    public static boolean managedScreen(Object screen){Poll p=POLLS.get(screen);return p!=null&&p.active;}
+    public static String worldTitle(String original,Object entry){World world=DISPLAY_ENTRIES.get(entry);return world==null?original:world.world;}
+    public static String displayAddress(String original,Object entry){return DISPLAY_ENTRIES.containsKey(entry)?"Steam":original;}
+    public static Object entryAt(Object renderer,int index){Object screen=R.get(renderer,"field_1200");List<?> entries=(List<?>)R.get(screen,"field_1181");int offset=(Integer)R.call(R.get(screen,"field_1186"),"method_1281");return entries.get(index-offset);}
+    /** Exact common display protocol, with no Steam-persona fallback. */
+    public static String[] description(String enabled,String player,String world){if(!"1".equals(enabled))return null;player=LegacyPublication.cleanName(player);world=LegacyPublication.cleanName(world);return player.isEmpty()||world.isEmpty()?null:new String[]{player,world};}
     public static boolean join(Object screen,Object data){
         String address=(String)R.get(data,"field_1687");if(!address.startsWith(PREFIX))return false;
         Poll p=POLLS.get(screen);World w=p==null?null:p.worlds.get(address);
@@ -55,17 +64,19 @@ public final class LegacyDiscovery {
                 Object id=steamId(lobby);R.call(matchmaking,"requestLobbyData",id);
                 if(!protocol.equals(R.call(matchmaking,"getLobbyData",id,"e4steam_protocol"))||!"1.6.4".equals(R.call(matchmaking,"getLobbyData",id,"e4steam_minecraft")))continue;
                 Object owner=R.call(matchmaking,"getLobbyOwner",id);long peer=nativeId(friend);if(owner==null||nativeId(owner)!=peer)continue;
-                String name=(String)R.call(friends,"getFriendPersonaName",friend);if(name==null)name="Minecraft";name=name.replaceAll("[\\p{Cntrl}§]","").trim();if(name.isEmpty())name="Minecraft";if(name.length()>64)name=name.substring(0,64);
-                World world=new World(lobby,peer,name);found.put(world.address(),world);
+                String[] description=description((String)R.call(matchmaking,"getLobbyData",id,LegacyPublication.DISPLAY_KEY),(String)R.call(matchmaking,"getLobbyData",id,LegacyPublication.PLAYER_KEY),(String)R.call(matchmaking,"getLobbyData",id,LegacyPublication.WORLD_KEY));
+                if(description==null)continue;
+                World world=new World(lobby,peer,description[0],description[1]);found.put(world.address(),world);
             }
             return Map.copyOf(found);
         }
         @SuppressWarnings("unchecked") void apply(Map<String,World> found){
             Object current=screen.get();if(!active||current==null||POLLS.get(current)!=this)return;
             Object list=R.get(current,"field_1197");if(list==null)return;
+            synchronized(MANAGED_LISTS){MANAGED_LISTS.values().removeIf(value->value==this);MANAGED_LISTS.put(list,this);}
             synchronized(list){
-                List<Object> servers=(List<Object>)R.get(list,"field_2225");servers.removeIf(s->((String)R.call(s,"method_1656")).startsWith(PREFIX));
-                for(World w:found.values())servers.add(R.create("net.minecraft.class_606","Steam · "+w.name,w.address()));
+                List<Object> servers=(List<Object>)R.get(list,"field_2225");servers.clear();
+                for(World w:found.values()){Object value=R.create("net.minecraft.class_606",w.player,w.address());DISPLAY_ENTRIES.put(value,w);servers.add(value);}
                 R.set(list,"field_2224",true);
             }
         }

@@ -52,6 +52,11 @@ public final class LegacyIdentity {
     }
     private static long currentRuntimeAccount(){String value=SteamRuntime.get().steamId();try{return Long.parseUnsignedLong(value);}catch(NumberFormatException unavailable){return 0;}}
     public static void closed(Object server) {Object listener=R.get(server,"field_2206");locals.remove(listener);}
+    public static String hostDisplayName(Object server){
+        LocalProof proof=locals.get(R.get(server,"field_2206"));if(proof==null)return null;
+        LegacyRegistry.Entry entry=LegacyRegistry.entry(proof.nativeName);
+        return entry!=null&&entry.steamId()==proof.steamId&&entry.uuid().toString().equals(System.getProperty("minecraft.portable.identity.localPlayer",""))?entry.displayName():null;
+    }
     public static String resolveAlias(Object manager,String input) {
         if(input==null)return null;
         String found=null;

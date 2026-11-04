@@ -11,6 +11,7 @@ public final class LegacyPortPolicyTest {
     static final class Connection { public SocketAddress method_1770(){return new InetSocketAddress("127.0.0.1",43210);} }
     static final class Login { public final Connection field_2882=new Connection(); }
     static final class Protocol { public String field_2422="Untrusted"; }
+    static final class ServerData { public String field_1687;ServerData(String address){field_1687=address;} }
     static final class Player { public String field_3982; Player(String name){field_3982=name;} }
     static final class Manager { public List<Player> field_2708=new ArrayList<>(); }
     private static int assertions;
@@ -26,6 +27,18 @@ public final class LegacyPortPolicyTest {
         check(SteamRuntime.get().authenticatedMinecraftPeer(new InetSocketAddress("192.0.2.1",43210))==0,"Non-loopback socket is not authenticated");
         Protocol protocol=new Protocol();denied(()->LegacyIdentity.prepareRemote(new Login(),protocol),"A label must not authenticate TCP");
         check(protocol.field_2422.equals("Untrusted"),"Denied login did not rewrite packet identity");
+        check(LegacyDiscovery.description(null,"LauncherName","NativeWorld")==null,"Persona-only lobby metadata is not advertised");
+        check(LegacyDiscovery.description("0","LauncherName","NativeWorld")==null,"Partially written description remains hidden");
+        check(LegacyDiscovery.description("1","","NativeWorld")==null,"Missing launcher host label is not guessed");
+        check(LegacyDiscovery.description("1","LauncherName"," ")==null,"Missing native world title is not guessed");
+        check(Arrays.equals(LegacyDiscovery.description("1","LauncherName","NativeWorld"),new String[]{"LauncherName","NativeWorld"}),"Shared lobby description protocol returns both native labels");
+        Object unmanaged=new Object();
+        check(LegacyDiscovery.worldTitle("LAN",unmanaged).equals("LAN"),"Unmanaged native LAN title remains native");
+        check(LegacyDiscovery.displayAddress("192.0.2.1:1234",unmanaged).equals("192.0.2.1:1234"),"Unmanaged native address is preserved");
+        check(!LegacyDiscovery.nativeDiscoveryManaged(unmanaged),"LAN suppression is scoped to a managed collection");
+        check(!LegacyDiscovery.join(unmanaged,new ServerData("example.invalid:25565")),"Manual saved servers keep the native join path");
+        check(LegacyDiscovery.join(unmanaged,new ServerData("e4steam-legacy-1.invalid")),"A stale synthetic discovery entry cannot fall through to DNS");
+        String emoji="😀".repeat(70);String clean=LegacyPublication.cleanName(emoji);check(clean.codePointCount(0,clean.length())==64&&!Character.isHighSurrogate(clean.charAt(clean.length()-1)),"Description bounds preserve complete Unicode code points");
         Path directory=Files.createTempDirectory("e4steam-legacy-policy-");Path registry=directory.resolve("registry.txt");
         try{
             UUID uuid=UUID.randomUUID();String nativeName=LegacyRegistry.canonicalName(1),display="Игрок | Один";
