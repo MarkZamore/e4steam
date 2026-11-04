@@ -5,7 +5,7 @@
   "fileName": "e4steam-legacy-fabric-mc1.6.4-v0.3.4-lf164.1.jar",
   "sizeBytes": 2281194,
   "sha256": "a35e616ee93e4cb9f6a9c2f0e9a06a36648e89639a07a6c47780b30c1b0c394e",
-  "recipeSha256": "c835deb16cb8fd8f26e3926b448d326a0c7e0f4d74939516cc97a1bdf500f091",
+  "recipeSha256": "fea9b6559148f03af5283c238f3f3fa5dc41ffafd2b3158a4a159fe3bfb444f5",
   "compiler": "javac 25.0.2",
   "sources": {
     "source/e4steam/retro/core/src/main/java/link/e4steam/Agnos.java": "701830093b8146b5e3bd98b5908c7e3ec247f8a3189eceadf1d60d11eafeac0e",

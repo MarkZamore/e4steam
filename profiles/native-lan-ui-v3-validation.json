@@ -1,7 +1,8 @@
 {
   "schemaVersion": 1,
   "profile": "native-lan-ui-v3",
-  "sourceCommit": "a6c9580b00106035586e7dc0ed828202c0ff76e8",
+  "sourceCommit": "a835c939e0315206b89bca870ed97f6b88f4a359",
+  "nativeJavaSourceCommit": "a6c9580b00106035586e7dc0ed828202c0ff76e8",
   "legacyDeliveryTag": "legacy-fabric-164-v1",
   "legacyArtifact": {
     "fileName": "e4steam-legacy-fabric-mc1.6.4-v0.3.4-lf164.1.jar",

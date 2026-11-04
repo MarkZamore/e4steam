@@ -3,7 +3,7 @@
   "componentId": "e4steam",
   "publisher": "MarkZamore",
   "profile": "native-lan-ui-v3",
-  "sourceCommit": "a6c9580b00106035586e7dc0ed828202c0ff76e8",
+  "sourceCommit": "a835c939e0315206b89bca870ed97f6b88f4a359",
   "capabilities": [
     "native-lan-settings-ui-hidden-or-absent",
     "modern-configured-online-mode-at-native-publish",
@@ -755,16 +755,16 @@
       "profile": "native-lan-ui-v3",
       "derivation": {
         "type": "source-built-legacy-port",
-        "sourceCommit": "a6c9580b00106035586e7dc0ed828202c0ff76e8",
+        "sourceCommit": "a835c939e0315206b89bca870ed97f6b88f4a359",
         "upstreamSourceCommit": "bdcea00e30ca519fa8190c0c5c04785d42b31dbc",
         "sourceBuildRecipe": {
           "path": "tools/legacy_fabric_164.py",
-          "sha256": "c835deb16cb8fd8f26e3926b448d326a0c7e0f4d74939516cc97a1bdf500f091"
+          "sha256": "fea9b6559148f03af5283c238f3f3fa5dc41ffafd2b3158a4a159fe3bfb444f5"
         },
         "sourceBuildReceipt": {
           "fileName": "build-receipt.json",
-          "sizeBytes": 80424,
-          "sha256": "c0d37e4b96d1671ccf0112e91d132a2763685a50bdd36641ba559b7e6f56adca",
+          "sizeBytes": 79783,
+          "sha256": "58c8af20838acf2361bf2067d7be9005c744e938215e0d27a9c3659354895a99",
           "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/legacy-fabric-164-v1/build-receipt.json"
         },
         "sourceBuiltClassSha256": {
