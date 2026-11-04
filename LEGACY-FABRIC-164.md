@@ -124,9 +124,10 @@ preservation and consumption of stale synthetic join keys.
 The native Java source is unchanged from `a6c9580b00106035586e7dc0ed828202c0ff76e8`;
 the later recipe revision fixes canonical LF/JSON ordering and cross-host ZIP
 metadata without changing the JAR. The local source-tool suite passes 45 tests.
-Linux/Windows GitHub CI is configured and must run on the exact publication
-commit; configuration and a local Windows reproduction do not constitute a
-completed Linux CI run.
+The exact source-release commit `112a3a188c8757fa9157826ecbf93c967f092320`
+passed all four jobs in GitHub run `41890737109`: the existing modern matrix
+and both pinned Legacy Fabric reproduction jobs. This proves Linux/Windows
+source reproduction, not Linux/macOS game runtime or two-account Steam play.
 
 The pack's independent `final-native-05` full client used that exact port JAR
 with BTW CE 3.1.1 and Nightmare 1.1.6. It entered the QA world, accepted the
@@ -152,3 +153,11 @@ legacy nickname-triggered rendering/game rules. Two-account Steam P2P, guest
 gameplay and a real change of host between two people remain **NOT RUN** because
 only one PC/account was available. They must not be inferred from the host,
 negative-login, source, or synthetic-renderer checks above.
+
+On 5 November 2026, the four immutable public port release assets were fetched
+into a fresh verification directory and compared byte for byte with the frozen
+selection. All twenty selected delivery JARs were independently streamed and
+matched by exact size/SHA256, totalling 64,761,382 bytes. The sanitized public
+inventory is recorded in `profiles/native-lan-ui-v3-public-verification.json`.
+The canonical active index and checksum inventory now match frozen V3 bytes;
+no published payload or build recipe was changed for activation.

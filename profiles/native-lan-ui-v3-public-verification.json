@@ -1,0 +1,176 @@
+{
+  "actualReleaseAssets": [
+    {
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/legacy-fabric-164-v1/e4steam-legacy-fabric-mc1.6.4-v0.3.4-lf164.1.jar",
+      "fileName": "e4steam-legacy-fabric-mc1.6.4-v0.3.4-lf164.1.jar",
+      "sha256": "a35e616ee93e4cb9f6a9c2f0e9a06a36648e89639a07a6c47780b30c1b0c394e",
+      "sizeBytes": 2281194
+    },
+    {
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/legacy-fabric-164-v1/build-receipt.json",
+      "fileName": "build-receipt.json",
+      "sha256": "3a3c68e245502544be7ebfa7c469604ed7837372cd4e79e36aa9abb41b3ca038",
+      "sizeBytes": 79994
+    },
+    {
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/legacy-fabric-164-v1/SHA256SUMS.txt",
+      "fileName": "SHA256SUMS.txt",
+      "sha256": "8e77430af5e970d4423b372ae43490598e5f81ccd8e97b0f71629f98e39b27cf",
+      "sizeBytes": 2180
+    },
+    {
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/legacy-fabric-164-v1/components.json",
+      "fileName": "components.json",
+      "sha256": "a3bcee31734f3bbbef43fa11eb1cb76d03c5378335d817261a25f834184dc236",
+      "sizeBytes": 87307
+    }
+  ],
+  "actualSelectedJarDownloads": 20,
+  "checked": [
+    {
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.7.x-v0.3.2.jar",
+      "fileName": "e4steam-forge-mc1.7.x-v0.3.2.jar",
+      "sha256": "c44434c31a5bbfcf5cc34a9327f2c6c08e8ae633e34727486146d8f0ffb03c9c",
+      "sizeBytes": 2107709
+    },
+    {
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.8.x-v0.3.2.jar",
+      "fileName": "e4steam-forge-mc1.8.x-v0.3.2.jar",
+      "sha256": "35caf65a4d97904066e2f1f6454d1ba4661bc73130305ffdb3917f90b3449972",
+      "sizeBytes": 3039265
+    },
+    {
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.9.x-v0.3.2.jar",
+      "fileName": "e4steam-forge-mc1.9.x-v0.3.2.jar",
+      "sha256": "263b4b6f75f06aa0c5c8380d8ae34415e4ae735925bb952f9718c2bc24539e66",
+      "sizeBytes": 3038887
+    },
+    {
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.10.x-v0.3.2.jar",
+      "fileName": "e4steam-forge-mc1.10.x-v0.3.2.jar",
+      "sha256": "ede466e6c19878c513419d971ca860b533eaa1ea756bf2c34a0adfbe80ad82ba",
+      "sizeBytes": 3038892
+    },
+    {
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.11.x-v0.3.2.jar",
+      "fileName": "e4steam-forge-mc1.11.x-v0.3.2.jar",
+      "sha256": "3371478eac829f01a879962d1c2e0f3b31684aa16ab8e8ac3ec06e46bcf5a26f",
+      "sizeBytes": 3038892
+    },
+    {
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.12.x-v0.3.2.jar",
+      "fileName": "e4steam-forge-mc1.12.x-v0.3.2.jar",
+      "sha256": "f554e6d20f037dbf8a2596eb0c3aaa3cf3ba0625d1caca9a3925cad297506e24",
+      "sizeBytes": 3038928
+    },
+    {
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.13.x-v0.3.2.jar",
+      "fileName": "e4steam-forge-mc1.13.x-v0.3.2.jar",
+      "sha256": "0cdb0ef6ce450faf2583ffd75b43e17426b20b402628e7c38466ce84d080f2ec",
+      "sizeBytes": 2901410
+    },
+    {
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.14.x-v0.3.2.jar",
+      "fileName": "e4steam-forge-mc1.14.x-v0.3.2.jar",
+      "sha256": "b7d08bbfadbee160f37eeb1e665d55c4a50b4682806dd63f3db5879b8fa5e1c7",
+      "sizeBytes": 2903985
+    },
+    {
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.15.x-v0.3.2.jar",
+      "fileName": "e4steam-forge-mc1.15.x-v0.3.2.jar",
+      "sha256": "5de9df05e6834a1279631eedfa5879bf8abfa955226dc127fffd2a4292768b91",
+      "sizeBytes": 2899585
+    },
+    {
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.16.x-v0.3.2.jar",
+      "fileName": "e4steam-forge-mc1.16.x-v0.3.2.jar",
+      "sha256": "a0e6a1ab6b29c36733c929e86905521e58b2943307fab4fda7da05b51b3449ca",
+      "sizeBytes": 2899902
+    },
+    {
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.2/e4steam-fabric-mc1.14.x-v0.3.2.jar",
+      "fileName": "e4steam-fabric-mc1.14.x-v0.3.2.jar",
+      "sha256": "c9467b97bfa7691007b4226af0ba7d776393fd013a0ddc908f36e63d818e85f2",
+      "sizeBytes": 3590675
+    },
+    {
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.2/e4steam-fabric-mc1.15.x-v0.3.2.jar",
+      "fileName": "e4steam-fabric-mc1.15.x-v0.3.2.jar",
+      "sha256": "61e7c1783a3338bee600660ac630ed3d6fcb220831f110661e01dbdfee7679b2",
+      "sizeBytes": 3589233
+    },
+    {
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/v0.3.2/e4steam-fabric-mc1.16.x-v0.3.2.jar",
+      "fileName": "e4steam-fabric-mc1.16.x-v0.3.2.jar",
+      "sha256": "b387a2b076527dd2f1ccbb3cf44ac97d3f4ce89722becb5e3bc57ad7933ba70f",
+      "sizeBytes": 3589535
+    },
+    {
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/native-lan-ui-v2/e4steam-forge-mc1.17.1-1.18.1-v0.3.4-lanmc-native-ui.2.jar",
+      "fileName": "e4steam-forge-mc1.17.1-1.18.1-v0.3.4-lanmc-native-ui.2.jar",
+      "sha256": "1344aa71d9fe824dd9b01210f58f28569631f4c5747d6f040d82f65c7010a8d7",
+      "sizeBytes": 3805024
+    },
+    {
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/native-lan-ui-v2/e4steam-forge-mc1.18.2-1.20.2-v0.3.4-lanmc-native-ui.2.jar",
+      "fileName": "e4steam-forge-mc1.18.2-1.20.2-v0.3.4-lanmc-native-ui.2.jar",
+      "sha256": "3f397fc193f14d3c543b5ef9b4613bc149a21ca8e14bd93c39de3d1bc6f9553c",
+      "sizeBytes": 3801632
+    },
+    {
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/native-lan-ui-v2/e4steam-neoforge-mc1.20.2-26.3-v0.3.4-lanmc-native-ui.2.jar",
+      "fileName": "e4steam-neoforge-mc1.20.2-26.3-v0.3.4-lanmc-native-ui.2.jar",
+      "sha256": "2cfedc07ee3c84b9b980351ea094d5f898c858f37ff46dada24c621061761d2e",
+      "sizeBytes": 3800314
+    },
+    {
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/native-lan-ui-v2/e4steam-fabric-quilt-mc1.17-1.18.2-v0.3.4-lanmc-native-ui.2.jar",
+      "fileName": "e4steam-fabric-quilt-mc1.17-1.18.2-v0.3.4-lanmc-native-ui.2.jar",
+      "sha256": "7dde29204bc3f50649bbf3b50163e96677a62467507d1218f9e58caa7785d006",
+      "sizeBytes": 3800700
+    },
+    {
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/native-lan-ui-v2/e4steam-fabric-quilt-mc1.19-1.21.11-v0.3.4-lanmc-native-ui.2.jar",
+      "fileName": "e4steam-fabric-quilt-mc1.19-1.21.11-v0.3.4-lanmc-native-ui.2.jar",
+      "sha256": "67d43d3047cf7d349b38d1addf024ef69de44d79d2b19f5f0092b024a565f1bd",
+      "sizeBytes": 3797496
+    },
+    {
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/native-lan-ui-v2/e4steam-fabric-quilt-mc26.1-26.3-v0.3.4-lanmc-native-ui.2.jar",
+      "fileName": "e4steam-fabric-quilt-mc26.1-26.3-v0.3.4-lanmc-native-ui.2.jar",
+      "sha256": "248fe6c4bf8f4decd0eea2c0883f15559eedd7491e6a9b5859b3bd1cafdcb26d",
+      "sizeBytes": 3798124
+    },
+    {
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/legacy-fabric-164-v1/e4steam-legacy-fabric-mc1.6.4-v0.3.4-lf164.1.jar",
+      "fileName": "e4steam-legacy-fabric-mc1.6.4-v0.3.4-lf164.1.jar",
+      "sha256": "a35e616ee93e4cb9f6a9c2f0e9a06a36648e89639a07a6c47780b30c1b0c394e",
+      "sizeBytes": 2281194
+    }
+  ],
+  "ciHeadSha": "112a3a188c8757fa9157826ecbf93c967f092320",
+  "ciJobs": [
+    {
+      "conclusion": "success",
+      "name": "legacy-port (ubuntu-latest)"
+    },
+    {
+      "conclusion": "success",
+      "name": "legacy-port (windows-latest)"
+    },
+    {
+      "conclusion": "success",
+      "name": "build (ubuntu-latest)"
+    },
+    {
+      "conclusion": "success",
+      "name": "build (windows-latest)"
+    }
+  ],
+  "exactSourceCiRun": 41890737109,
+  "profile": "native-lan-ui-v3",
+  "schemaVersion": 1,
+  "status": "PASS_ACTUAL_PUBLIC_BYTES_NOT_NEW_GAMEPLAY",
+  "totalSelectedJarBytes": 64761382,
+  "twoAccountSteamGameplayClaimed": false
+}

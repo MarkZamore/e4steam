@@ -18,7 +18,9 @@
     "legacyJdk": "Microsoft 25.0.2",
     "legacyPython": "3.12.10",
     "freshWindowsReproduction": "PASS",
-    "exactCommitFourJobGithubRun": "NOT_RUN_PENDING_PUSH"
+    "exactCommitFourJobGithubRun": "PASS_SOURCE_RELEASE_COMMIT",
+    "sourceReleaseRunId": 41890737109,
+    "sourceReleaseCiHead": "112a3a188c8757fa9157826ecbf93c967f092320"
   },
   "nativeRun": "final-native-05",
   "nativeClientExitCode": 0,
@@ -39,5 +41,5 @@
     "Remote player selected-skin or cape visual check",
     "Linux and macOS runtime validation"
   ],
-  "publicationStatus": "Candidate only. Active nineteen-target index is unchanged until coordinated launcher/public release."
+  "publicationStatus": "Immutable payload and all twenty selected public JARs verified. Canonical index activated with exact frozen V3 bytes; activation commit CI runs separately after push."
 }
