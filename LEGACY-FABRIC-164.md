@@ -94,3 +94,38 @@ and provenance fields. Only their active profile label advances to V3.
 The new target uses the immutable `legacy-fabric-164-v1` delivery tag; its
 receipt has its own size/SHA. Publish payload and receipt before the index.
 Do not activate the profile or the pack card merely because compilation passed.
+
+## Observed validation, 4 November 2026
+
+Source revision `a6c9580b00106035586e7dc0ed828202c0ff76e8` produces
+`e4steam-legacy-fabric-mc1.6.4-v0.3.4-lf164.1.jar`, 2,281,194 bytes,
+SHA256 `a35e616ee93e4cb9f6a9c2f0e9a06a36648e89639a07a6c47780b30c1b0c394e`.
+The source and policy suite passed 36 assertions, including untrusted socket
+denial, no registry-derived authentication, duplicate-account side effects,
+ambiguous labels, strict UTF-8, display-marker rejection, manual-server
+preservation and consumption of stale synthetic join keys.
+
+The pack's independent `final-native-05` full client used that exact port JAR
+with BTW CE 3.1.1 and Nightmare 1.1.6. It entered the QA world, accepted the
+canonical native local host, published through the actual pause button without
+the intermediate Share form, and saved/quit normally with exit code 0. The
+actual own-account Steam lobby supplied matching owner/generation/native port
+and the three exact launcher-host/native-world description fields. A plain TCP
+protocol-78 login without an authenticated Steam bridge was denied and the
+native player count remained one. Native shutdown returned the transport to
+NONE and emptied the publication/task registries.
+
+The real lazy-loaded multiplayer/slot renderer and FontRenderer observed
+world, host and Steam labels for an explicitly synthetic UI fixture. The
+automatic LAN insertion gate and stale-join cancellation were also exercised.
+This is native rendering-path evidence, not a second friend's discovered world
+or an authenticated peer connection. No internal `.invalid` address was drawn.
+
+This component owns presentation labels, not player meshes, cape rendering or
+the pack's selected-skin bridge. The separate pack helper has its own native
+skin/title evidence. No cape or remote-player visual PASS is claimed here;
+canonical protocol names also require separate exact-caller compatibility for
+legacy nickname-triggered rendering/game rules. Two-account Steam P2P, guest
+gameplay and a real change of host between two people remain **NOT RUN** because
+only one PC/account was available. They must not be inferred from the host,
+negative-login, source, or synthetic-renderer checks above.
