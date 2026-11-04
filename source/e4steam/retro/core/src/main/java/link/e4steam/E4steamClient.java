@@ -24,6 +24,18 @@ public final class E4steamClient {
     private E4steamClient() {
     }
 
+    /** The source-built Legacy Fabric port reports native Packet1Login acceptance. */
+    public static boolean tracksMinecraftLogin() { return platform != null && platform.tracksMinecraftLogin(); }
+
+    public static void showSteamJoinTimeout(String reason) {
+        final RetroPlatform current = platform;
+        if (current != null) current.execute(new Runnable() {
+            @Override public void run() {
+                current.joinTimedOut(reason);
+            }
+        });
+    }
+
     public static void install(RetroPlatform replacement) {
         if (replacement == null) {
             throw new IllegalArgumentException("Retro platform is required");

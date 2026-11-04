@@ -10,6 +10,11 @@ public interface RetroPlatform {
 
     void showMessage(String message);
 
+    /** Branches which observe native login acceptance opt in explicitly. */
+    default boolean tracksMinecraftLogin() { return false; }
+
+    default void joinTimedOut(String reason) { showMessage(reason); }
+
     /** Copies a join address locally without exposing it in chat or logs. */
     default boolean copyToClipboard(String text) {
         return false;

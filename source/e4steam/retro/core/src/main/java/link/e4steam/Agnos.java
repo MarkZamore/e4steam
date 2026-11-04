@@ -34,4 +34,9 @@ public final class Agnos {
     public static boolean autoRestartBrokenSteamSessionForHandshake() {
         return true;
     }
+
+    /** The Legacy Fabric branch uses ordinary TCP and has no Forge burst workaround. */
+    public static boolean paceMinecraftTrafficForLoader() {
+        return false;
+    }
 }
