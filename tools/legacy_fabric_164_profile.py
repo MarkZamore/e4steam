@@ -61,9 +61,9 @@ def stage(directory,source_commit):
         expected=copy.deepcopy(old);expected['profile']=PROFILE
         if new!=expected:raise ValueError('Existing target provenance or bytes changed')
     payload=json.dumps(result,ensure_ascii=False,indent=2)+'\n'
-    (directory/'components.json').write_text(payload,encoding='utf-8')
-    (directory/f'{PROFILE}.json').write_text(payload,encoding='utf-8')
-    (directory/'SHA256SUMS.txt').write_text(''.join(row['sha256']+'  '+row['fileName']+'\n' for row in sorted(result['builds'],key=lambda r:r['fileName'])),encoding='utf-8')
+    (directory/'components.json').write_text(payload,encoding='utf-8',newline='\n')
+    (directory/f'{PROFILE}.json').write_text(payload,encoding='utf-8',newline='\n')
+    (directory/'SHA256SUMS.txt').write_text(''.join(row['sha256']+'  '+row['fileName']+'\n' for row in sorted(result['builds'],key=lambda r:r['fileName'])),encoding='utf-8',newline='\n')
     print(json.dumps({'profile':PROFILE,'targets':20,'sourceCommit':source_commit,'staging':str(directory)}))
 
 if __name__=='__main__':
