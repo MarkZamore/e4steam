@@ -114,7 +114,7 @@ and is not the V3 publication entrypoint.
 
 ## Observed validation, 4 November 2026
 
-Source/recipe revision `a835c939e0315206b89bca870ed97f6b88f4a359` produces
+Source/recipe revision `204ed62ccb832f2756512c30026b812352a57d1b` produces
 `e4steam-legacy-fabric-mc1.6.4-v0.3.4-lf164.1.jar`, 2,281,194 bytes,
 SHA256 `a35e616ee93e4cb9f6a9c2f0e9a06a36648e89639a07a6c47780b30c1b0c394e`.
 The source and policy suite passed 36 assertions, including untrusted socket
@@ -122,7 +122,11 @@ denial, no registry-derived authentication, duplicate-account side effects,
 ambiguous labels, strict UTF-8, display-marker rejection, manual-server
 preservation and consumption of stale synthetic join keys.
 The native Java source is unchanged from `a6c9580b00106035586e7dc0ed828202c0ff76e8`;
-the later recipe revision fixes canonical LF receipt/profile serialization.
+the later recipe revision fixes canonical LF/JSON ordering and cross-host ZIP
+metadata without changing the JAR. The local source-tool suite passes 45 tests.
+Linux/Windows GitHub CI is configured and must run on the exact publication
+commit; configuration and a local Windows reproduction do not constitute a
+completed Linux CI run.
 
 The pack's independent `final-native-05` full client used that exact port JAR
 with BTW CE 3.1.1 and Nightmare 1.1.6. It entered the QA world, accepted the

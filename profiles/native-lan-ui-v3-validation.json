@@ -1,7 +1,7 @@
 {
   "schemaVersion": 1,
   "profile": "native-lan-ui-v3",
-  "sourceCommit": "a835c939e0315206b89bca870ed97f6b88f4a359",
+  "sourceCommit": "204ed62ccb832f2756512c30026b812352a57d1b",
   "nativeJavaSourceCommit": "a6c9580b00106035586e7dc0ed828202c0ff76e8",
   "legacyDeliveryTag": "legacy-fabric-164-v1",
   "legacyArtifact": {
@@ -11,6 +11,15 @@
   },
   "validationDate": "2026-11-04",
   "policyAssertions": 36,
+  "sourceToolTests": 45,
+  "ciReadiness": {
+    "modernJava21MatrixPreserved": true,
+    "legacyMatrix": ["ubuntu-latest", "windows-latest"],
+    "legacyJdk": "Microsoft 25.0.2",
+    "legacyPython": "3.12.10",
+    "freshWindowsReproduction": "PASS",
+    "exactCommitFourJobGithubRun": "NOT_RUN_PENDING_PUSH"
+  },
   "nativeRun": "final-native-05",
   "nativeClientExitCode": 0,
   "nativeOneAccountChecks": [
