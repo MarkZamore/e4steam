@@ -70,6 +70,8 @@ The build emits the deterministic JAR, source/class/dependency/recipe receipt
 and runs ownership-negative policy checks. These checks do not claim a real
 authenticated Steam session. Full client and native integration results belong
 to the pack's QA report; two-account Steam gameplay requires actual accounts.
+The receipt pins the committed LF NOTICE text and explicitly records its
+deterministic CRLF materialization inside the JAR, independent of Git autocrlf.
 
 After committing the reviewed source, stage the new frozen twenty-target
 profile without changing the active index or publishing:

@@ -12,3 +12,6 @@
 /releases/*.json text eol=lf
 /profiles/*.json text eol=lf
 /SHA256SUMS.txt text eol=lf
+/tools/legacy_fabric_164.py text eol=lf
+/tools/legacy_fabric_164_profile.py text eol=lf
+/LEGACY-FABRIC-164.md text eol=lf

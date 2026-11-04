@@ -30,6 +30,12 @@ DEPENDENCIES=[
 
 def sha(data):return hashlib.sha256(data).hexdigest()
 
+def source_bytes(path):
+    data=path.read_bytes()
+    # Git's NOTICE input is LF; Windows autocrlf previously materialized it
+    # differently. Pin the committed input and declare ZIP materialization.
+    return data.replace(b'\r\n',b'\n') if path==SOURCE/'NOTICE' else data
+
 def dependency(row,cache):
     group,artifact,version,expected,_=row
     filename=f'{artifact}-{version}.jar'
@@ -83,7 +89,9 @@ def build(output,java_home):
     # Mixin implementation classes must only be consumed by Mixin. Knot rejects
     # attempts to load them as ordinary runtime/preload helper classes.
     entries['e4steam-retro-preload.txt']=('\n'.join(sorted(name[:-6].replace('/','.') for name in entries if name.startswith('link/e4steam/') and name.endswith('.class') and '/mixin/' not in name))+'\n').encode()
-    for source,target in [('LICENSE','META-INF/LICENSE-e4steam.txt'),('NOTICE','META-INF/NOTICE-e4steam.txt'),('THIRD_PARTY_NOTICES.md','META-INF/THIRD_PARTY_NOTICES.md')]:entries[target]=(SOURCE/source).read_bytes()
+    for source,target in [('LICENSE','META-INF/LICENSE-e4steam.txt'),('NOTICE','META-INF/NOTICE-e4steam.txt'),('THIRD_PARTY_NOTICES.md','META-INF/THIRD_PARTY_NOTICES.md')]:
+        data=source_bytes(SOURCE/source)
+        entries[target]=data.replace(b'\n',b'\r\n') if source=='NOTICE' else data
     entries['META-INF/MANIFEST.MF']=b'Manifest-Version: 1.0\nImplementation-Title: e4steam Legacy Fabric 1.6.4 port\nImplementation-Version: 0.3.4-lf164.1\n\n'
     target=output/NAME
     with zipfile.ZipFile(target,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as jar:
@@ -92,7 +100,7 @@ def build(output,java_home):
             jar.writestr(info,data)
     tests=sorted((MODULE/'src/test/java').rglob('*.java'))
     inputs=sources+tests+resources+[SOURCE/name for name in ('LICENSE','NOTICE','THIRD_PARTY_NOTICES.md')]
-    receipt={'schemaVersion':1,'type':'source-built-legacy-port','upstreamSourceCommit':UPSTREAM,'fileName':NAME,'sizeBytes':target.stat().st_size,'sha256':sha(target.read_bytes()),'recipeSha256':sha(Path(__file__).read_bytes()),'compiler':subprocess.check_output([str(javac),'-version'],text=True).strip(),'sources':{path.relative_to(ROOT).as_posix():sha(path.read_bytes()) for path in inputs},'sourceBuiltClassSha256':{name:sha(data) for name,data in sorted(entries.items()) if name.endswith('.class') and name.startswith('link/e4steam/')},'dependencies':[{'group':row[0],'artifact':row[1],'version':row[2],'sha256':row[3],'bundled':row[4]} for row,_ in deps]}
+    receipt={'schemaVersion':1,'type':'source-built-legacy-port','upstreamSourceCommit':UPSTREAM,'fileName':NAME,'sizeBytes':target.stat().st_size,'sha256':sha(target.read_bytes()),'recipeSha256':sha(Path(__file__).read_bytes()),'compiler':subprocess.check_output([str(javac),'-version'],text=True).strip(),'sources':{path.relative_to(ROOT).as_posix():sha(source_bytes(path)) for path in inputs},'sourceTransforms':{'source/e4steam/NOTICE':'committed-LF-to-ZIP-CRLF'},'sourceBuiltClassSha256':{name:sha(data) for name,data in sorted(entries.items()) if name.endswith('.class') and name.startswith('link/e4steam/')},'dependencies':[{'group':row[0],'artifact':row[1],'version':row[2],'sha256':row[3],'bundled':row[4]} for row,_ in deps]}
     (output/'build-receipt.json').write_text(json.dumps(receipt,indent=2)+'\n',encoding='utf-8')
     testclasses=output/'test-classes';testclasses.mkdir(exist_ok=True)
     testcp=os.pathsep.join([str(target),str(testclasses)]+[str(path) for row,path in deps if row[0]=='org.apache.logging.log4j'])
