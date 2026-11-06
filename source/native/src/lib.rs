@@ -99,11 +99,17 @@ impl SteamBridge {
         if local_port == 0 || !valid_world_title(world_title) || !valid_nickname(nickname) {
             return Err("Invalid world information for Steam sharing.".into());
         }
-        self.send(Command::Publish {
+        let command = Command::Publish {
             local_port,
             title: world_title.to_owned(),
             nickname: nickname.to_owned(),
-        })
+        };
+        // The worker reports errors through this mutex. Keep its new error
+        // from being overwritten when a publication retry is queued.
+        let mut shared = self.shared.lock().unwrap();
+        self.send(command)?;
+        shared.last_error = None;
+        Ok(())
     }
 
     pub fn unpublish(&self) {
@@ -206,6 +212,36 @@ fn valid_world_title(value: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn publication_retry_clears_the_previous_error_only_when_queued() {
+        let (commands, pending) = mpsc::sync_channel(1);
+        let bridge = SteamBridge {
+            commands,
+            shared: Arc::new(Mutex::new(Shared::default())),
+            stop: Arc::new(AtomicBool::new(false)),
+            worker: None,
+        };
+        bridge.send(Command::StopSharing).unwrap();
+        bridge.shared.lock().unwrap().last_error = Some("previous error".into());
+
+        assert!(bridge.publish(25565, "Test World", "Player").is_err());
+        assert_eq!(bridge.last_error().as_deref(), Some("previous error"));
+
+        assert!(matches!(pending.try_recv(), Ok(Command::StopSharing)));
+        assert!(bridge.publish(0, "Test World", "Player").is_err());
+        assert_eq!(bridge.last_error().as_deref(), Some("previous error"));
+
+        bridge.publish(25565, "Test World", "Player").unwrap();
+        assert!(matches!(
+            pending.try_recv(),
+            Ok(Command::Publish {
+                local_port: 25565,
+                ..
+            })
+        ));
+        assert_eq!(bridge.last_error(), None);
+    }
 
     #[test]
     fn public_account_validation_rejects_lobby_and_empty_account_ids() {
