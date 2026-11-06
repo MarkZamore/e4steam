@@ -1,0 +1,227 @@
+//! Native Steam game transport for LANMinecraft packs.
+//!
+//! Only this worker talks to the Steam API. A game's loopback listener may
+//! accept the portable profile of a guest only by claiming its established
+//! bridge connection here.
+
+mod tunnel;
+mod worker;
+
+use std::{
+    collections::HashMap,
+    net::{Ipv4Addr, SocketAddr, TcpListener},
+    sync::{
+        Arc, Mutex,
+        atomic::{AtomicBool, Ordering},
+        mpsc::{self, SyncSender},
+    },
+    thread::{self, JoinHandle},
+    time::Duration,
+};
+
+use worker::Command;
+
+const START_TIMEOUT: Duration = Duration::from_secs(10);
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct WorldOffer {
+    pub lobby_id: u64,
+    pub title: String,
+    pub host: String,
+}
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct PeerIdentity {
+    pub steam_id: u64,
+    pub nickname: String,
+}
+
+#[derive(Default)]
+struct Shared {
+    worlds: Vec<WorldOffer>,
+    claims: HashMap<SocketAddr, PeerIdentity>,
+    published: bool,
+    last_error: Option<String>,
+}
+
+pub struct SteamBridge {
+    commands: SyncSender<Command>,
+    shared: Arc<Mutex<Shared>>,
+    stop: Arc<AtomicBool>,
+    worker: Option<JoinHandle<()>>,
+}
+
+impl SteamBridge {
+    pub fn start(expected_id: u64, variant: &str, nickname: &str) -> Result<Self, String> {
+        if !valid_steam_id(expected_id) || !valid_variant(variant) || !valid_nickname(nickname) {
+            return Err("Invalid native Steam launch identity or runtime variant.".into());
+        }
+        let (commands, pending) = mpsc::sync_channel(16);
+        let (started, startup) = mpsc::sync_channel(1);
+        let shared = Arc::new(Mutex::new(Shared::default()));
+        let stop = Arc::new(AtomicBool::new(false));
+        let worker_shared = Arc::clone(&shared);
+        let worker_stop = Arc::clone(&stop);
+        let variant = variant.to_owned();
+        let nickname = nickname.to_owned();
+        let worker = thread::Builder::new()
+            .name("lanmc-steam-game".into())
+            .spawn(move || {
+                worker::run(
+                    expected_id,
+                    variant,
+                    nickname,
+                    pending,
+                    started,
+                    worker_shared,
+                    worker_stop,
+                );
+            })
+            .map_err(|error| error.to_string())?;
+        let bridge = Self {
+            commands,
+            shared,
+            stop,
+            worker: Some(worker),
+        };
+        startup
+            .recv_timeout(START_TIMEOUT)
+            .map_err(|_| "Native Steam worker did not initialize.".to_string())??;
+        Ok(bridge)
+    }
+
+    pub fn publish(
+        &self,
+        local_port: u16,
+        world_title: &str,
+        nickname: &str,
+    ) -> Result<(), String> {
+        if local_port == 0 || !valid_world_title(world_title) || !valid_nickname(nickname) {
+            return Err("Invalid world information for Steam sharing.".into());
+        }
+        self.send(Command::Publish {
+            local_port,
+            title: world_title.to_owned(),
+            nickname: nickname.to_owned(),
+        })
+    }
+
+    pub fn unpublish(&self) {
+        // A stop is a lifecycle action. Give it a distinct signal so it
+        // cannot be lost if the command queue is saturated.
+        let mut shared = self.shared.lock().unwrap();
+        shared.claims.clear();
+        shared.published = false;
+        drop(shared);
+        self.commands.send(Command::StopSharing).ok();
+    }
+
+    pub fn worlds(&self) -> Vec<WorldOffer> {
+        self.shared.lock().unwrap().worlds.clone()
+    }
+
+    pub fn is_published(&self) -> bool {
+        self.shared.lock().unwrap().published
+    }
+
+    pub fn last_error(&self) -> Option<String> {
+        self.shared.lock().unwrap().last_error.clone()
+    }
+
+    pub fn join(&self, lobby_id: u64) -> Result<SocketAddr, String> {
+        if !self
+            .shared
+            .lock()
+            .unwrap()
+            .worlds
+            .iter()
+            .any(|world| world.lobby_id == lobby_id)
+        {
+            return Err("The Steam world is no longer available.".into());
+        }
+        let listener =
+            TcpListener::bind((Ipv4Addr::LOCALHOST, 0)).map_err(|error| error.to_string())?;
+        let address = listener.local_addr().map_err(|error| error.to_string())?;
+        listener
+            .set_nonblocking(true)
+            .map_err(|error| error.to_string())?;
+        self.send(Command::Join { lobby_id, listener })?;
+        Ok(address)
+    }
+
+    pub fn claim_guest(&self, remote_addr: SocketAddr) -> Option<PeerIdentity> {
+        if !remote_addr.ip().is_loopback() {
+            return None;
+        }
+        self.shared.lock().unwrap().claims.remove(&remote_addr)
+    }
+
+    fn send(&self, command: Command) -> Result<(), String> {
+        self.commands
+            .try_send(command)
+            .map_err(|_| "Native Steam worker is unavailable or busy.".into())
+    }
+}
+
+impl Drop for SteamBridge {
+    fn drop(&mut self) {
+        self.stop.store(true, Ordering::Release);
+        if let Some(worker) = self.worker.take() {
+            worker.join().ok();
+        }
+    }
+}
+
+fn valid_steam_id(id: u64) -> bool {
+    // Individual, public-universe, desktop Steam account.
+    id >> 32 == 0x0110_0001 && id as u32 != 0
+}
+
+fn valid_variant(value: &str) -> bool {
+    !value.is_empty()
+        && value.len() <= 96
+        && value
+            .bytes()
+            .all(|b| b.is_ascii_alphanumeric() || matches!(b, b'-' | b'_' | b'.'))
+}
+
+fn valid_nickname(value: &str) -> bool {
+    use unicode_general_category::{GeneralCategory, get_general_category};
+
+    (1..=16).contains(&value.encode_utf16().count())
+        && value.trim() == value
+        && !value.chars().any(|c| match get_general_category(c) {
+            GeneralCategory::Control
+            | GeneralCategory::LineSeparator
+            | GeneralCategory::ParagraphSeparator => true,
+            GeneralCategory::Format => !matches!(c, '\u{200c}' | '\u{200d}'),
+            _ => false,
+        })
+}
+
+fn valid_world_title(value: &str) -> bool {
+    !value.trim().is_empty() && value.len() <= 1024 && !value.chars().any(char::is_control)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn public_account_validation_rejects_lobby_and_empty_account_ids() {
+        assert!(valid_steam_id(0x0110_0001_1234_5678));
+        assert!(!valid_steam_id(0x0186_0000_1234_5678));
+        assert!(!valid_steam_id(0x0110_0001_0000_0000));
+    }
+
+    #[test]
+    fn public_metadata_rejects_control_characters_and_oversize_values() {
+        assert!(valid_world_title("Мой мир"));
+        assert!(!valid_world_title("A\0B"));
+        assert!(!valid_world_title(&"х".repeat(600)));
+        assert!(valid_nickname("Игрок"));
+        assert!(!valid_nickname("Игрок\n"));
+        assert!(valid_nickname("Player Name"));
+        assert!(!valid_nickname("Play\u{202e}er"));
+    }
+}
