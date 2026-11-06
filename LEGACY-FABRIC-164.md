@@ -46,6 +46,11 @@ The Open to LAN pause action initializes the actual native Share screen and
 invokes its native Start action without displaying the intermediate form.
 The module does not hardcode Nightmare settings or replace the pause menu.
 Native/author callbacks, including Nightmare's no-escape restrictions, remain.
+The successful Russian announcement uses the modern "Порт локального сервера:
+%s" wording with the original bound port. Other languages and the failure
+message use the native text. Once the integrated world is published, the same
+pause slot opens a native notice explaining that player reports are unavailable
+in Minecraft 1.6.4. Its Done button returns to the original pause screen.
 The listener binds explicitly to IPv4 loopback, matching the common Steam
 bridge. Shutdown closes the relay and local proof. Discovery adds transient
 Steam friends' worlds to the real multiplayer list; stale synthetic addresses
@@ -66,7 +71,11 @@ does not bundle Log4j classes or downgrade BTW's nested libraries. Steamworks4j
 Mixin implementation classes stay in the mandatory Mixin configuration and
 are excluded from direct helper preloading, as required by Knot.
 
-## Reproduction and publication
+## Historical v1/V3 reproduction and publication
+
+Run the commands in this section from source-release commit
+`112a3a188c8757fa9157826ecbf93c967f092320`. Current source uses the v2
+recipe documented below.
 
 Build with JDK 25.0.2, targeting Java 17:
 
@@ -161,3 +170,47 @@ matched by exact size/SHA256, totalling 64,761,382 bytes. The sanitized public
 inventory is recorded in `profiles/native-lan-ui-v3-public-verification.json`.
 The canonical active index and checksum inventory now match frozen V3 bytes;
 no published payload or build recipe was changed for activation.
+
+## Immutable Legacy Fabric v2 delivery
+
+The current build recipe emits `e4steam-legacy-fabric-mc1.6.4-v0.3.4-lf164.2.jar`.
+Its Fabric author version and platform range stay compatible. Historical v1/V3
+bytes and receipts remain frozen. To reproduce v1, use its original source-release
+commit above. A new twenty-target V4 selection starts from the exact published
+V3 bytes and replaces only the Legacy Fabric row. The nineteen other payloads,
+URLs, checksums and per-row source provenance remain as published.
+
+Build with the pinned Microsoft JDK 25.0.2 and Python 3.12.10 into the assigned
+task staging directory. Run native acceptance against that exact JAR. Commit
+the reviewed code and recipe, then stage the release profile from that commit:
+
+```powershell
+python -B tools/legacy_fabric_164.py --java-home $env:JAVA_HOME --out $candidate
+python -B tools/legacy_fabric_164_profile.py --out $candidate --source-commit (git rev-parse HEAD)
+```
+
+Commit the staged `native-lan-ui-v4.json` under `profiles/` and
+`build-receipt.json` under `releases/legacy-fabric-164-v2/`. Keep the root
+`components.json` and `SHA256SUMS.txt` on V3 until public verification. The
+Linux and Windows legacy CI jobs rebuild and compare the v2 frozen bytes even
+while the active index is V3. Both modern matrix jobs still run.
+
+After all four jobs pass for the clean frozen-profile commit, check the exact
+CI run with `python -B tools/legacy_fabric_164_profile.py --verify-ci <run-id>`.
+Create a **new** draft GitHub release `legacy-fabric-164-v2` targeting that
+commit. Upload the JAR, receipt and checksum inventory before `components.json`.
+An existing asset with different bytes is a release conflict. Publish the
+draft only once the four assets are ready, without replacing any historical
+tag or asset. Then run:
+
+```powershell
+python -B tools/legacy_fabric_164_profile.py --verify-public
+```
+
+This verifies the API digests and streams all twenty selected public JARs and
+three metadata files against their size and SHA256 pins. Save the small proof
+and exact CI run reference with the activation commit. Only then copy the frozen
+V4 profile and its checksum inventory to the root active files. Check with
+`python -B tools/active_profile.py` before pushing activation. Compatible
+launchers use the verified network selection at their next startup and keep
+their embedded V3 fallback and previous exact-hash retirement pins.

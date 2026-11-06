@@ -16,5 +16,6 @@
 /tools/legacy_fabric_164_profile.py text eol=lf
 /LEGACY-FABRIC-164.md text eol=lf
 /releases/legacy-fabric-164-v1/*.json text eol=lf
+/releases/legacy-fabric-164-v2/*.json text eol=lf
 /tools/active_profile.py text eol=lf
 /tools/test_active_profile.py text eol=lf

@@ -3,6 +3,6 @@
   "minVersion": "0.8.5",
   "package": "link.e4steam.legacy164.mixin",
   "compatibilityLevel": "JAVA_17",
-  "client": ["ClientTickMixin", "ClientLoginMixin", "SessionMixin", "IntegratedListenerMixin", "IntegratedServerMixin", "LoginMixin", "PlayerAdmissionMixin", "PlayerDisplayMixin", "TabDisplayMixin", "PauseMixin", "DiscoveryMixin", "LanDiscoveryMixin", "DiscoveryDisplayMixin"],
+  "client": ["ClientTickMixin", "ClientLoginMixin", "SessionMixin", "IntegratedListenerMixin", "IntegratedServerMixin", "LoginMixin", "PlayerAdmissionMixin", "PlayerDisplayMixin", "TabDisplayMixin", "PauseMixin", "ShareMessageMixin", "ReportsNoticeMixin", "DiscoveryMixin", "LanDiscoveryMixin", "DiscoveryDisplayMixin"],
   "injectors": {"defaultRequire": 1}
 }

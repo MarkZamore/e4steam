@@ -38,6 +38,15 @@ public final class LegacyPortPolicyTest {
         check(!LegacyDiscovery.nativeDiscoveryManaged(unmanaged),"LAN suppression is scoped to a managed collection");
         check(!LegacyDiscovery.join(unmanaged,new ServerData("example.invalid:25565")),"Manual saved servers keep the native join path");
         check(LegacyDiscovery.join(unmanaged,new ServerData("e4steam-legacy-1.invalid")),"A stale synthetic discovery entry cannot fall through to DNS");
+        String publish = LegacyMessages.publishKey("ru_RU", "commands.publish.started");
+        check(String.format(Locale.ROOT, publish, "43120").equals("Порт локального сервера: 43120"),
+            "Russian success text matches the modern client and still shows the bound port");
+        check(LegacyMessages.publishKey("ru_RU", "commands.publish.failed").equals("commands.publish.failed"),
+            "Publication failure keeps the native message");
+        check(LegacyMessages.publishKey("en_US", "commands.publish.started").equals("commands.publish.started"),
+            "English already uses the modern success text");
+        check(LegacyMessages.reportsUnavailable("ru_RU").equals("Жалобы на игроков в этой версии недоступны."),
+            "Legacy reporting action explains the actual limitation");
         String emoji="😀".repeat(70);String clean=LegacyPublication.cleanName(emoji);check(clean.codePointCount(0,clean.length())==64&&!Character.isHighSurrogate(clean.charAt(clean.length()-1)),"Description bounds preserve complete Unicode code points");
         Path directory=Files.createTempDirectory("e4steam-legacy-policy-");Path registry=directory.resolve("registry.txt");
         try{

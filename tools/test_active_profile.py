@@ -16,10 +16,10 @@ class ActiveProfileDispatcherTests(unittest.TestCase):
         self.temp=tempfile.TemporaryDirectory()
         self.root=Path(self.temp.name)
         (self.root/'profiles').mkdir()
-        (self.root/'releases'/active.TAG).mkdir(parents=True)
+        (self.root/'releases'/active.V3_TAG).mkdir(parents=True)
         for name in (active.V2,active.V3):
             (self.root/'profiles'/f'{name}.json').write_bytes((active.ROOT/'profiles'/f'{name}.json').read_bytes())
-        receipt='releases/'+active.TAG+'/build-receipt.json'
+        receipt='releases/'+active.V3_TAG+'/build-receipt.json'
         (self.root/receipt).write_bytes((active.ROOT/receipt).read_bytes())
 
     def tearDown(self):self.temp.cleanup()
@@ -51,6 +51,38 @@ class ActiveProfileDispatcherTests(unittest.TestCase):
             document=active.verify_active(self.root)
         self.assertEqual(20,len(document['builds']))
 
+    def test_v4_only_replaces_the_legacy_artifact(self):
+        previous = self.select(active.V3)
+        candidate = json.loads((self.root/'components.json').read_bytes())
+        candidate['profile'] = active.V4
+        candidate['sourceCommit'] = '1' * 40
+        for row in candidate['builds']:
+            row['profile'] = active.V4
+        legacy = next(row for row in candidate['builds'] if row['loaders'] == ['LegacyFabric'])
+        prior_legacy = next(row for row in previous['builds'] if row['loaders'] == ['LegacyFabric'])
+        receipt = json.loads((self.root/'releases'/active.V3_TAG/'build-receipt.json').read_bytes())
+        receipt.update(fileName=build.NAME, sizeBytes=receipt['sizeBytes'] + 1, sha256='2' * 64)
+        release_dir = self.root/'releases'/build.TAG
+        release_dir.mkdir()
+        receipt_bytes = (json.dumps(receipt, indent=2, sort_keys=True) + '\n').encode()
+        (release_dir/'build-receipt.json').write_bytes(receipt_bytes)
+        url = f'https://github.com/MarkZamore/e4steam/releases/download/{build.TAG}/'
+        legacy.update(fileName=build.NAME, sizeBytes=receipt['sizeBytes'], sha256=receipt['sha256'],
+                      deliveryTag=build.TAG, downloadUrl=url + build.NAME)
+        legacy['derivation'].update(
+            sourceCommit=candidate['sourceCommit'],
+            sourceBuildReceipt=dict(fileName='build-receipt.json', sizeBytes=len(receipt_bytes),
+                                    sha256=hashlib.sha256(receipt_bytes).hexdigest(),
+                                    downloadUrl=url + 'build-receipt.json'),
+        )
+        self.rewrite_frozen_and_active(candidate)
+        self.assertEqual(candidate, active.verify_active(self.root))
+        self.assertEqual(previous, json.loads((self.root/'profiles'/f'{active.V3}.json').read_bytes()))
+        legacy['deliveryTag'] = prior_legacy['deliveryTag']
+        self.rewrite_frozen_and_active(candidate)
+        with self.assertRaisesRegex(ValueError, 'immutable legacy delivery'):
+            active.verify_active(self.root)
+
     def test_semantically_equal_but_byte_different_active_index_is_rejected(self):
         self.select(active.V3)
         with (self.root/'components.json').open('ab') as handle:handle.write(b'\n')
@@ -69,7 +101,7 @@ class ActiveProfileDispatcherTests(unittest.TestCase):
 
     def test_corrupt_frozen_receipt_is_rejected(self):
         self.select(active.V3)
-        path=self.root/'releases'/active.TAG/'build-receipt.json';path.write_bytes(path.read_bytes()+b'\n')
+        path=self.root/'releases'/active.V3_TAG/'build-receipt.json';path.write_bytes(path.read_bytes()+b'\n')
         with self.assertRaisesRegex(ValueError,'receipt pin'):active.verify_active(self.root)
 
     def test_legacy_source_port_cannot_claim_a_nonexistent_author_jar(self):

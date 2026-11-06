@@ -17,7 +17,10 @@ ROOT=Path(__file__).resolve().parents[1]
 SOURCE=ROOT/'source/e4steam'
 MODULE=SOURCE/'legacy-fabric-1.6.4'
 UPSTREAM='bdcea00e30ca519fa8190c0c5c04785d42b31dbc'
-NAME='e4steam-legacy-fabric-mc1.6.4-v0.3.4-lf164.1.jar'
+RELEASE_REVISION=2
+TAG=f'legacy-fabric-164-v{RELEASE_REVISION}'
+IMPLEMENTATION_VERSION=f'0.3.4-lf164.{RELEASE_REVISION}'
+NAME=f'e4steam-legacy-fabric-mc1.6.4-v{IMPLEMENTATION_VERSION}.jar'
 DEPENDENCIES=[
  ('com.code-disaster.steamworks4j','steamworks4j','1.10.0','2da3d053f0405b6aeb68f94ab281f8eb827e7a9fc66230b7efb077be8aec2d64',True),
  ('com.code-disaster.steamworks4j','steamworks4j-server','1.10.0','7abdee44d0c53f07f9504de249fe9630da14797976e3d89941cd63bafd67adba',True),
@@ -97,7 +100,10 @@ def build(output,java_home):
     for source,target in [('LICENSE','META-INF/LICENSE-e4steam.txt'),('NOTICE','META-INF/NOTICE-e4steam.txt'),('THIRD_PARTY_NOTICES.md','META-INF/THIRD_PARTY_NOTICES.md')]:
         data=source_bytes(SOURCE/source)
         entries[target]=data.replace(b'\n',b'\r\n') if source=='NOTICE' else data
-    entries['META-INF/MANIFEST.MF']=b'Manifest-Version: 1.0\nImplementation-Title: e4steam Legacy Fabric 1.6.4 port\nImplementation-Version: 0.3.4-lf164.1\n\n'
+    entries['META-INF/MANIFEST.MF']=(
+        'Manifest-Version: 1.0\nImplementation-Title: e4steam Legacy Fabric 1.6.4 port\n'
+        f'Implementation-Version: {IMPLEMENTATION_VERSION}\n\n'
+    ).encode('ascii')
     target=output/NAME
     with zipfile.ZipFile(target,'w',zipfile.ZIP_DEFLATED,compresslevel=9) as jar:
         for name,data in sorted(entries.items()):
@@ -115,5 +121,5 @@ def build(output,java_home):
     print(json.dumps({key:receipt[key] for key in ('fileName','sizeBytes','sha256')}))
 
 if __name__=='__main__':
-    parser=argparse.ArgumentParser();parser.add_argument('--out',type=Path,default=ROOT/'dist/legacy-fabric-164-v1');parser.add_argument('--java-home',type=Path,default=Path(os.environ.get('JAVA_HOME','C:/Tools/jdk-25.0.2')))
+    parser=argparse.ArgumentParser();parser.add_argument('--out',type=Path,default=ROOT/'dist'/TAG);parser.add_argument('--java-home',type=Path,default=Path(os.environ.get('JAVA_HOME','C:/Tools/jdk-25.0.2')))
     args=parser.parse_args();build(args.out.resolve(),args.java_home.resolve())
