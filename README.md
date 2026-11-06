@@ -1,8 +1,8 @@
 # Shared e4steam component for LANMinecraft
 
 This is MarkZamore's GitHub delivery location for the shared e4steam component.
-The active `native-lan-ui-v3` index selects twenty loader/Minecraft targets.
-It retains all nineteen V2 selections and adds the declared source-built
+The active `native-lan-ui-v4` index selects twenty loader/Minecraft targets.
+It retains all nineteen V2 selections and updates the declared source-built
 Legacy Fabric 1.6.4 port described in [the platform notes](LEGACY-FABRIC-164.md).
 Six modern derivatives hide the extra LAN Settings button/form and apply only
 current configured `lanOnlineMode` before native integrated publication.
@@ -26,19 +26,21 @@ are declared downstream distributions, not unmodified author releases.
 | `native-lan-ui-v1` | Immutable historical six UI derivatives and nineteen-target index |
 | `native-lan-ui-v2` | Immutable six UI/authentication-lifecycle derivatives and historical nineteen-target index |
 | `legacy-fabric-164-v1` | Immutable source-built Legacy Fabric 1.6.4 payload and build receipt |
-| `native-lan-ui-v3` | Current twenty-target canonical index and frozen profile |
+| `native-lan-ui-v3` | Historical twenty-target frozen profile and launcher offline fallback |
+| `legacy-fabric-164-v2` | Immutable Legacy Fabric 1.6.4 publication and pause-slot update |
+| `native-lan-ui-v4` | Current twenty-target canonical index and frozen profile |
 
 `components.json` is the canonical schema2 index, and `SHA256SUMS.txt` covers its
 exact selections. Rows retain author provenance separately from delivery
 filename/SHA/size/URL/tag. Three capabilities preserve hidden or absent extra LAN
 UI, configured modern native-publish online mode, and original Steam authentication.
-[The frozen V3 profile](profiles/native-lan-ui-v3.json) must match the active
+[The frozen V4 profile](profiles/native-lan-ui-v4.json) must match the active
 selection. Author inventories and older profiles remain immutable history.
 
 The canonical index is
 `https://raw.githubusercontent.com/MarkZamore/e4steam/main/components.json`.
 Modern payloads use this account's `native-lan-ui-v2` URLs; unchanged retro payloads
-retain `v0.3.2` URLs. The new source port uses `legacy-fabric-164-v1` URLs and
+retain `v0.3.2` URLs. The source port uses `legacy-fabric-164-v2` URLs and
 does not claim a nonexistent original author JAR. A compatible launcher verifies/caches this shared index and
 JAR pins. Launcher429 predates the index consumer and requires the separate
 launcher update; publishing V2 does not change its compiled V1 pins. UI/auth
@@ -80,6 +82,14 @@ one-account client/world/publication and untrusted-login evidence; two-account
 Steam gameplay and remote player/cape visuals remain NOT RUN. The source port
 has its own pinned JDK 25.0.2 Linux/Windows reproduction job; modern JDK 21
 builds and historical V2 tooling remain separate.
+
+[The V4 public verification](profiles/native-lan-ui-v4-public-verification.json)
+records size and SHA256 checks for all twenty public JARs and the four new release
+assets. [All four CI jobs](https://github.com/MarkZamore/e4steam/actions/runs/42184457945)
+passed on the frozen release commit `347e981f583ae8064c83b26f8c1ca0d7440d216b`.
+Native 1.6.4 QA exercised the actual pause and Share calls, Russian publication
+chat, the Reports notice and return, and the authored quit gate. Actual
+two-account Steam gameplay was not run for this release.
 
 Author license/NOTICE/third-party records remain in every JAR and `upstream-notices`.
 See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md), [historical V1](NATIVE-UI.md),
