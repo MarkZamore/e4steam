@@ -102,7 +102,8 @@ def require_ci(run_id):
             or run.get('path') != '.github/workflows/native-ui.yml'):
         raise ValueError('Exact native profile CI has not passed for the release commit')
     jobs = json.loads(components.gh('api', endpoint + '/jobs'))['jobs']
-    expected = {f'{job} ({os})' for job in ('build', 'legacy-port') for os in ('ubuntu-latest', 'windows-latest')}
+    expected = {'build (ubuntu-latest)', 'build (windows-latest)',
+                'legacy-port (ubuntu-24.04)', 'legacy-port (windows-latest)'}
     if (len(jobs) != len(expected) or {job['name'] for job in jobs} != expected
             or any(job.get('conclusion') != 'success' for job in jobs)):
         raise ValueError('The exact modern and legacy Linux/Windows jobs must all pass')
