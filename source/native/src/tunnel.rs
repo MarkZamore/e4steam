@@ -24,13 +24,19 @@ pub(crate) trait Transport {
 impl Transport for NetConnection {
     fn receive(&mut self, limit: usize) -> io::Result<Vec<Vec<u8>>> {
         self.receive_messages(limit)
-            .map(|messages| {
-                messages
-                    .into_iter()
-                    .map(|message| message.data().to_vec())
-                    .collect()
+            .map_err(io::Error::other)?
+            .into_iter()
+            .map(|message| {
+                let data = message.data();
+                if data.is_empty() || data.len() > FRAME_BYTES {
+                    return Err(io::Error::new(
+                        io::ErrorKind::InvalidData,
+                        "Invalid Steam game frame.",
+                    ));
+                }
+                Ok(data.to_vec())
             })
-            .map_err(io::Error::other)
+            .collect()
     }
     fn send(&mut self, bytes: &[u8]) -> io::Result<bool> {
         match self.send_message(bytes, SendFlags::RELIABLE) {

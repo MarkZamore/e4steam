@@ -351,6 +351,7 @@ impl Worker {
                         .has_friend(FriendFlags::IMMEDIATE)
                 {
                     self.invited_join.clear();
+                    self.shared.lock().unwrap().pending_join = None;
                     request_lobby_data(lobby);
                     self.pending_invite = Some((lobby, friend, Instant::now()));
                     self.clear_error();
@@ -778,6 +779,7 @@ impl HostPeer {
                 tunnel,
                 &mut self.remote_closed,
                 "host",
+                true,
             );
         }
         let Some(connection) = &mut self.connection else {
@@ -834,7 +836,8 @@ impl HostPeer {
 impl Guest {
     fn poll(&mut self, steam: &Client, nickname: &str) -> Result<bool, String> {
         let matchmaking = steam.matchmaking();
-        if matchmaking.lobby_owner(self.lobby) != self.owner {
+        let owner_current = matchmaking.lobby_owner(self.lobby) == self.owner;
+        if !owner_current && !self.ready {
             return Err("The Steam host has closed or left the world.".into());
         }
         if !self.ready && Instant::now() > self.deadline {
@@ -876,6 +879,7 @@ impl Guest {
                 self.tunnel.as_mut().expect("ready Steam tunnel"),
                 &mut self.remote_closed,
                 "guest",
+                owner_current,
             )
             .map_err(|error| format!("Steam game tunnel: {error}"));
         }
@@ -951,6 +955,10 @@ fn connection_open(state: Option<NetworkingConnectionState>) -> bool {
     )
 }
 
+fn may_send_game_data(state: Option<NetworkingConnectionState>, owner_current: bool) -> bool {
+    owner_current && connection_open(state)
+}
+
 fn drain_expired(started: Instant, now: Instant) -> bool {
     now.saturating_duration_since(started) >= CLOSE_DRAIN
 }
@@ -963,15 +971,26 @@ fn poll_tunnel(
     tunnel: &mut Tunnel,
     remote_closed: &mut Option<Instant>,
     side: &str,
+    owner_current: bool,
 ) -> io::Result<bool> {
     let Some(connection) = slot.as_mut() else {
         return Ok(false);
     };
     let state = connection.info().ok().and_then(|info| info.state().ok());
-    let open = connection_open(state);
+    let open = may_send_game_data(state, owner_current);
     if !open && remote_closed.is_none() {
         *remote_closed = Some(Instant::now());
-        connection_diagnostic(steam, connection, tunnel, side, "remote closed; draining");
+        connection_diagnostic(
+            steam,
+            connection,
+            tunnel,
+            side,
+            if owner_current {
+                "remote closed; draining"
+            } else {
+                "lobby owner changed; draining authenticated tail"
+            },
+        );
     }
     if remote_closed.is_some_and(|started| drain_expired(started, Instant::now())) {
         connection_diagnostic(steam, connection, tunnel, side, "receive drain expired");
@@ -1145,6 +1164,27 @@ mod tests {
         ] {
             assert!(!connection_open(state));
         }
+    }
+
+    #[test]
+    fn changing_lobby_owner_forces_receive_only_on_an_existing_handle() {
+        assert!(may_send_game_data(
+            Some(NetworkingConnectionState::Connected),
+            true
+        ));
+        assert!(!may_send_game_data(
+            Some(NetworkingConnectionState::Connected),
+            false
+        ));
+        assert!(!may_send_game_data(
+            Some(NetworkingConnectionState::FindingRoute),
+            false
+        ));
+        assert!(!may_send_game_data(
+            Some(NetworkingConnectionState::ClosedByPeer),
+            true
+        ));
+        assert!(!may_send_game_data(None, true));
     }
 
     #[test]

@@ -60,6 +60,16 @@ terminal draining. `cargo clippy --locked --all-targets -- -D warnings`,
 two-account Steam/game run; overlay, relay and exact-client acceptance remain
 the consuming pack's responsibility.
 
+Follow-up review: an already authenticated guest may drain received tail bytes
+when lobby ownership changes, but sends no new game bytes and cannot start a
+handshake with the changed owner. Pre-READY ownership checks stay strict.
+The guaranteed scope is forwarding bytes already available on an established
+connection during an ordinary per-peer EOF/timeout while the host listener is
+alive. Whole-world withdrawal is best effort: Valve closes accepted connections
+ungracefully when its listen socket is destroyed. We do not retain that listener
+after unpublish, because doing so would block immediate sharing on virtual port
+481. Two-account world-shutdown delivery remains NOT RUN.
+
 ## Overlay invitation handoff audit, 2026-11-08
 
 Previously the overlay callback could reach the frontend only if its target was
@@ -84,3 +94,9 @@ directory entry, one-shot/target binding, replaced intent, expiry and clearing.
 These are component regressions, not a two-account overlay acceptance result.
 Valve documents the inviter field as the friend joined through:
 https://partner.steamgames.com/doc/api/isteamfriends#GameLobbyJoinRequested_t
+
+The combined follow-up passed 20 native tests (zero failed or ignored) and
+Clippy with warnings denied. The additional owner-change regression verifies
+that a still-connected handle cannot send new game bytes after ownership
+changes. A newer explicit invitation also revokes an older pending frontend
+handoff while its own fresh metadata is being checked.
