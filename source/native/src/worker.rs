@@ -1,5 +1,8 @@
 use crate::{
-    Control, PeerIdentity, Shared, WorldOffer, lobby_address, parse_lobby_address, tunnel::Tunnel,
+    Control, PeerIdentity, Shared, WorldOffer,
+    invitation::InvitationHandoff,
+    lobby_address, parse_lobby_address,
+    tunnel::{Pump, Tunnel},
     valid_nickname, valid_steam_id, valid_world_title,
 };
 use std::{
@@ -32,6 +35,7 @@ const POLL: Duration = Duration::from_millis(4);
 const DISCOVER: Duration = Duration::from_secs(1);
 const HANDSHAKE: Duration = Duration::from_secs(30);
 const CONNECT_LOCAL: Duration = Duration::from_millis(250);
+const CLOSE_DRAIN: Duration = Duration::from_secs(2);
 const LOBBY_PROPAGATION: Duration = Duration::from_millis(500);
 const FORMAT_KEY: &str = "lanmc_native";
 const FORMAT_VALUE: &str = "1";
@@ -80,6 +84,7 @@ struct Worker {
     discovered: HashMap<LobbyId, SteamId>,
     fresh_lobbies: HashMap<LobbyId, Instant>,
     pending_invite: Option<(LobbyId, SteamId, Instant)>,
+    invited_join: InvitationHandoff,
     control: Arc<Control>,
     observed_epoch: u64,
 }
@@ -115,9 +120,10 @@ struct Host {
 
 struct HostPeer {
     deadline: Instant,
-    connection: NetConnection,
+    connection: Option<NetConnection>,
     tunnel: Option<Tunnel>,
     claim_addr: Option<SocketAddr>,
+    remote_closed: Option<Instant>,
 }
 
 struct Guest {
@@ -131,6 +137,7 @@ struct Guest {
     deadline: Instant,
     hello_sent: bool,
     ready: bool,
+    remote_closed: Option<Instant>,
 }
 
 pub(crate) fn run(
@@ -197,6 +204,7 @@ pub(crate) fn run(
         discovered: HashMap::new(),
         fresh_lobbies: HashMap::new(),
         pending_invite: None,
+        invited_join: InvitationHandoff::default(),
         control,
         observed_epoch: 0,
     };
@@ -300,10 +308,15 @@ impl Worker {
                     return Err("Another Steam session is active.".into());
                 }
                 let lobby = LobbyId::from_raw(lobby_id);
-                let owner = self
-                    .discovered
-                    .get(&lobby)
-                    .copied()
+                // Keep a verified overlay action while the frontend saves its
+                // current world; periodic discovery may not list this lobby.
+                let invited_owner = self
+                    .invited_join
+                    .take_owner(lobby_id, Instant::now(), HANDSHAKE)
+                    .map(SteamId::from_raw);
+                self.pending_invite = None;
+                let owner = invited_owner
+                    .or_else(|| self.discovered.get(&lobby).copied())
                     .filter(|owner| self.world_offer(lobby, *owner).is_some())
                     .ok_or_else(|| "The Steam world is no longer available.".to_string())?;
                 let action = self.action();
@@ -337,8 +350,14 @@ impl Worker {
                         .get_friend(friend)
                         .has_friend(FriendFlags::IMMEDIATE)
                 {
+                    self.invited_join.clear();
+                    self.shared.lock().unwrap().pending_join = None;
                     request_lobby_data(lobby);
                     self.pending_invite = Some((lobby, friend, Instant::now()));
+                    self.clear_error();
+                    eprintln!(
+                        "[LANMinecraft Steam] Overlay join requested; checking fresh lobby details."
+                    );
                 }
             }
             Completion::LobbyData(update) => {
@@ -487,6 +506,7 @@ impl Worker {
             deadline: Instant::now() + HANDSHAKE,
             hello_sent: false,
             ready: false,
+            remote_closed: None,
         })
     }
 
@@ -536,16 +556,41 @@ impl Worker {
         if since.elapsed() > HANDSHAKE {
             self.pending_invite = None;
             self.error("The invited Steam world is no longer available.");
-        } else if self
+        } else if let Some(owner) = self.invited_world_owner(lobby, friend) {
+            self.pending_invite = None;
+            self.invited_join
+                .authorize(lobby.raw(), owner.raw(), Instant::now());
+            self.shared.lock().unwrap().pending_join = Some(lobby.raw());
+            eprintln!("[LANMinecraft Steam] Overlay join verified; handing the world to the game.");
+        }
+    }
+
+    fn invited_world_owner(&self, lobby: LobbyId, inviter: SteamId) -> Option<SteamId> {
+        if !self
             .fresh_lobbies
             .get(&lobby)
             .is_some_and(|time| time.elapsed() <= DISCOVERY_TTL)
-            && self.discovered.get(&lobby) == Some(&friend)
-            && self.world_offer(lobby, friend).is_some()
+            || !self
+                .steam
+                .friends()
+                .get_friend(inviter)
+                .has_friend(FriendFlags::IMMEDIATE)
         {
-            self.pending_invite = None;
-            self.shared.lock().unwrap().pending_join = Some(lobby.raw());
+            return None;
         }
+        // Valve reports the friend joined THROUGH, who can be a guest rather
+        // than the owner. world_offer requires that the advertised host is an
+        // immediate friend with the exact variant. open_guest independently
+        // checks the actual Steam owner and authenticated sharing generation.
+        let owner = self
+            .steam
+            .matchmaking()
+            .lobby_data(lobby, OWNER_KEY)?
+            .parse::<u64>()
+            .ok()
+            .filter(|owner| valid_steam_id(*owner))
+            .map(SteamId::from_raw)?;
+        self.world_offer(lobby, owner).map(|_| owner)
     }
 
     fn world_offer(&self, lobby: LobbyId, owner: SteamId) -> Option<WorldOffer> {
@@ -689,9 +734,10 @@ impl Host {
                     if let Some(peer) = event.remote().steam_id().filter(|peer| admitted(*peer)) {
                         self.peers.entry(peer).or_insert_with(|| HostPeer {
                             deadline: Instant::now() + HANDSHAKE,
-                            connection: event.take_connection(),
+                            connection: Some(event.take_connection()),
                             tunnel: None,
                             claim_addr: None,
+                            remote_closed: None,
                         });
                     }
                 }
@@ -703,7 +749,7 @@ impl Host {
         self.peers.retain(|peer, connection| {
             let alive = admitted(*peer)
                 && connection
-                    .poll(*peer, self.local_port, &self.generation, shared)
+                    .poll(steam, *peer, self.local_port, &self.generation, shared)
                     .unwrap_or_else(|error| {
                         network_failure(&error);
                         false
@@ -720,27 +766,33 @@ impl Host {
 impl HostPeer {
     fn poll(
         &mut self,
+        steam: &Client,
         peer: SteamId,
         port: u16,
         generation: &Generation,
         shared: &Mutex<Shared>,
     ) -> io::Result<bool> {
-        let state = self
-            .connection
-            .info()
-            .ok()
-            .and_then(|info| info.state().ok());
+        if let Some(tunnel) = &mut self.tunnel {
+            return poll_tunnel(
+                steam,
+                &mut self.connection,
+                tunnel,
+                &mut self.remote_closed,
+                "host",
+                true,
+            );
+        }
+        let Some(connection) = &mut self.connection else {
+            return Ok(false);
+        };
+        let state = connection.info().ok().and_then(|info| info.state().ok());
         if state != Some(NetworkingConnectionState::Connected) {
             return Ok(false);
-        }
-        if let Some(tunnel) = &mut self.tunnel {
-            return tunnel.pump(&mut self.connection);
         }
         if Instant::now() > self.deadline {
             return Ok(false);
         }
-        let Some(message) = self
-            .connection
+        let Some(message) = connection
             .receive_messages(1)
             .map_err(io::Error::other)?
             .pop()
@@ -764,7 +816,7 @@ impl HostPeer {
                 nickname: nickname.to_owned(),
             },
             || {
-                self.connection
+                connection
                     .send_message(ACK, SendFlags::RELIABLE)
                     .map_err(io::Error::other)
             },
@@ -784,7 +836,8 @@ impl HostPeer {
 impl Guest {
     fn poll(&mut self, steam: &Client, nickname: &str) -> Result<bool, String> {
         let matchmaking = steam.matchmaking();
-        if matchmaking.lobby_owner(self.lobby) != self.owner {
+        let owner_current = matchmaking.lobby_owner(self.lobby) == self.owner;
+        if !owner_current && !self.ready {
             return Err("The Steam host has closed or left the world.".into());
         }
         if !self.ready && Instant::now() > self.deadline {
@@ -804,6 +857,32 @@ impl Guest {
         };
         let info = connection.info().ok();
         let state = info.as_ref().and_then(|info| info.state().ok());
+        if self.ready {
+            // This is the same authenticated handle accepted before READY.
+            // Validate a live handle as before; then drain received tail bytes
+            // even when its remote state has already changed to closed.
+            if connection_open(state)
+                && info
+                    .as_ref()
+                    .and_then(|info| info.identity_remote())
+                    .and_then(|identity| identity.steam_id())
+                    != Some(self.owner)
+            {
+                return Err(
+                    "The Steam connection's authenticated host did not match the lobby owner."
+                        .into(),
+                );
+            }
+            return poll_tunnel(
+                steam,
+                &mut self.connection,
+                self.tunnel.as_mut().expect("ready Steam tunnel"),
+                &mut self.remote_closed,
+                "guest",
+                owner_current,
+            )
+            .map_err(|error| format!("Steam game tunnel: {error}"));
+        }
         if !matches!(
             state,
             Some(
@@ -812,9 +891,6 @@ impl Guest {
                     | NetworkingConnectionState::Connected
             )
         ) {
-            if self.ready {
-                return Err("The Steam game connection ended.".into());
-            }
             self.connection = None;
             self.hello_sent = false;
             return Ok(true);
@@ -827,14 +903,6 @@ impl Guest {
             return Err(
                 "The Steam connection's authenticated host did not match the lobby owner.".into(),
             );
-        }
-        if self.ready {
-            return self
-                .tunnel
-                .as_mut()
-                .expect("ready Steam tunnel")
-                .pump(connection)
-                .map_err(|error| format!("Steam game tunnel: {error}"));
         }
         if let Some(listener) = &self.listener {
             match listener.accept() {
@@ -874,6 +942,126 @@ impl Guest {
         }
         Ok(true)
     }
+}
+
+fn connection_open(state: Option<NetworkingConnectionState>) -> bool {
+    matches!(
+        state,
+        Some(
+            NetworkingConnectionState::Connecting
+                | NetworkingConnectionState::FindingRoute
+                | NetworkingConnectionState::Connected
+        )
+    )
+}
+
+fn may_send_game_data(state: Option<NetworkingConnectionState>, owner_current: bool) -> bool {
+    owner_current && connection_open(state)
+}
+
+fn drain_expired(started: Instant, now: Instant) -> bool {
+    now.saturating_duration_since(started) >= CLOSE_DRAIN
+}
+
+/// Once authenticated, retain a terminal handle only long enough to drain its
+/// received bytes. Every poll remains nonblocking, including a stalled game.
+fn poll_tunnel(
+    steam: &Client,
+    slot: &mut Option<NetConnection>,
+    tunnel: &mut Tunnel,
+    remote_closed: &mut Option<Instant>,
+    side: &str,
+    owner_current: bool,
+) -> io::Result<bool> {
+    let Some(connection) = slot.as_mut() else {
+        return Ok(false);
+    };
+    let state = connection.info().ok().and_then(|info| info.state().ok());
+    let open = may_send_game_data(state, owner_current);
+    if !open && remote_closed.is_none() {
+        *remote_closed = Some(Instant::now());
+        connection_diagnostic(
+            steam,
+            connection,
+            tunnel,
+            side,
+            if owner_current {
+                "remote closed; draining"
+            } else {
+                "lobby owner changed; draining authenticated tail"
+            },
+        );
+    }
+    if remote_closed.is_some_and(|started| drain_expired(started, Instant::now())) {
+        connection_diagnostic(steam, connection, tunnel, side, "receive drain expired");
+        close_connection(slot, false);
+        return Ok(false);
+    }
+    match tunnel.pump(connection, open) {
+        Ok(Pump::Open) => Ok(true),
+        Ok(Pump::LocalClosed) => {
+            connection_diagnostic(
+                steam,
+                connection,
+                tunnel,
+                side,
+                "local game closed; flushing reliable tail",
+            );
+            // NetConnection::drop uses linger=false and would discard the
+            // game's final Disconnect packet queued by this very poll.
+            close_connection(slot, true);
+            Ok(false)
+        }
+        Ok(Pump::RemoteDrained) => {
+            close_connection(slot, false);
+            Ok(false)
+        }
+        Err(error) => {
+            connection_diagnostic(steam, connection, tunnel, side, "tunnel error");
+            close_connection(slot, open);
+            Err(error)
+        }
+    }
+}
+
+fn close_connection(slot: &mut Option<NetConnection>, linger: bool) {
+    if let Some(connection) = slot.take() {
+        if linger {
+            connection.flush_messages().ok();
+        }
+        connection.close(
+            NetConnectionEnd::App(AppNetConnectionEnd::generic_normal()),
+            Some("Local game stream closed"),
+            linger,
+        );
+    }
+}
+
+/// One compact terminal snapshot, never packet payloads, lobby secrets or
+/// identities. The game channel is separate from the launcher's Steam channel.
+fn connection_diagnostic(
+    steam: &Client,
+    connection: &NetConnection,
+    tunnel: &Tunnel,
+    side: &str,
+    event: &str,
+) {
+    let info = connection.info().ok();
+    let state = info.as_ref().and_then(|info| info.state().ok());
+    let reason = info.as_ref().and_then(|info| info.end_reason());
+    let (local_in, local_out) = tunnel.queued_bytes();
+    let status = steam
+        .networking_sockets()
+        .get_realtime_connection_status(connection, 0)
+        .ok()
+        .map(|(status, _)| status);
+    let metrics = status.map(|status| format!(
+        "ping_ms={}, pending_reliable_bytes={}, unacked_reliable_bytes={}, send_rate_bytes_s={}",
+        status.ping(), status.pending_reliable(), status.sent_unacked_reliable(), status.send_rate_bytes_per_sec(),
+    )).unwrap_or_else(|| "status unavailable".into());
+    eprintln!(
+        "[LANMinecraft Steam] Game transport {side}: {event}; state={state:?}, end_reason={reason:?}, local_in_bytes={local_in}, local_out_bytes={local_out}, {metrics}."
+    );
 }
 
 /// READY releases the guest's game bytes. Install its one-use identity first,
@@ -949,6 +1137,55 @@ fn read_hello<'a>(hello: &'a [u8], generation: &Generation) -> Option<&'a str> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn terminal_receive_drain_is_bounded_without_shortening_live_connections() {
+        let now = Instant::now();
+        assert!(!drain_expired(
+            now,
+            now + CLOSE_DRAIN - Duration::from_millis(1)
+        ));
+        assert!(drain_expired(now, now + CLOSE_DRAIN));
+        assert!(drain_expired(
+            now,
+            now + CLOSE_DRAIN + Duration::from_secs(60)
+        ));
+        for state in [
+            NetworkingConnectionState::Connecting,
+            NetworkingConnectionState::FindingRoute,
+            NetworkingConnectionState::Connected,
+        ] {
+            assert!(connection_open(Some(state)));
+        }
+        for state in [
+            None,
+            Some(NetworkingConnectionState::ClosedByPeer),
+            Some(NetworkingConnectionState::ProblemDetectedLocally),
+        ] {
+            assert!(!connection_open(state));
+        }
+    }
+
+    #[test]
+    fn changing_lobby_owner_forces_receive_only_on_an_existing_handle() {
+        assert!(may_send_game_data(
+            Some(NetworkingConnectionState::Connected),
+            true
+        ));
+        assert!(!may_send_game_data(
+            Some(NetworkingConnectionState::Connected),
+            false
+        ));
+        assert!(!may_send_game_data(
+            Some(NetworkingConnectionState::FindingRoute),
+            false
+        ));
+        assert!(!may_send_game_data(
+            Some(NetworkingConnectionState::ClosedByPeer),
+            true
+        ));
+        assert!(!may_send_game_data(None, true));
+    }
 
     #[test]
     fn ready_observes_the_identity_claim_and_failed_ack_rolls_it_back() {
