@@ -1,5 +1,6 @@
 use crate::{
-    Control, PeerIdentity, Shared, WorldOffer, lobby_address, parse_lobby_address, tunnel::Tunnel,
+    Control, PeerIdentity, Shared, WorldOffer, lobby_address, parse_lobby_address,
+    tunnel::{Pump, Tunnel},
     valid_nickname, valid_steam_id, valid_world_title,
 };
 use std::{
@@ -32,6 +33,7 @@ const POLL: Duration = Duration::from_millis(4);
 const DISCOVER: Duration = Duration::from_secs(1);
 const HANDSHAKE: Duration = Duration::from_secs(30);
 const CONNECT_LOCAL: Duration = Duration::from_millis(250);
+const CLOSE_DRAIN: Duration = Duration::from_secs(2);
 const LOBBY_PROPAGATION: Duration = Duration::from_millis(500);
 const FORMAT_KEY: &str = "lanmc_native";
 const FORMAT_VALUE: &str = "1";
@@ -115,9 +117,10 @@ struct Host {
 
 struct HostPeer {
     deadline: Instant,
-    connection: NetConnection,
+    connection: Option<NetConnection>,
     tunnel: Option<Tunnel>,
     claim_addr: Option<SocketAddr>,
+    remote_closed: Option<Instant>,
 }
 
 struct Guest {
@@ -131,6 +134,7 @@ struct Guest {
     deadline: Instant,
     hello_sent: bool,
     ready: bool,
+    remote_closed: Option<Instant>,
 }
 
 pub(crate) fn run(
@@ -487,6 +491,7 @@ impl Worker {
             deadline: Instant::now() + HANDSHAKE,
             hello_sent: false,
             ready: false,
+            remote_closed: None,
         })
     }
 
@@ -689,9 +694,10 @@ impl Host {
                     if let Some(peer) = event.remote().steam_id().filter(|peer| admitted(*peer)) {
                         self.peers.entry(peer).or_insert_with(|| HostPeer {
                             deadline: Instant::now() + HANDSHAKE,
-                            connection: event.take_connection(),
+                            connection: Some(event.take_connection()),
                             tunnel: None,
                             claim_addr: None,
+                            remote_closed: None,
                         });
                     }
                 }
@@ -703,7 +709,7 @@ impl Host {
         self.peers.retain(|peer, connection| {
             let alive = admitted(*peer)
                 && connection
-                    .poll(*peer, self.local_port, &self.generation, shared)
+                    .poll(steam, *peer, self.local_port, &self.generation, shared)
                     .unwrap_or_else(|error| {
                         network_failure(&error);
                         false
@@ -720,27 +726,32 @@ impl Host {
 impl HostPeer {
     fn poll(
         &mut self,
+        steam: &Client,
         peer: SteamId,
         port: u16,
         generation: &Generation,
         shared: &Mutex<Shared>,
     ) -> io::Result<bool> {
-        let state = self
-            .connection
-            .info()
-            .ok()
-            .and_then(|info| info.state().ok());
+        if let Some(tunnel) = &mut self.tunnel {
+            return poll_tunnel(
+                steam,
+                &mut self.connection,
+                tunnel,
+                &mut self.remote_closed,
+                "host",
+            );
+        }
+        let Some(connection) = &mut self.connection else {
+            return Ok(false);
+        };
+        let state = connection.info().ok().and_then(|info| info.state().ok());
         if state != Some(NetworkingConnectionState::Connected) {
             return Ok(false);
-        }
-        if let Some(tunnel) = &mut self.tunnel {
-            return tunnel.pump(&mut self.connection);
         }
         if Instant::now() > self.deadline {
             return Ok(false);
         }
-        let Some(message) = self
-            .connection
+        let Some(message) = connection
             .receive_messages(1)
             .map_err(io::Error::other)?
             .pop()
@@ -764,7 +775,7 @@ impl HostPeer {
                 nickname: nickname.to_owned(),
             },
             || {
-                self.connection
+                connection
                     .send_message(ACK, SendFlags::RELIABLE)
                     .map_err(io::Error::other)
             },
@@ -804,6 +815,31 @@ impl Guest {
         };
         let info = connection.info().ok();
         let state = info.as_ref().and_then(|info| info.state().ok());
+        if self.ready {
+            // This is the same authenticated handle accepted before READY.
+            // Validate a live handle as before; then drain received tail bytes
+            // even when its remote state has already changed to closed.
+            if connection_open(state)
+                && info
+                    .as_ref()
+                    .and_then(|info| info.identity_remote())
+                    .and_then(|identity| identity.steam_id())
+                    != Some(self.owner)
+            {
+                return Err(
+                    "The Steam connection's authenticated host did not match the lobby owner."
+                        .into(),
+                );
+            }
+            return poll_tunnel(
+                steam,
+                &mut self.connection,
+                self.tunnel.as_mut().expect("ready Steam tunnel"),
+                &mut self.remote_closed,
+                "guest",
+            )
+            .map_err(|error| format!("Steam game tunnel: {error}"));
+        }
         if !matches!(
             state,
             Some(
@@ -812,9 +848,6 @@ impl Guest {
                     | NetworkingConnectionState::Connected
             )
         ) {
-            if self.ready {
-                return Err("The Steam game connection ended.".into());
-            }
             self.connection = None;
             self.hello_sent = false;
             return Ok(true);
@@ -827,14 +860,6 @@ impl Guest {
             return Err(
                 "The Steam connection's authenticated host did not match the lobby owner.".into(),
             );
-        }
-        if self.ready {
-            return self
-                .tunnel
-                .as_mut()
-                .expect("ready Steam tunnel")
-                .pump(connection)
-                .map_err(|error| format!("Steam game tunnel: {error}"));
         }
         if let Some(listener) = &self.listener {
             match listener.accept() {
@@ -874,6 +899,111 @@ impl Guest {
         }
         Ok(true)
     }
+}
+
+fn connection_open(state: Option<NetworkingConnectionState>) -> bool {
+    matches!(
+        state,
+        Some(
+            NetworkingConnectionState::Connecting
+                | NetworkingConnectionState::FindingRoute
+                | NetworkingConnectionState::Connected
+        )
+    )
+}
+
+fn drain_expired(started: Instant, now: Instant) -> bool {
+    now.saturating_duration_since(started) >= CLOSE_DRAIN
+}
+
+/// Once authenticated, retain a terminal handle only long enough to drain its
+/// received bytes. Every poll remains nonblocking, including a stalled game.
+fn poll_tunnel(
+    steam: &Client,
+    slot: &mut Option<NetConnection>,
+    tunnel: &mut Tunnel,
+    remote_closed: &mut Option<Instant>,
+    side: &str,
+) -> io::Result<bool> {
+    let Some(connection) = slot.as_mut() else {
+        return Ok(false);
+    };
+    let state = connection.info().ok().and_then(|info| info.state().ok());
+    let open = connection_open(state);
+    if !open && remote_closed.is_none() {
+        *remote_closed = Some(Instant::now());
+        connection_diagnostic(steam, connection, tunnel, side, "remote closed; draining");
+    }
+    if remote_closed.is_some_and(|started| drain_expired(started, Instant::now())) {
+        connection_diagnostic(steam, connection, tunnel, side, "receive drain expired");
+        close_connection(slot, false);
+        return Ok(false);
+    }
+    match tunnel.pump(connection, open) {
+        Ok(Pump::Open) => Ok(true),
+        Ok(Pump::LocalClosed) => {
+            connection_diagnostic(
+                steam,
+                connection,
+                tunnel,
+                side,
+                "local game closed; flushing reliable tail",
+            );
+            // NetConnection::drop uses linger=false and would discard the
+            // game's final Disconnect packet queued by this very poll.
+            close_connection(slot, true);
+            Ok(false)
+        }
+        Ok(Pump::RemoteDrained) => {
+            close_connection(slot, false);
+            Ok(false)
+        }
+        Err(error) => {
+            connection_diagnostic(steam, connection, tunnel, side, "tunnel error");
+            close_connection(slot, open);
+            Err(error)
+        }
+    }
+}
+
+fn close_connection(slot: &mut Option<NetConnection>, linger: bool) {
+    if let Some(connection) = slot.take() {
+        if linger {
+            connection.flush_messages().ok();
+        }
+        connection.close(
+            NetConnectionEnd::App(AppNetConnectionEnd::generic_normal()),
+            Some("Local game stream closed"),
+            linger,
+        );
+    }
+}
+
+/// One compact terminal snapshot, never packet payloads, lobby secrets or
+/// identities. The game channel is separate from the launcher's Steam channel.
+fn connection_diagnostic(
+    steam: &Client,
+    connection: &NetConnection,
+    tunnel: &Tunnel,
+    side: &str,
+    event: &str,
+) {
+    let info = connection.info().ok();
+    let state = info.as_ref().and_then(|info| info.state().ok());
+    let reason = info.as_ref().and_then(|info| info.end_reason());
+    let (local_in, local_out) = tunnel.queued_bytes();
+    let status = steam
+        .networking_sockets()
+        .get_realtime_connection_status(connection, 0)
+        .ok()
+        .map(|(status, _)| status);
+    let metrics = status.map(|status| format!(
+        "ping_ms={}, pending_reliable_bytes={}, unacked_reliable_bytes={}, send_rate_bytes_s={}",
+        status.ping(), status.pending_reliable(), status.sent_unacked_reliable(), status.send_rate_bytes_per_sec(),
+    )).unwrap_or_else(|| "status unavailable".into());
+    eprintln!(
+        "[LANMinecraft Steam] Game transport {side}: {event}; state={state:?}, end_reason={reason:?}, local_in_bytes={local_in}, local_out_bytes={local_out}, {metrics}."
+    );
 }
 
 /// READY releases the guest's game bytes. Install its one-use identity first,
@@ -949,6 +1079,34 @@ fn read_hello<'a>(hello: &'a [u8], generation: &Generation) -> Option<&'a str> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn terminal_receive_drain_is_bounded_without_shortening_live_connections() {
+        let now = Instant::now();
+        assert!(!drain_expired(
+            now,
+            now + CLOSE_DRAIN - Duration::from_millis(1)
+        ));
+        assert!(drain_expired(now, now + CLOSE_DRAIN));
+        assert!(drain_expired(
+            now,
+            now + CLOSE_DRAIN + Duration::from_secs(60)
+        ));
+        for state in [
+            NetworkingConnectionState::Connecting,
+            NetworkingConnectionState::FindingRoute,
+            NetworkingConnectionState::Connected,
+        ] {
+            assert!(connection_open(Some(state)));
+        }
+        for state in [
+            None,
+            Some(NetworkingConnectionState::ClosedByPeer),
+            Some(NetworkingConnectionState::ProblemDetectedLocally),
+        ] {
+            assert!(!connection_open(state));
+        }
+    }
 
     #[test]
     fn ready_observes_the_identity_claim_and_failed_ack_rolls_it_back() {

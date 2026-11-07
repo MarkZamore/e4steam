@@ -32,3 +32,30 @@ the verification script also checked its Valve signature. Real overlay
 invitations, two-account Steam relay, world persistence and network performance
 under chunk streaming remain NOT RUN by this component audit. The exact pack
 clients must complete their own acceptance before publication.
+
+## Disconnect delivery audit, 2026-11-08
+
+Reviewed base: `faa25063441b83f589caab505dfefda8932e4fe4`.
+The game may enqueue its final Disconnect and then close/reset the local stream
+in one worker poll. The previous implicit NetConnection drop used linger=false,
+discarding unsent reliable messages. An established receiver also rejected a
+terminal Steam state before draining its queued messages. The bridge now
+explicitly flushes and closes local EOF/reset with linger=true, drains received
+tail bytes after a remote close, and bounds that nonblocking receive drain to
+two seconds if the local game is backpressured. Existing identity, membership,
+generation, cancellation and claim checks remain in place.
+
+Terminal diagnostic snapshots include the separate game connection's state,
+end reason, pending/unacknowledged reliable bytes, ping and local buffers. They
+exclude payloads, account identities and sharing-generation secrets. The game's
+30-second KeepAlive watchdog is unchanged. Missing KeepAlive replies in the
+reported incident cannot be assigned a root cause from the available logs.
+
+Validation: `cargo test --locked --all-targets` passed 16 tests, zero failed or
+ignored. Six new regressions cover final data before EOF/reset, send
+backpressure, batches and partial local writes after remote closure, a reset
+local writer with a readable final packet, invalid wire frames, and bounded
+terminal draining. `cargo clippy --locked --all-targets -- -D warnings`,
+`cargo fmt` and `git diff --check` passed. This is a component test, not a new
+two-account Steam/game run; overlay, relay and exact-client acceptance remain
+the consuming pack's responsibility.
