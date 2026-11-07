@@ -4,6 +4,7 @@
 //! accept the portable profile of a guest only by claiming its established
 //! bridge connection here.
 
+mod invitation;
 mod tunnel;
 mod worker;
 

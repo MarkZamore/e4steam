@@ -59,3 +59,28 @@ terminal draining. `cargo clippy --locked --all-targets -- -D warnings`,
 `cargo fmt` and `git diff --check` passed. This is a component test, not a new
 two-account Steam/game run; overlay, relay and exact-client acceptance remain
 the consuming pack's responsibility.
+
+## Overlay invitation handoff audit, 2026-11-08
+
+Previously the overlay callback could reach the frontend only if its target was
+already present in the periodic rich-presence directory. The subsequent Join
+command required the same directory entry again after saving the current world.
+This incorrectly coupled explicit invitations to an independent listing cache.
+It also treated the friend joined through as the owner, rejecting invitations
+sent by a guest even when the actual host was another immediate friend.
+
+An invitation now resolves the advertised owner from fresh lobby metadata and
+validates both the inviter's friendship and the host's friendship, metadata and
+exact variant. The verified lobby/owner pair is retained in one bounded slot,
+consumed once by the normal join and expires after the existing 30-second
+handshake period. Manual joins retain directory validation. Joined-lobby actual
+ownership, membership, sharing generation and one-use identity claims are
+unchanged. Compact callback/handoff events distinguish an unreceived invitation
+from rejection or failure to enter the game; they contain no account identities.
+
+Validation: `cargo test --locked --all-targets` passed 19 tests, zero failed or
+ignored. Three new handoff regressions cover a delayed frontend without a
+directory entry, one-shot/target binding, replaced intent, expiry and clearing.
+These are component regressions, not a two-account overlay acceptance result.
+Valve documents the inviter field as the friend joined through:
+https://partner.steamgames.com/doc/api/isteamfriends#GameLobbyJoinRequested_t

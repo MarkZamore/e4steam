@@ -1,5 +1,7 @@
 use crate::{
-    Control, PeerIdentity, Shared, WorldOffer, lobby_address, parse_lobby_address,
+    Control, PeerIdentity, Shared, WorldOffer,
+    invitation::InvitationHandoff,
+    lobby_address, parse_lobby_address,
     tunnel::{Pump, Tunnel},
     valid_nickname, valid_steam_id, valid_world_title,
 };
@@ -82,6 +84,7 @@ struct Worker {
     discovered: HashMap<LobbyId, SteamId>,
     fresh_lobbies: HashMap<LobbyId, Instant>,
     pending_invite: Option<(LobbyId, SteamId, Instant)>,
+    invited_join: InvitationHandoff,
     control: Arc<Control>,
     observed_epoch: u64,
 }
@@ -201,6 +204,7 @@ pub(crate) fn run(
         discovered: HashMap::new(),
         fresh_lobbies: HashMap::new(),
         pending_invite: None,
+        invited_join: InvitationHandoff::default(),
         control,
         observed_epoch: 0,
     };
@@ -304,10 +308,15 @@ impl Worker {
                     return Err("Another Steam session is active.".into());
                 }
                 let lobby = LobbyId::from_raw(lobby_id);
-                let owner = self
-                    .discovered
-                    .get(&lobby)
-                    .copied()
+                // Keep a verified overlay action while the frontend saves its
+                // current world; periodic discovery may not list this lobby.
+                let invited_owner = self
+                    .invited_join
+                    .take_owner(lobby_id, Instant::now(), HANDSHAKE)
+                    .map(SteamId::from_raw);
+                self.pending_invite = None;
+                let owner = invited_owner
+                    .or_else(|| self.discovered.get(&lobby).copied())
                     .filter(|owner| self.world_offer(lobby, *owner).is_some())
                     .ok_or_else(|| "The Steam world is no longer available.".to_string())?;
                 let action = self.action();
@@ -341,8 +350,13 @@ impl Worker {
                         .get_friend(friend)
                         .has_friend(FriendFlags::IMMEDIATE)
                 {
+                    self.invited_join.clear();
                     request_lobby_data(lobby);
                     self.pending_invite = Some((lobby, friend, Instant::now()));
+                    self.clear_error();
+                    eprintln!(
+                        "[LANMinecraft Steam] Overlay join requested; checking fresh lobby details."
+                    );
                 }
             }
             Completion::LobbyData(update) => {
@@ -541,16 +555,41 @@ impl Worker {
         if since.elapsed() > HANDSHAKE {
             self.pending_invite = None;
             self.error("The invited Steam world is no longer available.");
-        } else if self
+        } else if let Some(owner) = self.invited_world_owner(lobby, friend) {
+            self.pending_invite = None;
+            self.invited_join
+                .authorize(lobby.raw(), owner.raw(), Instant::now());
+            self.shared.lock().unwrap().pending_join = Some(lobby.raw());
+            eprintln!("[LANMinecraft Steam] Overlay join verified; handing the world to the game.");
+        }
+    }
+
+    fn invited_world_owner(&self, lobby: LobbyId, inviter: SteamId) -> Option<SteamId> {
+        if !self
             .fresh_lobbies
             .get(&lobby)
             .is_some_and(|time| time.elapsed() <= DISCOVERY_TTL)
-            && self.discovered.get(&lobby) == Some(&friend)
-            && self.world_offer(lobby, friend).is_some()
+            || !self
+                .steam
+                .friends()
+                .get_friend(inviter)
+                .has_friend(FriendFlags::IMMEDIATE)
         {
-            self.pending_invite = None;
-            self.shared.lock().unwrap().pending_join = Some(lobby.raw());
+            return None;
         }
+        // Valve reports the friend joined THROUGH, who can be a guest rather
+        // than the owner. world_offer requires that the advertised host is an
+        // immediate friend with the exact variant. open_guest independently
+        // checks the actual Steam owner and authenticated sharing generation.
+        let owner = self
+            .steam
+            .matchmaking()
+            .lobby_data(lobby, OWNER_KEY)?
+            .parse::<u64>()
+            .ok()
+            .filter(|owner| valid_steam_id(*owner))
+            .map(SteamId::from_raw)?;
+        self.world_offer(lobby, owner).map(|_| owner)
     }
 
     fn world_offer(&self, lobby: LobbyId, owner: SteamId) -> Option<WorldOffer> {
