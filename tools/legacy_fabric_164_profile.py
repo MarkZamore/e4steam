@@ -19,9 +19,9 @@ import components
 from legacy_fabric_164 import IMPLEMENTATION_VERSION, NAME, TAG, UPSTREAM
 
 ROOT=Path(__file__).resolve().parents[1]
-PROFILE=active_profile.V4
-BASE=active_profile.V3
-BASE_SHA256='a3bcee31734f3bbbef43fa11eb1cb76d03c5378335d817261a25f834184dc236'
+PROFILE=active_profile.V5
+BASE=active_profile.V4
+BASE_SHA256='399842903aaa1cad641e703cc06ec38417fbefdc6fbdf9a89f62d447d64be50e'
 REPOSITORY='MarkZamore/e4steam'
 RELEASE_URL=f'https://github.com/{REPOSITORY}/releases/download/{TAG}/'
 
@@ -55,7 +55,7 @@ def stage(directory,source_commit):
             raise ValueError('Wrong native port implementation version')
     base_bytes = (ROOT/'profiles'/f'{BASE}.json').read_bytes()
     if sha(base_bytes) != BASE_SHA256:
-        raise ValueError('The published V3 profile changed')
+        raise ValueError('The published base profile changed')
     base=json.loads(base_bytes)
     active_profile.verify_legacy_profile(ROOT, base)
     result=copy.deepcopy(base);result['profile']=PROFILE;result['sourceCommit']=source_commit

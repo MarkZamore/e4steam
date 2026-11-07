@@ -171,7 +171,38 @@ inventory is recorded in `profiles/native-lan-ui-v3-public-verification.json`.
 The canonical active index and checksum inventory now match frozen V3 bytes;
 no published payload or build recipe was changed for activation.
 
-## Immutable Legacy Fabric v2 delivery
+## Immutable Legacy Fabric v3 delivery
+
+The v3 port retains the v2 dependencies and platform range. Its native 1.6.4
+chat now shows a localized ready heading, green copyable Steam address, blue
+invitation control and red stop control. Controls use native font widths,
+wrapping, chat scale and scroll coordinates. Only launcher-owned local chat
+IDs belonging to the current exact hosting session can dispatch an action;
+copied server text and stale session rows cannot dispatch local commands.
+Minecraft 1.6.4 lacks modern rich chat events, so the adapter implements this
+at the native chat hit-test boundary rather than browser links.
+
+Native `commands.*` translation arguments display registered player labels.
+Only whole known canonical player tokens are substituted, on a cloned argument
+array. Command parsing, permission keys, stored profiles and unknown names retain
+their original values. No content mechanics or external libraries were updated.
+
+The V5 frozen profile replaces only the Legacy Fabric row of the exact V4
+selection (SHA256 `399842903aaa1cad641e703cc06ec38417fbefdc6fbdf9a89f62d447d64be50e`).
+Historical v1/V3 and v2/V4 tags, JARs and receipts remain immutable. The staging,
+four-job CI and public-byte verification procedure below applies using
+`legacy-fabric-164-v3`, `native-lan-ui-v5` and the `lf164.3` JAR name.
+
+Native candidate acceptance: 47 policy assertions and 46 source-tool tests;
+Minecraft 1.6.4 / Java 17 full-client save/reentry with the exact v3 candidate.
+The native chat hit-test dispatched copy/invite/stop and rejected a stale row;
+the actual command translation displayed two synthetic registered names while
+preserving the original arguments. This fixture suppressed Steam startup and
+command execution, used no physical mouse input and did not use personal worlds.
+It does not prove a real invitation, clipboard transfer, or two-account Steam
+gameplay. The pack records its own difficulty/Creative command changes separately.
+
+## Historical immutable Legacy Fabric v2 delivery
 
 The current build recipe emits `e4steam-legacy-fabric-mc1.6.4-v0.3.4-lf164.2.jar`.
 Its Fabric author version and platform range stay compatible. Historical v1/V3

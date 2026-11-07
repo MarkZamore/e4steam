@@ -51,13 +51,13 @@ class ActiveProfileDispatcherTests(unittest.TestCase):
             document=active.verify_active(self.root)
         self.assertEqual(20,len(document['builds']))
 
-    def test_v4_only_replaces_the_legacy_artifact(self):
+    def test_v5_only_replaces_the_legacy_artifact(self):
         previous = self.select(active.V3)
         candidate = json.loads((self.root/'components.json').read_bytes())
-        candidate['profile'] = active.V4
+        candidate['profile'] = active.V5
         candidate['sourceCommit'] = '1' * 40
         for row in candidate['builds']:
-            row['profile'] = active.V4
+            row['profile'] = active.V5
         legacy = next(row for row in candidate['builds'] if row['loaders'] == ['LegacyFabric'])
         prior_legacy = next(row for row in previous['builds'] if row['loaders'] == ['LegacyFabric'])
         receipt = json.loads((self.root/'releases'/active.V3_TAG/'build-receipt.json').read_bytes())

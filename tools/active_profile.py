@@ -13,6 +13,7 @@ ROOT=Path(__file__).resolve().parents[1]
 V2='native-lan-ui-v2'
 V3='native-lan-ui-v3'
 V4='native-lan-ui-v4'
+V5='native-lan-ui-v5'
 V3_TAG='legacy-fabric-164-v1'
 
 def require(value,message):
@@ -22,7 +23,7 @@ def verify_active(root=None):
     root=Path(root) if root is not None else ROOT
     active_bytes=(root/'components.json').read_bytes();active=json.loads(active_bytes)
     profile=active.get('profile')
-    require(profile in {V2,V3,V4},'Unsupported active profile; author fallback is forbidden')
+    require(profile in {V2,V3,V4,V5},'Unsupported active profile; author fallback is forbidden')
     frozen_bytes=(root/'profiles'/f'{profile}.json').read_bytes();frozen=json.loads(frozen_bytes)
     require(active_bytes==frozen_bytes,'Active index bytes differ from the reviewed frozen profile')
     require(active.get('schemaVersion')==2 and active.get('componentId')=='e4steam','Invalid shared component index')
@@ -34,10 +35,10 @@ def verify_active(root=None):
 
 def verify_legacy_profile(root, document):
     profile = document['profile']
-    require(profile in {V3, V4}, 'Unsupported Legacy Fabric profile')
-    tag = V3_TAG if profile == V3 else legacy_fabric_164.TAG
-    filename = ('e4steam-legacy-fabric-mc1.6.4-v0.3.4-lf164.1.jar'
-                if profile == V3 else legacy_fabric_164.NAME)
+    require(profile in {V3, V4, V5}, 'Unsupported Legacy Fabric profile')
+    revision = {V3: 1, V4: 2, V5: 3}[profile]
+    tag = f'legacy-fabric-164-v{revision}'
+    filename = f'e4steam-legacy-fabric-mc1.6.4-v0.3.4-lf164.{revision}.jar'
     require(set(native_ui_v2.CAPABILITIES).issubset(document.get('capabilities', [])),
             f'{profile} drops a reviewed native UI/auth capability')
     base=json.loads((root/'profiles'/f'{V2}.json').read_bytes())

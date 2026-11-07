@@ -48,6 +48,17 @@ public final class LegacyPortPolicyTest {
         check(LegacyMessages.reportsUnavailable("ru_RU").equals("Жалобы на игроков в этой версии недоступны."),
             "Legacy reporting action explains the actual limitation");
         String emoji="😀".repeat(70);String clean=LegacyPublication.cleanName(emoji);check(clean.codePointCount(0,clean.length())==64&&!Character.isHighSurrogate(clean.charAt(clean.length()-1)),"Description bounds preserve complete Unicode code points");
+        String buttons="[Invite friends] [Stop sharing]";
+        java.util.List<String> labels=java.util.List.of("[Invite friends]","[Stop sharing]");
+        java.util.List<String> actions=java.util.List.of("invite","stop");
+        check("invite".equals(LegacySharingChat.commandAt(buttons,java.util.List.of(buttons),0,3,labels,actions,String::length)),
+            "Unwrapped invite action uses the native text width");
+        check("stop".equals(LegacySharingChat.commandAt(buttons,java.util.List.of("[Invite friends]","[Stop sharing]"),1,3,labels,actions,String::length)),
+            "Wrapped stop action retains its source span");
+        check(LegacySharingChat.commandAt(buttons,java.util.List.of(buttons),0,16,labels,actions,String::length)==null,
+            "Spacing between controls is not clickable");
+        check(LegacySharingChat.commandAt(buttons,java.util.List.of("forged"),0,3,labels,actions,String::length)==null,
+            "Unmatched native text is not treated as an action");
         Path directory=Files.createTempDirectory("e4steam-legacy-policy-");Path registry=directory.resolve("registry.txt");
         try{
             UUID uuid=UUID.randomUUID();String nativeName=LegacyRegistry.canonicalName(1),display="Игрок | Один";
@@ -55,6 +66,13 @@ public final class LegacyPortPolicyTest {
             Files.writeString(registry,"1|"+nativeName+"|"+encoded+"|"+uuid+"\n",StandardCharsets.UTF_8);
             System.setProperty("minecraft.portable.legacy.registry",registry.toString());System.setProperty("minecraft.portable.identity.localPlayer",uuid.toString());
             check(LegacyRegistry.displayName(nativeName).equals(display),"Unicode and separator display alias round trip");
+            Object[] canonicalArguments={nativeName,42,"unknown"};
+            Object[] shown=LegacyMessages.commandNames("commands.tp.success",canonicalArguments);
+            check(shown!=canonicalArguments&&shown[0].equals(display)&&shown[1].equals(42)&&shown[2].equals("unknown"),
+                "Command feedback substitutes only a registered whole player token");
+            check(canonicalArguments[0].equals(nativeName),"Command source arguments remain canonical");
+            check(LegacyMessages.commandNames("other.namespace",canonicalArguments)==canonicalArguments,
+                "Unrelated translations retain their arguments");
             check(LegacyRegistry.localLabel("Fallback").equals(nativeName),"LocalUUID chooses canonical label");
             denied(()->LegacyIdentity.prepareRemote(new Login(),protocol),"Registry presence must not grant remote trust");
             Manager manager=new Manager();manager.field_2708.add(new Player(nativeName));
