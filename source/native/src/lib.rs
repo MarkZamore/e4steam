@@ -12,7 +12,7 @@ use std::{
     net::{Ipv4Addr, SocketAddr, TcpListener},
     sync::{
         Arc, Mutex,
-        atomic::{AtomicBool, Ordering},
+        atomic::{AtomicBool, AtomicU64, Ordering},
         mpsc::{self, SyncSender},
     },
     thread::{self, JoinHandle},
@@ -46,10 +46,16 @@ struct Shared {
     last_error: Option<String>,
 }
 
+#[derive(Default)]
+struct Control {
+    stop: AtomicBool,
+    sharing_epoch: AtomicU64,
+}
+
 pub struct SteamBridge {
     commands: SyncSender<Command>,
     shared: Arc<Mutex<Shared>>,
-    stop: Arc<AtomicBool>,
+    control: Arc<Control>,
     worker: Option<JoinHandle<()>>,
 }
 
@@ -61,9 +67,9 @@ impl SteamBridge {
         let (commands, pending) = mpsc::sync_channel(16);
         let (started, startup) = mpsc::sync_channel(1);
         let shared = Arc::new(Mutex::new(Shared::default()));
-        let stop = Arc::new(AtomicBool::new(false));
+        let control = Arc::new(Control::default());
         let worker_shared = Arc::clone(&shared);
-        let worker_stop = Arc::clone(&stop);
+        let worker_control = Arc::clone(&control);
         let variant = variant.to_owned();
         let nickname = nickname.to_owned();
         let worker = thread::Builder::new()
@@ -76,14 +82,14 @@ impl SteamBridge {
                     pending,
                     started,
                     worker_shared,
-                    worker_stop,
+                    worker_control,
                 );
             })
             .map_err(|error| error.to_string())?;
         let bridge = Self {
             commands,
             shared,
-            stop,
+            control,
             worker: Some(worker),
         };
         startup
@@ -101,28 +107,28 @@ impl SteamBridge {
         if local_port == 0 || !valid_world_title(world_title) || !valid_nickname(nickname) {
             return Err("Invalid world information for Steam sharing.".into());
         }
-        let command = Command::Publish {
+        // Serialize publication with unpublish: an older queued request must
+        // never reopen a world after its owner has withdrawn it.
+        let mut shared = self.shared.lock().unwrap();
+        self.send(Command::Publish {
+            epoch: self.control.sharing_epoch.load(Ordering::Acquire),
             local_port,
             title: world_title.to_owned(),
             nickname: nickname.to_owned(),
-        };
-        // The worker reports errors through this mutex. Keep its new error
-        // from being overwritten when a publication retry is queued.
-        let mut shared = self.shared.lock().unwrap();
-        self.send(command)?;
+        })?;
         shared.last_error = None;
         Ok(())
     }
 
     pub fn unpublish(&self) {
-        // A stop is a lifecycle action. Give it a distinct signal so it
-        // cannot be lost if the command queue is saturated.
+        // Invalidate older queued requests and in-flight lobby callbacks without
+        // waiting for space in the UI command queue. The worker observes this
+        // independently on its next poll.
         let mut shared = self.shared.lock().unwrap();
+        self.control.sharing_epoch.fetch_add(1, Ordering::AcqRel);
         shared.claims.clear();
         shared.published = false;
         shared.published_lobby = None;
-        drop(shared);
-        self.commands.send(Command::StopSharing).ok();
     }
 
     pub fn worlds(&self) -> Vec<WorldOffer> {
@@ -187,7 +193,7 @@ impl SteamBridge {
 
 impl Drop for SteamBridge {
     fn drop(&mut self) {
-        self.stop.store(true, Ordering::Release);
+        self.control.stop.store(true, Ordering::Release);
         if let Some(worker) = self.worker.take() {
             worker.join().ok();
         }
@@ -255,7 +261,7 @@ mod tests {
                 pending_join: Some(23),
                 ..Shared::default()
             })),
-            stop: Arc::new(AtomicBool::new(false)),
+            control: Arc::new(Control::default()),
             worker: None,
         };
         assert_eq!(bridge.take_join_request(), Some(23));
@@ -266,7 +272,28 @@ mod tests {
         bridge.unpublish();
         assert!(!bridge.is_published());
         assert_eq!(bridge.published_lobby(), None);
-        assert!(matches!(pending.try_recv(), Ok(Command::StopSharing)));
+        assert!(matches!(pending.try_recv(), Err(mpsc::TryRecvError::Empty)));
+    }
+
+    #[test]
+    fn unpublish_bypasses_full_queue_and_invalidates_queued_publication() {
+        let (commands, pending) = mpsc::sync_channel(1);
+        let bridge = SteamBridge {
+            commands,
+            shared: Arc::new(Mutex::new(Shared::default())),
+            control: Arc::new(Control::default()),
+            worker: None,
+        };
+        bridge.publish(25565, "Old world", "Player").unwrap();
+        bridge.unpublish();
+        assert_eq!(bridge.control.sharing_epoch.load(Ordering::Acquire), 1);
+        let old = pending.try_recv().unwrap();
+        assert!(matches!(old, Command::Publish { epoch: 0, .. }));
+        bridge.publish(25566, "New world", "Player").unwrap();
+        assert!(matches!(
+            pending.try_recv(),
+            Ok(Command::Publish { epoch: 1, .. })
+        ));
     }
 
     #[test]
@@ -298,16 +325,16 @@ mod tests {
         let bridge = SteamBridge {
             commands,
             shared: Arc::new(Mutex::new(Shared::default())),
-            stop: Arc::new(AtomicBool::new(false)),
+            control: Arc::new(Control::default()),
             worker: None,
         };
-        bridge.send(Command::StopSharing).unwrap();
+        bridge.send(Command::InviteFriends).unwrap();
         bridge.shared.lock().unwrap().last_error = Some("previous error".into());
 
         assert!(bridge.publish(25565, "Test World", "Player").is_err());
         assert_eq!(bridge.last_error().as_deref(), Some("previous error"));
 
-        assert!(matches!(pending.try_recv(), Ok(Command::StopSharing)));
+        assert!(matches!(pending.try_recv(), Ok(Command::InviteFriends)));
         assert!(bridge.publish(0, "Test World", "Player").is_err());
         assert_eq!(bridge.last_error().as_deref(), Some("previous error"));
 
@@ -320,6 +347,38 @@ mod tests {
             })
         ));
         assert_eq!(bridge.last_error(), None);
+    }
+
+    #[test]
+    fn guest_identity_is_claimed_once_and_only_for_loopback_connections() {
+        let (commands, _pending) = mpsc::sync_channel(1);
+        let bridge = SteamBridge {
+            commands,
+            shared: Arc::new(Mutex::new(Shared::default())),
+            control: Arc::new(Control::default()),
+            worker: None,
+        };
+        let identity = PeerIdentity {
+            steam_id: 0x0110_0001_1234_5678,
+            nickname: "Player".into(),
+        };
+        let local = SocketAddr::from((Ipv4Addr::LOCALHOST, 12345));
+        let remote = SocketAddr::from((Ipv4Addr::new(192, 0, 2, 1), 12345));
+        bridge
+            .shared
+            .lock()
+            .unwrap()
+            .claims
+            .insert(local, identity.clone());
+        bridge
+            .shared
+            .lock()
+            .unwrap()
+            .claims
+            .insert(remote, identity.clone());
+        assert_eq!(bridge.claim_guest(remote), None);
+        assert_eq!(bridge.claim_guest(local), Some(identity));
+        assert_eq!(bridge.claim_guest(local), None);
     }
 
     #[test]

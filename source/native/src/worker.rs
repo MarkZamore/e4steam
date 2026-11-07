@@ -1,5 +1,5 @@
 use crate::{
-    PeerIdentity, Shared, WorldOffer, lobby_address, parse_lobby_address, tunnel::Tunnel,
+    Control, PeerIdentity, Shared, WorldOffer, lobby_address, parse_lobby_address, tunnel::Tunnel,
     valid_nickname, valid_steam_id, valid_world_title,
 };
 use std::{
@@ -9,7 +9,7 @@ use std::{
     net::{Ipv4Addr, SocketAddr, TcpListener, TcpStream},
     sync::{
         Arc, Mutex,
-        atomic::{AtomicBool, Ordering},
+        atomic::Ordering,
         mpsc::{self, Receiver, Sender, SyncSender},
     },
     thread,
@@ -48,11 +48,11 @@ type Generation = [u8; 16];
 
 pub(crate) enum Command {
     Publish {
+        epoch: u64,
         local_port: u16,
         title: String,
         nickname: String,
     },
-    StopSharing,
     InviteFriends,
     Join {
         lobby_id: u64,
@@ -80,6 +80,8 @@ struct Worker {
     discovered: HashMap<LobbyId, SteamId>,
     fresh_lobbies: HashMap<LobbyId, Instant>,
     pending_invite: Option<(LobbyId, SteamId, Instant)>,
+    control: Arc<Control>,
+    observed_epoch: u64,
 }
 
 enum Role {
@@ -138,7 +140,7 @@ pub(crate) fn run(
     commands: Receiver<Command>,
     started: SyncSender<Result<(), String>>,
     shared: Arc<Mutex<Shared>>,
-    stop: Arc<AtomicBool>,
+    control: Arc<Control>,
 ) {
     let initialized = Client::init_app(APP_ID)
         .map_err(|error| format!("Steam game transport initialization failed ({error})."))
@@ -195,12 +197,15 @@ pub(crate) fn run(
         discovered: HashMap::new(),
         fresh_lobbies: HashMap::new(),
         pending_invite: None,
+        control,
+        observed_epoch: 0,
     };
     if started.send(Ok(())).is_err() {
         return;
     }
     let mut next_discovery = Instant::now();
-    while !stop.load(Ordering::Acquire) {
+    while !worker.control.stop.load(Ordering::Acquire) {
+        worker.sync_sharing();
         worker.steam.run_callbacks();
         while let Ok(command) = commands.try_recv() {
             if let Err(error) = worker.command(command) {
@@ -225,10 +230,15 @@ impl Worker {
     fn command(&mut self, command: Command) -> Result<(), String> {
         match command {
             Command::Publish {
+                epoch,
                 local_port,
                 title,
                 nickname,
             } => {
+                self.sync_sharing();
+                if epoch != self.observed_epoch {
+                    return Ok(());
+                }
                 if nickname != self.nickname {
                     return Err(
                         "Steam publication nickname does not match the launch profile.".into(),
@@ -273,11 +283,6 @@ impl Worker {
                 };
                 self.clear_error();
             }
-            Command::StopSharing => {
-                if matches!(self.role, Role::Hosting(_) | Role::Publishing { .. }) {
-                    self.close_role();
-                }
-            }
             Command::InviteFriends => {
                 let Role::Hosting(host) = &self.role else {
                     return Err("The Steam world is not ready for invitations.".into());
@@ -320,6 +325,7 @@ impl Worker {
     }
 
     fn complete(&mut self, completion: Completion) {
+        self.sync_sharing();
         match completion {
             Completion::Invited(lobby, friend) => {
                 if valid_steam_id(friend.raw())
@@ -396,6 +402,15 @@ impl Worker {
                 self.steam
                     .friends()
                     .set_rich_presence("connect", Some(&lobby_address(lobby.raw())));
+                let mut shared = self.shared.lock().unwrap();
+                if self.control.sharing_epoch.load(Ordering::Acquire) != self.observed_epoch {
+                    matchmaking.delete_lobby_data(lobby, FORMAT_KEY);
+                    matchmaking.set_lobby_joinable(lobby, false);
+                    matchmaking.leave_lobby(lobby);
+                    self.steam.friends().set_rich_presence(PRESENCE_KEY, None);
+                    self.steam.friends().set_rich_presence("connect", None);
+                    return;
+                }
                 self.role = Role::Hosting(Host {
                     lobby,
                     listener,
@@ -403,7 +418,6 @@ impl Worker {
                     generation,
                     peers: HashMap::new(),
                 });
-                let mut shared = self.shared.lock().unwrap();
                 shared.published = true;
                 shared.published_lobby = Some(lobby.raw());
                 eprintln!("[LANMinecraft Steam] World published to Steam friends.");
@@ -590,6 +604,16 @@ impl Worker {
         }
     }
 
+    fn sync_sharing(&mut self) {
+        let epoch = self.control.sharing_epoch.load(Ordering::Acquire);
+        if epoch != self.observed_epoch {
+            self.observed_epoch = epoch;
+            if matches!(self.role, Role::Hosting(_) | Role::Publishing { .. }) {
+                self.close_role();
+            }
+        }
+    }
+
     fn close_role(&mut self) {
         let role = std::mem::replace(&mut self.role, Role::Idle);
         let matchmaking = self.steam.matchmaking();
@@ -732,16 +756,19 @@ impl HostPeer {
         )?;
         let address = local.local_addr()?;
         let tunnel = Tunnel::new(local)?;
-        self.connection
-            .send_message(ACK, SendFlags::RELIABLE)
-            .map_err(io::Error::other)?;
-        shared.lock().unwrap().claims.insert(
+        ready_guest(
+            shared,
             address,
             PeerIdentity {
                 steam_id: peer.raw(),
                 nickname: nickname.to_owned(),
             },
-        );
+            || {
+                self.connection
+                    .send_message(ACK, SendFlags::RELIABLE)
+                    .map_err(io::Error::other)
+            },
+        )?;
         self.claim_addr = Some(address);
         self.tunnel = Some(tunnel);
         Ok(true)
@@ -849,6 +876,22 @@ impl Guest {
     }
 }
 
+/// READY releases the guest's game bytes. Install its one-use identity first,
+/// so a fast peer cannot reach the local login before its claim is visible.
+fn ready_guest<T>(
+    shared: &Mutex<Shared>,
+    address: SocketAddr,
+    identity: PeerIdentity,
+    ready: impl FnOnce() -> io::Result<T>,
+) -> io::Result<()> {
+    shared.lock().unwrap().claims.insert(address, identity);
+    if let Err(error) = ready() {
+        shared.lock().unwrap().claims.remove(&address);
+        return Err(error);
+    }
+    Ok(())
+}
+
 fn network_failure(error: &io::Error) {
     eprintln!(
         "[LANMinecraft Steam] Network error: {error}\n{}",
@@ -906,6 +949,32 @@ fn read_hello<'a>(hello: &'a [u8], generation: &Generation) -> Option<&'a str> {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn ready_observes_the_identity_claim_and_failed_ack_rolls_it_back() {
+        let shared = Mutex::new(Shared::default());
+        let address = SocketAddr::from((Ipv4Addr::LOCALHOST, 12345));
+        let identity = PeerIdentity {
+            steam_id: 0x0110_0001_1234_5678,
+            nickname: "Player".into(),
+        };
+        ready_guest(&shared, address, identity.clone(), || {
+            assert_eq!(shared.lock().unwrap().claims.get(&address), Some(&identity));
+            Ok(())
+        })
+        .unwrap();
+        assert_eq!(
+            shared.lock().unwrap().claims.remove(&address),
+            Some(identity.clone())
+        );
+        let error = ready_guest(&shared, address, identity.clone(), || {
+            assert_eq!(shared.lock().unwrap().claims.get(&address), Some(&identity));
+            Err::<(), _>(io::Error::from(io::ErrorKind::BrokenPipe))
+        })
+        .unwrap_err();
+        assert_eq!(error.kind(), io::ErrorKind::BrokenPipe);
+        assert!(shared.lock().unwrap().claims.is_empty());
+    }
 
     #[test]
     fn only_the_current_sharing_generation_and_valid_nickname_are_accepted() {
