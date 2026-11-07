@@ -41,6 +41,8 @@ struct Shared {
     worlds: Vec<WorldOffer>,
     claims: HashMap<SocketAddr, PeerIdentity>,
     published: bool,
+    published_lobby: Option<u64>,
+    pending_join: Option<u64>,
     last_error: Option<String>,
 }
 
@@ -118,6 +120,7 @@ impl SteamBridge {
         let mut shared = self.shared.lock().unwrap();
         shared.claims.clear();
         shared.published = false;
+        shared.published_lobby = None;
         drop(shared);
         self.commands.send(Command::StopSharing).ok();
     }
@@ -132,6 +135,19 @@ impl SteamBridge {
 
     pub fn last_error(&self) -> Option<String> {
         self.shared.lock().unwrap().last_error.clone()
+    }
+
+    pub fn published_lobby(&self) -> Option<u64> {
+        self.shared.lock().unwrap().published_lobby
+    }
+
+    /// A Steam overlay request, released only after normal discovery validation.
+    pub fn take_join_request(&self) -> Option<u64> {
+        self.shared.lock().unwrap().pending_join.take()
+    }
+
+    pub fn invite_friends(&self) -> Result<(), String> {
+        self.send(Command::InviteFriends)
     }
 
     pub fn join(&self, lobby_id: u64) -> Result<SocketAddr, String> {
@@ -183,6 +199,21 @@ fn valid_steam_id(id: u64) -> bool {
     id >> 32 == 0x0110_0001 && id as u32 != 0
 }
 
+pub fn lobby_address(lobby: u64) -> String {
+    format!("{lobby}.steam")
+}
+
+/// Accept the original native address as well as the copyable DNS-shaped form.
+pub fn parse_lobby_address(address: &str) -> Option<u64> {
+    let id = address
+        .strip_prefix("lanmc-steam:")
+        .or_else(|| address.strip_suffix(".steam"))?;
+    if id.is_empty() || !id.bytes().all(|byte| byte.is_ascii_digit()) {
+        return None;
+    }
+    id.parse().ok().filter(|id| *id != 0)
+}
+
 fn valid_variant(value: &str) -> bool {
     !value.is_empty()
         && value.len() <= 96
@@ -212,6 +243,54 @@ fn valid_world_title(value: &str) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn overlay_join_is_consumed_once_and_unpublish_invalidates_the_lobby() {
+        let (commands, pending) = mpsc::sync_channel(2);
+        let bridge = SteamBridge {
+            commands,
+            shared: Arc::new(Mutex::new(Shared {
+                published: true,
+                published_lobby: Some(17),
+                pending_join: Some(23),
+                ..Shared::default()
+            })),
+            stop: Arc::new(AtomicBool::new(false)),
+            worker: None,
+        };
+        assert_eq!(bridge.take_join_request(), Some(23));
+        assert_eq!(bridge.take_join_request(), None);
+        assert_eq!(bridge.published_lobby(), Some(17));
+        bridge.invite_friends().unwrap();
+        assert!(matches!(pending.try_recv(), Ok(Command::InviteFriends)));
+        bridge.unpublish();
+        assert!(!bridge.is_published());
+        assert_eq!(bridge.published_lobby(), None);
+        assert!(matches!(pending.try_recv(), Ok(Command::StopSharing)));
+    }
+
+    #[test]
+    fn invitation_addresses_accept_only_nonzero_lobbies_and_keep_legacy_addresses() {
+        assert_eq!(
+            parse_lobby_address(&lobby_address(109775241234567890)),
+            Some(109775241234567890)
+        );
+        assert_eq!(
+            parse_lobby_address("lanmc-steam:109775241234567890"),
+            Some(109775241234567890)
+        );
+        for invalid in [
+            "0.steam",
+            "-1.steam",
+            "1.steam/command",
+            "https://1.steam",
+            "lanmc-steam:",
+            "18446744073709551616.steam",
+            "host.example",
+        ] {
+            assert_eq!(parse_lobby_address(invalid), None, "{invalid}");
+        }
+    }
 
     #[test]
     fn publication_retry_clears_the_previous_error_only_when_queued() {

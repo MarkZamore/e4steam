@@ -1,6 +1,6 @@
 use crate::{
-    PeerIdentity, Shared, WorldOffer, tunnel::Tunnel, valid_nickname, valid_steam_id,
-    valid_world_title,
+    PeerIdentity, Shared, WorldOffer, lobby_address, parse_lobby_address, tunnel::Tunnel,
+    valid_nickname, valid_steam_id, valid_world_title,
 };
 use std::{
     collections::HashMap,
@@ -16,7 +16,8 @@ use std::{
     time::{Duration, Instant},
 };
 use steamworks::{
-    AppId, Client, FriendFlags, LobbyDataUpdate, LobbyId, LobbyType, SteamId,
+    AppId, Client, FriendFlags, GameLobbyJoinRequested, GameRichPresenceJoinRequested,
+    LobbyDataUpdate, LobbyId, LobbyType, SteamId,
     networking_sockets::{ListenSocket, NetConnection},
     networking_types::{
         AppNetConnectionEnd, ListenSocketEvent, NetConnectionEnd, NetworkingConnectionState,
@@ -52,6 +53,7 @@ pub(crate) enum Command {
         nickname: String,
     },
     StopSharing,
+    InviteFriends,
     Join {
         lobby_id: u64,
         listener: TcpListener,
@@ -62,6 +64,7 @@ enum Completion {
     Published(u64, Result<LobbyId, String>),
     Joined(u64, Result<LobbyId, ()>),
     LobbyData(LobbyDataUpdate),
+    Invited(LobbyId, SteamId),
 }
 
 struct Worker {
@@ -76,6 +79,7 @@ struct Worker {
     role: Role,
     discovered: HashMap<LobbyId, SteamId>,
     fresh_lobbies: HashMap<LobbyId, Instant>,
+    pending_invite: Option<(LobbyId, SteamId, Instant)>,
 }
 
 enum Role {
@@ -157,6 +161,27 @@ pub(crate) fn run(
     let _lobby_updates = steam.register_callback(move |update: LobbyDataUpdate| {
         lobby_data.send(Completion::LobbyData(update)).ok();
     });
+    let invitations = completion_tx.clone();
+    let _lobby_invites = steam.register_callback(move |invite: GameLobbyJoinRequested| {
+        invitations
+            .send(Completion::Invited(
+                invite.lobby_steam_id,
+                invite.friend_steam_id,
+            ))
+            .ok();
+    });
+    let invitations = completion_tx.clone();
+    let _presence_invites =
+        steam.register_callback(move |invite: GameRichPresenceJoinRequested| {
+            if let Some(lobby) = parse_lobby_address(&invite.connect) {
+                invitations
+                    .send(Completion::Invited(
+                        LobbyId::from_raw(lobby),
+                        invite.friend_steam_id,
+                    ))
+                    .ok();
+            }
+        });
     let mut worker = Worker {
         steam,
         local_id: SteamId::from_raw(expected_id),
@@ -169,6 +194,7 @@ pub(crate) fn run(
         role: Role::Idle,
         discovered: HashMap::new(),
         fresh_lobbies: HashMap::new(),
+        pending_invite: None,
     };
     if started.send(Ok(())).is_err() {
         return;
@@ -189,6 +215,7 @@ pub(crate) fn run(
             next_discovery = Instant::now() + DISCOVER;
         }
         worker.poll();
+        worker.poll_invite();
         thread::sleep(POLL);
     }
     worker.close_role();
@@ -251,7 +278,19 @@ impl Worker {
                     self.close_role();
                 }
             }
+            Command::InviteFriends => {
+                let Role::Hosting(host) = &self.role else {
+                    return Err("The Steam world is not ready for invitations.".into());
+                };
+                if !self.steam.utils().is_overlay_enabled() {
+                    return Err("The Steam overlay is unavailable.".into());
+                }
+                self.steam.friends().activate_invite_dialog(host.lobby);
+            }
             Command::Join { lobby_id, listener } => {
+                if matches!(self.role, Role::Guest(_)) {
+                    self.close_role();
+                }
                 if !matches!(self.role, Role::Idle) {
                     return Err("Another Steam session is active.".into());
                 }
@@ -282,6 +321,20 @@ impl Worker {
 
     fn complete(&mut self, completion: Completion) {
         match completion {
+            Completion::Invited(lobby, friend) => {
+                if valid_steam_id(friend.raw())
+                    && friend != self.local_id
+                    && lobby.raw() != 0
+                    && self
+                        .steam
+                        .friends()
+                        .get_friend(friend)
+                        .has_friend(FriendFlags::IMMEDIATE)
+                {
+                    request_lobby_data(lobby);
+                    self.pending_invite = Some((lobby, friend, Instant::now()));
+                }
+            }
             Completion::LobbyData(update) => {
                 if update.member.raw() == update.lobby.raw() {
                     if update.success {
@@ -340,6 +393,9 @@ impl Worker {
                 self.steam
                     .friends()
                     .set_rich_presence(PRESENCE_KEY, Some(&lobby_id));
+                self.steam
+                    .friends()
+                    .set_rich_presence("connect", Some(&lobby_address(lobby.raw())));
                 self.role = Role::Hosting(Host {
                     lobby,
                     listener,
@@ -347,7 +403,9 @@ impl Worker {
                     generation,
                     peers: HashMap::new(),
                 });
-                self.shared.lock().unwrap().published = true;
+                let mut shared = self.shared.lock().unwrap();
+                shared.published = true;
+                shared.published_lobby = Some(lobby.raw());
                 eprintln!("[LANMinecraft Steam] World published to Steam friends.");
             }
             Completion::Joined(action, result) => {
@@ -457,6 +515,25 @@ impl Worker {
         self.shared.lock().unwrap().worlds = worlds;
     }
 
+    fn poll_invite(&mut self) {
+        let Some((lobby, friend, since)) = self.pending_invite else {
+            return;
+        };
+        if since.elapsed() > HANDSHAKE {
+            self.pending_invite = None;
+            self.error("The invited Steam world is no longer available.");
+        } else if self
+            .fresh_lobbies
+            .get(&lobby)
+            .is_some_and(|time| time.elapsed() <= DISCOVERY_TTL)
+            && self.discovered.get(&lobby) == Some(&friend)
+            && self.world_offer(lobby, friend).is_some()
+        {
+            self.pending_invite = None;
+            self.shared.lock().unwrap().pending_join = Some(lobby.raw());
+        }
+    }
+
     fn world_offer(&self, lobby: LobbyId, owner: SteamId) -> Option<WorldOffer> {
         let matchmaking = self.steam.matchmaking();
         // Steam exposes GetLobbyOwner only once joined. Here the matching
@@ -522,6 +599,7 @@ impl Worker {
                 matchmaking.set_lobby_joinable(host.lobby, false);
                 matchmaking.leave_lobby(host.lobby);
                 self.steam.friends().set_rich_presence(PRESENCE_KEY, None);
+                self.steam.friends().set_rich_presence("connect", None);
             }
             Role::Guest(guest) => matchmaking.leave_lobby(guest.lobby),
             _ => {}
@@ -529,6 +607,8 @@ impl Worker {
         let mut shared = self.shared.lock().unwrap();
         shared.claims.clear();
         shared.published = false;
+        shared.published_lobby = None;
+        shared.pending_join = None;
     }
 
     fn action(&mut self) -> u64 {

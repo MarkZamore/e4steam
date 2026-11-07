@@ -6,6 +6,8 @@ The native lobby publishes the actual world title and launcher nickname. Discove
 
 The bridge uses Steam virtual port 481. The Java component continues using its own e4steam wire protocol and the launcher retains its world-transfer transport. Native game variants expose only mutually compatible worlds. When the world stops or the process exits, the bridge drops connections and closes its Steam lobby. Keep the bridge scoped to the game process and call `unpublish()` when leaving a hosted world.
 
+The host advertises a copyable `<lobby-id>.steam` address in Steam's `connect` rich presence and can open Valve's invite picker with `invite_friends()`. Both the lobby and rich-presence join callbacks go through fresh friend-world discovery and exact variant validation before `take_join_request()` returns a lobby. Joining still verifies the actual owner and the existing authenticated connection handshake. The original `lanmc-steam:<lobby-id>` address remains accepted. This flow follows the Java e4steam component's `SteamLobbyManager` invitation lifecycle; the native pack uses Rust bindings and Valve APIs, not the Java JAR. Consuming games must poll join requests on their UI thread, save/leave any current world, and call the normal connection path. Expose host actions only for the currently published lobby so stale chat messages cannot control a later session.
+
 ## Building on Windows
 
 Set `CARGO_TARGET_DIR` to the task's approved build directory. Build from the locked inputs with `cargo build --locked`. Place the verified Valve SDK DLL next to the consuming game's executable. Use `Get-VerifiedSteamDll.ps1` to locate and validate the exact DLL in the locked `steamworks-sys` dependency. Keep `STEAM_SDK_LOCATION` unset so the build uses the reviewed SDK.
