@@ -25,6 +25,7 @@ public final class Legacy164Client implements ClientModInitializer,RetroPlatform
     }
     @Override public boolean copyToClipboard(String text){R.call(R.type("net.minecraft.class_388"),"method_1036",text);return true;}
     @Override public boolean tracksMinecraftLogin(){return true;}
+    @Override public void showSharingReady(String endpoint) { LegacySharingChat.show(endpoint); }
     @Override public void joinTimedOut(String reason){
         Object mc=R.minecraft(),screen=R.get(mc,"field_3816");
         if(screen!=null&&screen.getClass().getName().equals("net.minecraft.class_472")){

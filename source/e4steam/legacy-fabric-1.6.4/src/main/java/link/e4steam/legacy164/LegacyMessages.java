@@ -24,4 +24,17 @@ public final class LegacyMessages {
             ? "Жалобы на игроков в этой версии недоступны."
             : "Player reporting is unavailable in this version.";
     }
+
+    public static Object[] commandNames(String key, Object[] values) {
+        if (key == null || !key.startsWith("commands.") || values == null) return values;
+        Object[] result = values;
+        for (int index = 0; index < values.length; index++) {
+            if (!(values[index] instanceof String name)) continue;
+            String display = LegacyRegistry.displayName(name);
+            if (display.equals(name)) continue;
+            if (result == values) result = values.clone();
+            result[index] = display;
+        }
+        return result;
+    }
 }
