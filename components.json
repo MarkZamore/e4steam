@@ -25,7 +25,7 @@
         1,
         7
       ],
-      "profile": "native-lan-ui-v5",
+      "profile": "native-lan-ui-v6",
       "sha256": "c44434c31a5bbfcf5cc34a9327f2c6c08e8ae633e34727486146d8f0ffb03c9c",
       "sizeBytes": 2107709,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.7.x-v0.3.2.jar",
@@ -57,7 +57,7 @@
         1,
         8
       ],
-      "profile": "native-lan-ui-v5",
+      "profile": "native-lan-ui-v6",
       "sha256": "35caf65a4d97904066e2f1f6454d1ba4661bc73130305ffdb3917f90b3449972",
       "sizeBytes": 3039265,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.8.x-v0.3.2.jar",
@@ -89,7 +89,7 @@
         1,
         9
       ],
-      "profile": "native-lan-ui-v5",
+      "profile": "native-lan-ui-v6",
       "sha256": "263b4b6f75f06aa0c5c8380d8ae34415e4ae735925bb952f9718c2bc24539e66",
       "sizeBytes": 3038887,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.9.x-v0.3.2.jar",
@@ -121,7 +121,7 @@
         1,
         10
       ],
-      "profile": "native-lan-ui-v5",
+      "profile": "native-lan-ui-v6",
       "sha256": "ede466e6c19878c513419d971ca860b533eaa1ea756bf2c34a0adfbe80ad82ba",
       "sizeBytes": 3038892,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.10.x-v0.3.2.jar",
@@ -153,7 +153,7 @@
         1,
         11
       ],
-      "profile": "native-lan-ui-v5",
+      "profile": "native-lan-ui-v6",
       "sha256": "3371478eac829f01a879962d1c2e0f3b31684aa16ab8e8ac3ec06e46bcf5a26f",
       "sizeBytes": 3038892,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.11.x-v0.3.2.jar",
@@ -185,7 +185,7 @@
         1,
         12
       ],
-      "profile": "native-lan-ui-v5",
+      "profile": "native-lan-ui-v6",
       "sha256": "f554e6d20f037dbf8a2596eb0c3aaa3cf3ba0625d1caca9a3925cad297506e24",
       "sizeBytes": 3038928,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.12.x-v0.3.2.jar",
@@ -217,7 +217,7 @@
         1,
         13
       ],
-      "profile": "native-lan-ui-v5",
+      "profile": "native-lan-ui-v6",
       "sha256": "0cdb0ef6ce450faf2583ffd75b43e17426b20b402628e7c38466ce84d080f2ec",
       "sizeBytes": 2901410,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.13.x-v0.3.2.jar",
@@ -249,7 +249,7 @@
         1,
         14
       ],
-      "profile": "native-lan-ui-v5",
+      "profile": "native-lan-ui-v6",
       "sha256": "b7d08bbfadbee160f37eeb1e665d55c4a50b4682806dd63f3db5879b8fa5e1c7",
       "sizeBytes": 2903985,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.14.x-v0.3.2.jar",
@@ -281,7 +281,7 @@
         1,
         15
       ],
-      "profile": "native-lan-ui-v5",
+      "profile": "native-lan-ui-v6",
       "sha256": "5de9df05e6834a1279631eedfa5879bf8abfa955226dc127fffd2a4292768b91",
       "sizeBytes": 2899585,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.15.x-v0.3.2.jar",
@@ -313,7 +313,7 @@
         1,
         16
       ],
-      "profile": "native-lan-ui-v5",
+      "profile": "native-lan-ui-v6",
       "sha256": "a0e6a1ab6b29c36733c929e86905521e58b2943307fab4fda7da05b51b3449ca",
       "sizeBytes": 2899902,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.16.x-v0.3.2.jar",
@@ -345,7 +345,7 @@
         1,
         14
       ],
-      "profile": "native-lan-ui-v5",
+      "profile": "native-lan-ui-v6",
       "sha256": "c9467b97bfa7691007b4226af0ba7d776393fd013a0ddc908f36e63d818e85f2",
       "sizeBytes": 3590675,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-fabric-mc1.14.x-v0.3.2.jar",
@@ -377,7 +377,7 @@
         1,
         15
       ],
-      "profile": "native-lan-ui-v5",
+      "profile": "native-lan-ui-v6",
       "sha256": "61e7c1783a3338bee600660ac630ed3d6fcb220831f110661e01dbdfee7679b2",
       "sizeBytes": 3589233,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-fabric-mc1.15.x-v0.3.2.jar",
@@ -409,7 +409,7 @@
         1,
         16
       ],
-      "profile": "native-lan-ui-v5",
+      "profile": "native-lan-ui-v6",
       "sha256": "b387a2b076527dd2f1ccbb3cf44ac97d3f4ce89722becb5e3bc57ad7933ba70f",
       "sizeBytes": 3589535,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-fabric-mc1.16.x-v0.3.2.jar",
@@ -458,7 +458,7 @@
         17,
         1
       ],
-      "profile": "native-lan-ui-v5",
+      "profile": "native-lan-ui-v6",
       "sha256": "1344aa71d9fe824dd9b01210f58f28569631f4c5747d6f040d82f65c7010a8d7",
       "sizeBytes": 3805024,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.4/e4steam-forge-mc1.17.1-1.18.1-v0.3.4.jar",
@@ -507,7 +507,7 @@
         18,
         2
       ],
-      "profile": "native-lan-ui-v5",
+      "profile": "native-lan-ui-v6",
       "sha256": "3f397fc193f14d3c543b5ef9b4613bc149a21ca8e14bd93c39de3d1bc6f9553c",
       "sizeBytes": 3801632,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.4/e4steam-forge-mc1.18.2-1.20.2-v0.3.4.jar",
@@ -555,7 +555,7 @@
         20,
         2
       ],
-      "profile": "native-lan-ui-v5",
+      "profile": "native-lan-ui-v6",
       "sha256": "2cfedc07ee3c84b9b980351ea094d5f898c858f37ff46dada24c621061761d2e",
       "sizeBytes": 3800314,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.4/e4steam-neoforge-mc1.20.2-26.3-v0.3.4.jar",
@@ -603,7 +603,7 @@
         1,
         17
       ],
-      "profile": "native-lan-ui-v5",
+      "profile": "native-lan-ui-v6",
       "sha256": "7dde29204bc3f50649bbf3b50163e96677a62467507d1218f9e58caa7785d006",
       "sizeBytes": 3800700,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.4/e4steam-fabric-quilt-mc1.17-1.18.2-v0.3.4.jar",
@@ -651,7 +651,7 @@
         1,
         19
       ],
-      "profile": "native-lan-ui-v5",
+      "profile": "native-lan-ui-v6",
       "sha256": "67d43d3047cf7d349b38d1addf024ef69de44d79d2b19f5f0092b024a565f1bd",
       "sizeBytes": 3797496,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.4/e4steam-fabric-quilt-mc1.19-1.21.11-v0.3.4.jar",
@@ -699,7 +699,7 @@
         26,
         1
       ],
-      "profile": "native-lan-ui-v5",
+      "profile": "native-lan-ui-v6",
       "sha256": "248fe6c4bf8f4decd0eea2c0883f15559eedd7491e6a9b5859b3bd1cafdcb26d",
       "sizeBytes": 3798124,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.4/e4steam-fabric-quilt-mc26.1-26.3-v0.3.4.jar",
@@ -708,17 +708,17 @@
     },
     {
       "authorVersion": "0.3.4",
-      "deliveryTag": "legacy-fabric-164-v3",
+      "deliveryTag": "legacy-fabric-164-v4",
       "derivation": {
         "sourceBuildReceipt": {
-          "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/legacy-fabric-164-v3/build-receipt.json",
+          "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/legacy-fabric-164-v4/build-receipt.json",
           "fileName": "build-receipt.json",
-          "sha256": "d0c67b96af38f5ef6a1ba4d01af5211f5d6978cf3531e2857c51b3757088076e",
+          "sha256": "bda4692397f74807e6319535601cc5ee1f319b029f0d78308b419e1946cd4e7f",
           "sizeBytes": 82053
         },
         "sourceBuildRecipe": {
           "path": "tools/legacy_fabric_164.py",
-          "sha256": "829f3356dcfcd7d7c81ad89d069985d6b7e02aedc46a0cdde6f194a8ed9599e0"
+          "sha256": "431dfeae2d193740d6ccd82f72b43a2eddaf8f6bbebc0dfaf4875ab6a2009966"
         },
         "sourceBuiltClassSha256": {
           "link/e4steam/Agnos.class": "3471d1a42fd46227ae640d9f975b66118e7aab04b53ef12387c0a2137009caae",
@@ -963,7 +963,7 @@
           "link/e4steam/legacy164/LegacyDiscovery.class": "245c9fae46b07d76f4e4ac55bfa747ea1699e6391913ccfc637027bff26e2150",
           "link/e4steam/legacy164/LegacyIdentity$LocalProof.class": "f75911b61ab7697cbf62f896037f60da6bb7872704fd7cb632b3ab60d8c47ad2",
           "link/e4steam/legacy164/LegacyIdentity.class": "ee6fc205bd7c38737e7970a73ba08ee339e37eaf32bfbd0dd261b6a2985a53af",
-          "link/e4steam/legacy164/LegacyMessages.class": "9d8ac1df9e98ae0e1a72684fbdf3cbbc79a86204b0cda4b6d2fc9ddf4b4bcf0c",
+          "link/e4steam/legacy164/LegacyMessages.class": "836346edc08485197d344b747d9bb942afab07e3852b06c9a81f8238e823bd70",
           "link/e4steam/legacy164/LegacyPublication$Publication.class": "c9e4f49b926ed1c691f966c1ca7958ef0d343ecdc8c1b6ae8be7ea31aed1948a",
           "link/e4steam/legacy164/LegacyPublication.class": "0f91847d4c5c4db90cc2e61cd9b9e11ce7c3a978c9ab38b2bf13db77a042d58d",
           "link/e4steam/legacy164/LegacyRegistry$Entry.class": "9a93d4717d11727ddd826dd9b147ee8de28e01ef2939818571efda8a09565ae5",
@@ -1147,17 +1147,17 @@
           "link/e4steam/steam/VoiceChatUdpEndpoint$PlasmoPort.class": "c6b4cc9e795d26f2e6f8e5f688ecac654288b4aa20ba7ecace8b6fcaaf3a446e",
           "link/e4steam/steam/VoiceChatUdpEndpoint.class": "966cb8dab6599574ff5dc01ce67c81eddf66257b7d441489fadecffd1a91f33b"
         },
-        "sourceCommit": "5aaed27873d3e46bcf9d3923b869263c8450f856",
+        "sourceCommit": "e5ab709666e6d2ac0647d888175a70b9ac46a70a",
         "type": "source-built-legacy-port",
         "upstreamSourceCommit": "bdcea00e30ca519fa8190c0c5c04785d42b31dbc"
       },
-      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/legacy-fabric-164-v3/e4steam-legacy-fabric-mc1.6.4-v0.3.4-lf164.3.jar",
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/legacy-fabric-164-v4/e4steam-legacy-fabric-mc1.6.4-v0.3.4-lf164.4.jar",
       "exclusiveMaximumMinecraftVersion": [
         1,
         6,
         5
       ],
-      "fileName": "e4steam-legacy-fabric-mc1.6.4-v0.3.4-lf164.3.jar",
+      "fileName": "e4steam-legacy-fabric-mc1.6.4-v0.3.4-lf164.4.jar",
       "loaders": [
         "LegacyFabric"
       ],
@@ -1167,9 +1167,9 @@
         6,
         4
       ],
-      "profile": "native-lan-ui-v5",
-      "sha256": "8a80ab8542dc87c141c013ca4f27fd5a8b190f2d3110339813d20cee5e2069d1",
-      "sizeBytes": 2291675,
+      "profile": "native-lan-ui-v6",
+      "sha256": "38a24bca7cc27769e79bfcf349ed23cd549638caa6961ac57a6e9f79bd0423a8",
+      "sizeBytes": 2291728,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/tree/bdcea00e30ca519fa8190c0c5c04785d42b31dbc",
       "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.4",
       "version": "0.3.4"
@@ -1181,10 +1181,10 @@
     "author-steam-authentication-retained"
   ],
   "componentId": "e4steam",
-  "profile": "native-lan-ui-v5",
+  "profile": "native-lan-ui-v6",
   "publisher": "MarkZamore",
   "schemaVersion": 2,
-  "sourceCommit": "5aaed27873d3e46bcf9d3923b869263c8450f856",
+  "sourceCommit": "e5ab709666e6d2ac0647d888175a70b9ac46a70a",
   "sourcePatches": [
     {
       "path": "source/native-ui.patch",

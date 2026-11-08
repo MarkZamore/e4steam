@@ -202,9 +202,9 @@ command execution, used no physical mouse input and did not use personal worlds.
 It does not prove a real invitation, clipboard transfer, or two-account Steam
 gameplay. The pack records its own difficulty/Creative command changes separately.
 
-## Staged immutable Legacy Fabric v4 delivery
+## Immutable Legacy Fabric v4 delivery
 
-The v4 candidate (`0.3.4-lf164.4`, `legacy-fabric-164-v4`, profile V6) also covers
+The v4 port (`0.3.4-lf164.4`, `legacy-fabric-164-v4`, profile V6) also covers
 native operator feedback. `ServerCommandManager` (`class_765.method_2767`)
 constructs `chat.type.admin` with the sender's canonical name and a nested
 command-result component. Only the first argument of that exact two-argument
@@ -218,10 +218,28 @@ V6 starts from the exact V5 profile SHA256
 and replaces only its Legacy Fabric row. All nineteen other delivery pins and
 historical v1/V3, v2/V4 and v3/V5 receipts remain unchanged. The same four-job
 CI, native acceptance, payload-before-index publication and all-target public
-byte verification gates apply with the new v4/V6 names. The root active index
-remains V5 until the candidate is accepted and its immutable public bytes pass
-verification. Source policy coverage is 55 assertions, including native admin
-sender mapping, nested-body preservation and unknown/malformed negatives.
+byte verification gates apply with the new v4/V6 names. Source policy coverage
+is 55 assertions, including native admin sender mapping, nested-body preservation
+and unknown/malformed negatives; 47 Python source-tool tests passed.
+
+The exact candidate SHA256
+`38a24bca7cc27769e79bfcf349ed23cd549638caa6961ac57a6e9f79bd0423a8`
+passed native reentry/save/quit in 27.87s. The actual `chat.type.admin` displayed
+the registered synthetic host label and preserved the nested result and original
+canonical arguments. Native teleport labels and copy/invite/stop hit tests with
+stale-session rejection also passed. Steam and command execution were suppressed
+only by the QA fixture. The initial owned fresh-world cycle stopped on an English
+locale prerequisite; the owned fixture was corrected to ru_RU before successful
+reentry. User worlds/settings were untouched. Two real Steam participants and a
+real guest command invocation remain NOT RUN.
+
+All four jobs passed for frozen release commit
+`6008bdbb18fd19d32ace6f963129af2767d88ed4` in CI run `42479514797`.
+JAR/receipt/checksums were uploaded before the index, then the draft was published.
+Independent public verification streamed all twenty selected JARs and all four
+new release assets with exact byte counts and SHA256. Only after those checks
+did the root index advance from V5 to V6. The small validation/public proof files
+under `profiles/` retain these boundaries. No audio-device repair is claimed.
 
 ## Historical immutable Legacy Fabric v2 delivery
 

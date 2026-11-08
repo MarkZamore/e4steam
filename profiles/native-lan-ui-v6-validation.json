@@ -1,0 +1,32 @@
+{
+  "status": "PASS_NATIVE_CLIENT_REENTRY_SAVE_QUIT",
+  "candidateJar": {
+    "file": "e4steam-legacy-fabric-mc1.6.4-v0.3.4-lf164.4.jar",
+    "sizeBytes": 2291728,
+    "sha256": "38a24bca7cc27769e79bfcf349ed23cd549638caa6961ac57a6e9f79bd0423a8"
+  },
+  "exit": {
+    "exitCode": 0,
+    "elapsedSeconds": 27.87,
+    "qaAgentSha256": "7b3c9906ffede0234d35f4cf52078222ae286fb5778861200313360941e6c6d7",
+    "mode": "reenter"
+  },
+  "adminTranslation": "PASS",
+  "canonicalArgumentsPreserved": true,
+  "nativeCopyInviteStopAndStaleRejection": "PASS",
+  "baselineErrors": "8 texture errors plus Realms/skins endpoint",
+  "twoRealSteamParticipants": "NOT_RUN",
+  "realGuestGamemodeInvocation": "NOT_RUN",
+  "note": "Native translated component invoked with explicit synthetic profile, command execution/Steam suppressed in QA; initial fresh cycle created world but QA locale prerequisite was English and corrected only in owned fixture",
+  "profile": "native-lan-ui-v6",
+  "sourceRevision": "e5ab709666e6d2ac0647d888175a70b9ac46a70a",
+  "frozenReleaseRevision": "6008bdbb18fd19d32ace6f963129af2767d88ed4",
+  "sourcePolicyAssertions": 55,
+  "sourceToolTests": 47,
+  "sourceCi": {
+    "runId": 42479514797,
+    "url": "https://github.com/MarkZamore/e4steam/actions/runs/42479514797",
+    "exactFourJobs": "PASS"
+  },
+  "publicDelivery": "native-lan-ui-v6-public-verification.json"
+}
