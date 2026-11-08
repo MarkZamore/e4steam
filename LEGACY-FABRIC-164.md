@@ -202,6 +202,27 @@ command execution, used no physical mouse input and did not use personal worlds.
 It does not prove a real invitation, clipboard transfer, or two-account Steam
 gameplay. The pack records its own difficulty/Creative command changes separately.
 
+## Staged immutable Legacy Fabric v4 delivery
+
+The v4 candidate (`0.3.4-lf164.4`, `legacy-fabric-164-v4`, profile V6) also covers
+native operator feedback. `ServerCommandManager` (`class_765.method_2767`)
+constructs `chat.type.admin` with the sender's canonical name and a nested
+command-result component. Only the first argument of that exact two-argument
+shape is mapped to a registered display name. The body, original argument array,
+ordinary chat, unknown senders, command parsing and permission checks retain
+their native values. No storage identity, author JAR, external library or
+content mechanic changes are part of this port update.
+
+V6 starts from the exact V5 profile SHA256
+`c718ce3b1b817b63faadc11745057d008c10e5ad6f3852c1cfb8b666b31295f9`
+and replaces only its Legacy Fabric row. All nineteen other delivery pins and
+historical v1/V3, v2/V4 and v3/V5 receipts remain unchanged. The same four-job
+CI, native acceptance, payload-before-index publication and all-target public
+byte verification gates apply with the new v4/V6 names. The root active index
+remains V5 until the candidate is accepted and its immutable public bytes pass
+verification. Source policy coverage is 55 assertions, including native admin
+sender mapping, nested-body preservation and unknown/malformed negatives.
+
 ## Historical immutable Legacy Fabric v2 delivery
 
 The current build recipe emits `e4steam-legacy-fabric-mc1.6.4-v0.3.4-lf164.2.jar`.

@@ -32,6 +32,11 @@ are declared downstream distributions, not unmodified author releases.
 | `legacy-fabric-164-v3` | Immutable Legacy Fabric 1.6.4 native sharing controls and command display names |
 | `native-lan-ui-v5` | Current twenty-target canonical index and frozen profile |
 
+The staged `legacy-fabric-164-v4` / `native-lan-ui-v6` source candidate adds the
+registered sender nickname to native operator command feedback. It has not been
+activated or published; the active selection above remains V5. See the platform
+notes for its review and immutable publication gates.
+
 `components.json` is the canonical schema2 index, and `SHA256SUMS.txt` covers its
 exact selections. Rows retain author provenance separately from delivery
 filename/SHA/size/URL/tag. Three capabilities preserve hidden or absent extra LAN

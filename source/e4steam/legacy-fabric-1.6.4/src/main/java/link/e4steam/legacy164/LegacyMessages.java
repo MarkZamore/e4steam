@@ -26,9 +26,16 @@ public final class LegacyMessages {
     }
 
     public static Object[] commandNames(String key, Object[] values) {
-        if (key == null || !key.startsWith("commands.") || values == null) return values;
+        if (key == null || values == null) return values;
+        int count;
+        if (key.startsWith("commands.")) count = values.length;
+        // Native ServerCommandManager wraps operator feedback as
+        // chat.type.admin(senderName, translatedCommandResult). Only the sender
+        // slot is a player name; the nested body must retain its own structure.
+        else if ("chat.type.admin".equals(key) && values.length == 2) count = 1;
+        else return values;
         Object[] result = values;
-        for (int index = 0; index < values.length; index++) {
+        for (int index = 0; index < count; index++) {
             if (!(values[index] instanceof String name)) continue;
             String display = LegacyRegistry.displayName(name);
             if (display.equals(name)) continue;

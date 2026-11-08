@@ -73,6 +73,28 @@ public final class LegacyPortPolicyTest {
             check(canonicalArguments[0].equals(nativeName),"Command source arguments remain canonical");
             check(LegacyMessages.commandNames("other.namespace",canonicalArguments)==canonicalArguments,
                 "Unrelated translations retain their arguments");
+            Object commandBody=new Object();Object[] adminArguments={nativeName,commandBody};
+            Object[] adminShown=LegacyMessages.commandNames("chat.type.admin",adminArguments);
+            check(adminShown!=adminArguments&&adminShown[0].equals(display)&&adminShown[1]==commandBody,
+                "Operator feedback displays its registered sender and preserves the nested command component");
+            check(adminArguments[0].equals(nativeName)&&adminArguments[1]==commandBody,
+                "Operator feedback source arguments remain canonical and structurally unchanged");
+            Object[] bodyToken={nativeName,nativeName};
+            check(LegacyMessages.commandNames("chat.type.admin",bodyToken)[1].equals(nativeName),
+                "The operator body is never treated as a player-name slot");
+            Object[] unknownAdmin={LegacyRegistry.canonicalName(2),commandBody};
+            check(LegacyMessages.commandNames("chat.type.admin",unknownAdmin)==unknownAdmin,
+                "An unknown operator is not assigned a registered display name");
+            Object[] embeddedAdmin={"prefix "+nativeName,commandBody};
+            check(LegacyMessages.commandNames("chat.type.admin",embeddedAdmin)==embeddedAdmin,
+                "Operator feedback does not replace an embedded canonical substring");
+            check(LegacyMessages.commandNames("chat.type.text",adminArguments)==adminArguments,
+                "Normal chat structure remains outside the command feedback boundary");
+            Object[] malformedAdmin={nativeName};
+            check(LegacyMessages.commandNames("chat.type.admin",malformedAdmin)==malformedAdmin,
+                "An unrecognized operator message shape is left unchanged");
+            check(LegacyMessages.commandNames(null,adminArguments)==adminArguments&&LegacyMessages.commandNames("chat.type.admin",null)==null,
+                "Absent translation metadata is left unchanged");
             check(LegacyRegistry.localLabel("Fallback").equals(nativeName),"LocalUUID chooses canonical label");
             denied(()->LegacyIdentity.prepareRemote(new Login(),protocol),"Registry presence must not grant remote trust");
             Manager manager=new Manager();manager.field_2708.add(new Player(nativeName));

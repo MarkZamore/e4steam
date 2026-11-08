@@ -51,24 +51,26 @@ class ActiveProfileDispatcherTests(unittest.TestCase):
             document=active.verify_active(self.root)
         self.assertEqual(20,len(document['builds']))
 
-    def test_v5_only_replaces_the_legacy_artifact(self):
+    def assert_new_legacy_revision(self, profile, revision):
         previous = self.select(active.V3)
         candidate = json.loads((self.root/'components.json').read_bytes())
-        candidate['profile'] = active.V5
+        candidate['profile'] = profile
         candidate['sourceCommit'] = '1' * 40
         for row in candidate['builds']:
-            row['profile'] = active.V5
+            row['profile'] = profile
         legacy = next(row for row in candidate['builds'] if row['loaders'] == ['LegacyFabric'])
         prior_legacy = next(row for row in previous['builds'] if row['loaders'] == ['LegacyFabric'])
         receipt = json.loads((self.root/'releases'/active.V3_TAG/'build-receipt.json').read_bytes())
-        receipt.update(fileName=build.NAME, sizeBytes=receipt['sizeBytes'] + 1, sha256='2' * 64)
-        release_dir = self.root/'releases'/build.TAG
+        filename=f'e4steam-legacy-fabric-mc1.6.4-v0.3.4-lf164.{revision}.jar'
+        tag=f'legacy-fabric-164-v{revision}'
+        receipt.update(fileName=filename, sizeBytes=receipt['sizeBytes'] + 1, sha256='2' * 64)
+        release_dir = self.root/'releases'/tag
         release_dir.mkdir()
         receipt_bytes = (json.dumps(receipt, indent=2, sort_keys=True) + '\n').encode()
         (release_dir/'build-receipt.json').write_bytes(receipt_bytes)
-        url = f'https://github.com/MarkZamore/e4steam/releases/download/{build.TAG}/'
-        legacy.update(fileName=build.NAME, sizeBytes=receipt['sizeBytes'], sha256=receipt['sha256'],
-                      deliveryTag=build.TAG, downloadUrl=url + build.NAME)
+        url = f'https://github.com/MarkZamore/e4steam/releases/download/{tag}/'
+        legacy.update(fileName=filename, sizeBytes=receipt['sizeBytes'], sha256=receipt['sha256'],
+                      deliveryTag=tag, downloadUrl=url + filename)
         legacy['derivation'].update(
             sourceCommit=candidate['sourceCommit'],
             sourceBuildReceipt=dict(fileName='build-receipt.json', sizeBytes=len(receipt_bytes),
@@ -82,6 +84,12 @@ class ActiveProfileDispatcherTests(unittest.TestCase):
         self.rewrite_frozen_and_active(candidate)
         with self.assertRaisesRegex(ValueError, 'immutable legacy delivery'):
             active.verify_active(self.root)
+
+    def test_v5_only_replaces_the_legacy_artifact(self):
+        self.assert_new_legacy_revision(active.V5,3)
+
+    def test_v6_only_replaces_the_legacy_artifact(self):
+        self.assert_new_legacy_revision(active.V6,4)
 
     def test_semantically_equal_but_byte_different_active_index_is_rejected(self):
         self.select(active.V3)

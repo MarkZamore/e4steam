@@ -19,9 +19,9 @@ import components
 from legacy_fabric_164 import IMPLEMENTATION_VERSION, NAME, TAG, UPSTREAM
 
 ROOT=Path(__file__).resolve().parents[1]
-PROFILE=active_profile.V5
-BASE=active_profile.V4
-BASE_SHA256='399842903aaa1cad641e703cc06ec38417fbefdc6fbdf9a89f62d447d64be50e'
+PROFILE=active_profile.V6
+BASE=active_profile.V5
+BASE_SHA256='c718ce3b1b817b63faadc11745057d008c10e5ad6f3852c1cfb8b666b31295f9'
 REPOSITORY='MarkZamore/e4steam'
 RELEASE_URL=f'https://github.com/{REPOSITORY}/releases/download/{TAG}/'
 
