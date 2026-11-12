@@ -11,6 +11,7 @@ import net.minecraft.client.gui.GuiScreen;
 import net.minecraft.client.gui.GuiIngameMenu;
 import net.minecraft.client.gui.GuiMainMenu;
 import net.minecraft.client.gui.GuiMultiplayer;
+import net.minecraft.client.gui.GuiOptions;
 import net.minecraft.client.gui.GuiShareToLan;
 import net.minecraft.client.multiplayer.GuiConnecting;
 import net.minecraft.client.multiplayer.ServerData;
@@ -18,6 +19,7 @@ import net.minecraft.client.resources.I18n;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.integrated.IntegratedServer;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.Style;
@@ -29,6 +31,7 @@ import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.FMLCommonHandler;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 import net.minecraftforge.fml.common.gameevent.TickEvent;
 
@@ -40,6 +43,11 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 public final class E4steamForge112Client implements RetroPlatform {
     private static final int ACCESS_MODE_BUTTON = 0xE451;
     private static final int INVITE_BUTTON = 0xE452;
+    private static final int OPEN_TO_LAN = 7;
+    private static final int START_LAN = 101;
+    private static final int CANCEL_LAN = 102;
+    private static final int WORLD_DIFFICULTY = 108;
+    private static final int LOCK_DIFFICULTY = 109;
     private final ConcurrentLinkedQueue<Runnable> clientTasks =
             new ConcurrentLinkedQueue<Runnable>();
 
@@ -148,8 +156,10 @@ public final class E4steamForge112Client implements RetroPlatform {
         Minecraft minecraft = Minecraft.getMinecraft();
         if (minecraft.ingameGUI == null) return;
 
-        ITextComponent message = new TextComponentString(
-                I18n.format("text.e4steam_minecraft.domainAssigned") + " ");
+        boolean managed = RetroBootstrap.launcherManagedLan();
+        ITextComponent message = new TextComponentString(I18n.format(managed
+                ? "text.e4steam_minecraft.launcherDomainAssigned"
+                : "text.e4steam_minecraft.domainAssigned") + (managed ? " [" : " "));
         TextComponentString address = new TextComponentString(endpoint);
         address.setStyle(new Style()
                 .setColor(TextFormatting.GREEN)
@@ -159,6 +169,7 @@ public final class E4steamForge112Client implements RetroPlatform {
                         new TextComponentString(I18n.format(
                                 "text.e4steam_minecraft.addressCopyHelp")))));
         message.appendSibling(address);
+        if (managed) message.appendText("]");
 
         TextComponentString invite = new TextComponentString("[" +
                 I18n.format("text.e4steam_minecraft.inviteFriends") + "]");
@@ -170,8 +181,9 @@ public final class E4steamForge112Client implements RetroPlatform {
                                 "text.e4steam_minecraft.inviteFriendsHelp")))));
         message.appendText(" ").appendSibling(invite);
 
-        TextComponentString stop = new TextComponentString("[" +
-                I18n.format("text.e4steam_minecraft.clickToStop") + "]");
+        TextComponentString stop = new TextComponentString("[" + I18n.format(managed
+                ? "text.e4steam_minecraft.launcherStopSharing"
+                : "text.e4steam_minecraft.clickToStop") + "]");
         stop.setStyle(new Style()
                 .setColor(TextFormatting.RED)
                 .setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/e4steam stop"))
@@ -182,7 +194,20 @@ public final class E4steamForge112Client implements RetroPlatform {
         minecraft.ingameGUI.getChatGUI().printChatMessage(message);
     }
 
-    @SubscribeEvent public void initializeScreen(GuiScreenEvent.InitGuiEvent.Post event) {
+    @SubscribeEvent(priority = EventPriority.LOWEST)
+    public void initializeScreen(GuiScreenEvent.InitGuiEvent.Post event) {
+        if (RetroBootstrap.launcherManagedLan()) {
+            if (event.getGui() instanceof GuiShareToLan) {
+                event.getButtonList().removeIf(button -> button.id != START_LAN && button.id != CANCEL_LAN);
+            } else if (event.getGui() instanceof GuiOptions && Minecraft.getMinecraft().world != null) {
+                event.getButtonList().removeIf(button -> button.id == WORLD_DIFFICULTY || button.id == LOCK_DIFFICULTY);
+            } else if (event.getGui() instanceof GuiIngameMenu) {
+                for (GuiButton button : event.getButtonList()) {
+                    if (button.id == OPEN_TO_LAN) updateManagedPauseButton(button);
+                }
+            }
+            return;
+        }
         if (event.getGui() instanceof GuiShareToLan) {
             event.getButtonList().add(new GuiButton(
                     ACCESS_MODE_BUTTON,
@@ -205,6 +230,42 @@ public final class E4steamForge112Client implements RetroPlatform {
                     I18n.format("text.e4steam_minecraft.inviteFriends")
             ));
         }
+    }
+
+    @SubscribeEvent(priority = EventPriority.HIGHEST)
+    public void managedButtonPressed(GuiScreenEvent.ActionPerformedEvent.Pre event) {
+        if (!RetroBootstrap.launcherManagedLan()
+                || !(event.getGui() instanceof GuiIngameMenu) || event.getButton().id != OPEN_TO_LAN) return;
+        event.setCanceled(true);
+        Minecraft client = Minecraft.getMinecraft();
+        IntegratedServer server = client.getIntegratedServer();
+        if (server == null || server.getPublic()) {
+            RetroBootstrap.openReports();
+            return;
+        }
+        String port = null;
+        try {
+            port = server.shareToLAN(server.getWorld(0).getWorldInfo().getGameType(), false);
+        } catch (RuntimeException exception) {
+            link.e4steam.E4steamClient.LOGGER.error("Could not open the integrated world", exception);
+        } finally {
+            RetroBootstrap.cancelPublication();
+        }
+        if (port == null) {
+            showMessage(I18n.format("commands.publish.failed"));
+            return;
+        }
+        updateManagedPauseButton(event.getButton());
+        client.displayGuiScreen(null);
+        showMessage(I18n.format("text.e4steam_minecraft.launcherLocalPort", port));
+    }
+
+    private static void updateManagedPauseButton(GuiButton button) {
+        IntegratedServer server = Minecraft.getMinecraft().getIntegratedServer();
+        boolean reports = server == null || server.getPublic();
+        button.displayString = I18n.format(reports
+                ? "text.e4steam_minecraft.launcherReports" : "menu.shareToLan");
+        button.enabled = true;
     }
 
     @SubscribeEvent public void buttonPressed(GuiScreenEvent.ActionPerformedEvent.Post event) {

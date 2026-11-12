@@ -11,6 +11,13 @@
   "client": [
     "ConnectScreenAddressRetroMixin",
     "ChatScreenCommandSuggestionsMixin",
+    "LauncherIntegratedServerMixin",
+    "LauncherJoinMultiplayerScreenMixin",
+    "LauncherLanPingerMixin",
+    "LauncherNetworkServerEntryMixin",
+    "LauncherOptionsScreenMixin",
+    "LauncherPauseScreenMixin",
+    "LauncherPlayerListMixin",
     "PauseScreenComponentMixin",
     "ScreenCommandMixin",
     "ShareToLanScreenComponentMixin"

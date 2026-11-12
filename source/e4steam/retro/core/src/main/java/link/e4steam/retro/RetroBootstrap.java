@@ -3,6 +3,7 @@ package link.e4steam.retro;
 import link.e4steam.E4steamClient;
 import link.e4steam.MinecraftVersion;
 import link.e4steam.steam.SteamAccessMode;
+import link.e4steam.steam.SteamLanMetadata;
 import link.e4steam.steam.SteamOverlayRelauncher;
 import link.e4steam.steam.SteamRuntime;
 import link.e4steam.steam.SteamSession;
@@ -19,10 +20,70 @@ public final class RetroBootstrap {
             "start", "stop", "restart", "invite", "doctor", "addon", "help"));
     private static int relayPort;
     private static int hostedPort;
+    private static Publication publication;
     private static volatile SteamAccessMode selectedAccessMode = SteamAccessMode.FRIENDS_ONLY;
     private static volatile RetroPlatform installedPlatform;
 
     private RetroBootstrap() {
+    }
+
+    private static final class Publication {
+        private String worldName;
+        private String playerName;
+        private Runnable closeRelay;
+
+        private boolean confirmed() { return worldName != null; }
+    }
+
+    public static boolean launcherManagedLan() {
+        return Boolean.getBoolean("link.e4steam.launcherManagedLan");
+    }
+
+    public static String launcherNickname(String fallback) {
+        return System.getProperty("link.e4steam.launcherPlayerName", fallback);
+    }
+
+    /** Reserves one native publication attempt. No Steam task starts at HEAD. */
+    public static boolean beginPublication() {
+        if (!launcherManagedLan()) return true;
+        synchronized (LOCK) {
+            if (publication != null) return false;
+            publication = new Publication();
+            return true;
+        }
+    }
+
+    public static Object relayTicket() {
+        synchronized (LOCK) { return publication; }
+    }
+
+    public static void publishRelay(String worldName, String playerName) {
+        if (!launcherManagedLan()) return;
+        synchronized (LOCK) {
+            if (publication == null || publication.confirmed()) return;
+            publication.worldName = worldName == null ? "" : worldName;
+            publication.playerName = playerName;
+            replaceHostedSessionLocked(relayPort);
+        }
+    }
+
+    public static void cancelPublication() {
+        if (!launcherManagedLan()) return;
+        synchronized (LOCK) {
+            if (publication == null || publication.confirmed()) return;
+            if (publication.closeRelay != null) publication.closeRelay.run();
+            publication = null;
+            relayPort = 0;
+        }
+    }
+
+    public static void openReports() {
+        SteamRuntime.get().openRecentPlayersOverlay().whenComplete((unused, failure) -> {
+            if (failure != null) {
+                showTranslated("text.e4steam_minecraft.overlayUnavailable",
+                        "The Steam overlay is unavailable");
+            }
+        });
     }
 
     public static void install(String minecraftVersion, RetroPlatform platform) {
@@ -38,16 +99,29 @@ public final class RetroBootstrap {
 
     /** Publishes a loopback-only relay created by a version-specific Minecraft hook. */
     public static void relayBound(int port) {
+        relayBound(port, null, null);
+    }
+
+    public static boolean relayBound(int port, Object ticket, Runnable close) {
         int normalized = normalizePort(port);
         synchronized (LOCK) {
+            if (launcherManagedLan()) {
+                if (normalized == 0 || publication == null || publication != ticket || relayPort != 0) return false;
+                relayPort = normalized;
+                publication.closeRelay = close;
+                if (publication.confirmed()) replaceHostedSessionLocked(normalized);
+                return true;
+            }
             relayPort = normalized;
             replaceHostedSessionLocked(normalized);
+            return normalized != 0;
         }
     }
 
     /** Stops Steam exposure when the corresponding Minecraft listener closes. */
     public static void relayClosed() {
         synchronized (LOCK) {
+            publication = null;
             relayPort = 0;
             replaceHostedSessionLocked(0);
         }
@@ -100,7 +174,7 @@ public final class RetroBootstrap {
         }
         hostedPort = 0;
         if (port > 0 && selectedAccessMode != SteamAccessMode.LOCAL_ONLY) {
-            SteamSession replacement = new SteamSession(port, selectedAccessMode);
+            SteamSession replacement = newHostedSession(port);
             E4steamClient.session = replacement;
             hostedPort = port;
             replacement.startAsync();
@@ -118,7 +192,8 @@ public final class RetroBootstrap {
     private static boolean startSharing(boolean forceRestart) {
         synchronized (LOCK) {
             SteamSession current = E4steamClient.session;
-            if (relayPort == 0 || selectedAccessMode == SteamAccessMode.LOCAL_ONLY) {
+            if (relayPort == 0 || selectedAccessMode == SteamAccessMode.LOCAL_ONLY
+                    || launcherManagedLan() && (publication == null || !publication.confirmed())) {
                 return false;
             }
             if (!forceRestart && isActive(current)) {
@@ -129,12 +204,20 @@ public final class RetroBootstrap {
                 current.stop();
             }
             hostedPort = 0;
-            SteamSession replacement = new SteamSession(relayPort, selectedAccessMode);
+            SteamSession replacement = newHostedSession(relayPort);
             E4steamClient.session = replacement;
             hostedPort = relayPort;
             replacement.startAsync();
             return true;
         }
+    }
+
+    private static SteamSession newHostedSession(int port) {
+        SteamSession session = new SteamSession(port, selectedAccessMode);
+        if (publication != null && publication.confirmed()) {
+            SteamLanMetadata.describe(session, publication.worldName, publication.playerName);
+        }
+        return session;
     }
 
     private static boolean stopSharing() {

@@ -10,7 +10,8 @@ plugins {
 }
 
 group = "link.e4steam"
-version = "0.3.2"
+val launcherRetroVersion = providers.gradleProperty("lanminecraftRetroVersion")
+version = launcherRetroVersion.getOrElse("0.3.2")
 
 subprojects {
     group = rootProject.group
@@ -28,6 +29,13 @@ subprojects {
         options.encoding = "UTF-8"
         sourceCompatibility = "1.8"
         targetCompatibility = "1.8"
+    }
+
+    if (launcherRetroVersion.isPresent) {
+        tasks.withType<Jar>().configureEach {
+            isPreserveFileTimestamps = false
+            isReproducibleFileOrder = true
+        }
     }
 
     plugins.withId("java") {
@@ -249,6 +257,9 @@ public final class RetroBuildMetadata {
             rename { "NOTICE-e4steam.txt" }
         }
         from(rootProject.file("../THIRD_PARTY_NOTICES.md")) { into("META-INF") }
+        if (launcherRetroVersion.isPresent) {
+            from(rootProject.file("LANMINECRAFT-LAN-NOTICE.txt")) { into("META-INF") }
+        }
         if (project.name in legacyLangProjects) {
             // Windows cannot materialize en_US.lang and en_us.lang (or the
             // Russian pair) in one directory. A ZIP can, so add the lowercase
@@ -303,6 +314,10 @@ public final class RetroBuildMetadata {
                 asJar {
                     inputFile.set(tasks.named<ShadowJar>("shadowJar").flatMap { it.archiveFile })
                     archiveFileName.set("e4steam-${loader}-mc${minecraftBranch}-v${project.version}.jar")
+                    if (launcherRetroVersion.isPresent) {
+                        isPreserveFileTimestamps = false
+                        isReproducibleFileOrder = true
+                    }
                 }
             }
             tasks.named("build") { dependsOn(tasks.named("remapJar")) }

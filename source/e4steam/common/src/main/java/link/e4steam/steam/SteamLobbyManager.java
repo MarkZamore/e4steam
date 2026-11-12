@@ -16,7 +16,9 @@ import link.e4steam.Mirror;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -230,7 +232,7 @@ final class SteamLobbyManager implements AutoCloseable {
         }
         requireOverlay();
         if (hostLobbyId == 0) {
-            openFriendsOverlayCompat();
+            openOverlayCompat("Friends");
             return;
         }
         friends.activateGameOverlayInviteDialog(SteamID.createFromNativeHandle(hostLobbyId));
@@ -242,7 +244,57 @@ final class SteamLobbyManager implements AutoCloseable {
             return;
         }
         requireOverlay();
-        openFriendsOverlayCompat();
+        openOverlayCompat("Friends");
+    }
+
+    void openRecentPlayersOverlay() throws IOException {
+        requireOverlay();
+        openOverlayCompat("players");
+    }
+
+    List<SteamLanWorld> discoverLauncherWorlds() {
+        List<SteamLanWorld> worlds = new ArrayList<>();
+        int count = Math.min(2048, friends.getFriendCount(SteamFriends.FriendFlags.Immediate));
+        for (int index = 0; index < count; index++) {
+            SteamID friend = friends.getFriendByIndex(index, SteamFriends.FriendFlags.Immediate);
+            if (friend == null) continue;
+            friends.requestFriendRichPresence(friend);
+            SteamLanWorld world = launcherWorld(friend, true);
+            if (world != null) worlds.add(world);
+        }
+        return worlds;
+    }
+
+    boolean connectLauncherWorld(long lobbyId, long friendId) {
+        SteamID friend = SteamID.createFromNativeHandle(friendId);
+        if (friends.getFriendRelationship(friend) != SteamFriends.FriendRelationship.Friend) return false;
+        SteamLanWorld world = launcherWorld(friend, false);
+        return world != null && world.lobbyId() == lobbyId
+                && requestJoin(SteamID.createFromNativeHandle(lobbyId), friend, false);
+    }
+
+    private SteamLanWorld launcherWorld(SteamID friend, boolean refresh) {
+        String connect = friends.getFriendRichPresence(friend, "connect");
+        if (connect == null || !connect.startsWith(LOBBY_CONNECT_PREFIX)) return null;
+        long lobbyId;
+        try {
+            lobbyId = Long.parseUnsignedLong(connect.substring(LOBBY_CONNECT_PREFIX.length()));
+        } catch (NumberFormatException invalidPresence) {
+            return null;
+        }
+        if (lobbyId == 0 || lobbyId == hostLobbyId) return null;
+        SteamID lobby = SteamID.createFromNativeHandle(lobbyId);
+        if (refresh) matchmaking.requestLobbyData(lobby);
+        if (!PROTOCOL_VERSION.equals(matchmaking.getLobbyData(lobby, KEY_PROTOCOL))
+                || !minecraftVersion.equals(matchmaking.getLobbyData(lobby, KEY_MINECRAFT))
+                || !"1".equals(matchmaking.getLobbyData(lobby, SteamLanWorld.DISPLAY_KEY))) return null;
+        SteamID owner = matchmaking.getLobbyOwner(lobby);
+        long friendId = SteamNativeHandle.getNativeHandle(friend);
+        if (owner == null || SteamNativeHandle.getNativeHandle(owner) != friendId) return null;
+        SteamLanWorld world = new SteamLanWorld(lobbyId, friendId,
+                matchmaking.getLobbyData(lobby, SteamLanWorld.WORLD_KEY),
+                matchmaking.getLobbyData(lobby, SteamLanWorld.PLAYER_KEY));
+        return world.worldName().isEmpty() || world.playerName().isEmpty() ? null : world;
     }
 
     boolean allows(SteamSession owner, long remoteSteamId) {
@@ -476,6 +528,7 @@ final class SteamLobbyManager implements AutoCloseable {
                 && matchmaking.setLobbyData(lobby, KEY_PROTOCOL, PROTOCOL_VERSION)
                 && matchmaking.setLobbyData(lobby, KEY_MINECRAFT, minecraftVersion)
                 && matchmaking.setLobbyData(lobby, KEY_ENDPOINT, address.inviteString())
+                && SteamLanMetadata.publish(owner, matchmaking, lobby)
                 && matchmaking.setLobbyJoinable(lobby, true);
         if (!metadataReady) {
             matchmaking.leaveLobby(lobby);
@@ -609,14 +662,14 @@ final class SteamLobbyManager implements AutoCloseable {
         return (Long) createLobby.invoke(null, callbackHandle, lobbyType, capacity);
     }
 
-    private static void openFriendsOverlayCompat() throws IOException {
+    private static void openOverlayCompat(String page) throws IOException {
         try {
             Class<?> nativeType = Class.forName("com.codedisaster.steamworks.SteamFriendsNative");
             Method activate = nativeType.getDeclaredMethod("activateGameOverlay", String.class);
             activate.setAccessible(true);
-            activate.invoke(null, "Friends");
+            activate.invoke(null, page);
         } catch (ReflectiveOperationException exception) {
-            throw new IOException("Steam friends overlay compatibility call failed", exception);
+            throw new IOException("Steam overlay compatibility call failed", exception);
         }
     }
 

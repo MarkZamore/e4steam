@@ -13,6 +13,7 @@ val sharedSteamSources = fileTree(rootProject.file("../common/src/main/java")) {
         "link/e4steam/steam/NativePlatform.java",
         "link/e4steam/steam/SteamAccessMode.java",
         "link/e4steam/steam/SteamAddress.java",
+        "link/e4steam/steam/SteamAddonLobbyDirectory.java",
         "link/e4steam/steam/SteamAddonHooks.java",
         "link/e4steam/steam/SteamApi.java",
         "link/e4steam/steam/SteamBridgeRegistry.java",
@@ -30,6 +31,8 @@ val sharedSteamSources = fileTree(rootProject.file("../common/src/main/java")) {
         "link/e4steam/steam/SteamLifecycle.java",
         "link/e4steam/steam/SteamClientHealthMonitor.java",
         "link/e4steam/steam/SteamLobbyManager.java",
+        "link/e4steam/steam/SteamLanMetadata.java",
+        "link/e4steam/steam/SteamLanWorld.java",
         "link/e4steam/steam/SteamLoopbackAuthentication.java",
         "link/e4steam/steam/SteamMinecraftIdentity.java",
         "link/e4steam/steam/SteamNativeLibraryLoader.java",
@@ -42,11 +45,25 @@ val sharedSteamSources = fileTree(rootProject.file("../common/src/main/java")) {
         "link/e4steam/steam/SteamProtocol.java",
         "link/e4steam/steam/SteamPublicJoinTracker.java",
         "link/e4steam/steam/SteamResetRetryQueue.java",
+        "link/e4steam/steam/SteamReliableDataPacer.java",
         "link/e4steam/steam/SteamRuntime.java",
         "link/e4steam/steam/SteamRuntimeBackend.java",
         "link/e4steam/steam/SteamUdpBridge.java",
         "link/e4steam/steam/SteamworksApi.java",
         "link/e4steam/steam/VoiceChatUdpEndpoint.java"
+    )
+}
+
+val sharedLobbyApiSources = fileTree(rootProject.file("../api/src/main/java")) {
+    include(
+        "link/e4steam/api/ApiError.java",
+        "link/e4steam/api/ApiErrorCode.java",
+        "link/e4steam/api/ApiLimits.java",
+        "link/e4steam/api/ApiResult.java",
+        "link/e4steam/api/ApiValidation.java",
+        "link/e4steam/api/Retryability.java",
+        "link/e4steam/api/identity/IdentityService.java",
+        "link/e4steam/api/lobby/LobbyService.java"
     )
 }
 
@@ -103,6 +120,7 @@ tasks.processResources {
 
 tasks.compileJava {
     source(sharedSteamSources)
+    source(sharedLobbyApiSources)
 }
 
 dependencies {

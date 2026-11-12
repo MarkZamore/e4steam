@@ -7,6 +7,14 @@
     "NetHandlerLoginServerMixin",
     "NetworkSystemEndpointMixin"
   ],
-  "client": ["GuiConnectingAddressMixin"],
+  "client": [
+    "GuiConnectingAddressMixin",
+    "GuiMultiplayerManagedLan112Mixin",
+    "IntegratedServerManagedLan112Mixin",
+    "PlayerListManagedLan112Mixin",
+    "ServerListEntryManagedLan112Mixin",
+    "ThreadLanServerPingManaged112Mixin",
+    "WorldInfoManagedLan112Mixin"
+  ],
   "injectors": {"defaultRequire": 1}
 }

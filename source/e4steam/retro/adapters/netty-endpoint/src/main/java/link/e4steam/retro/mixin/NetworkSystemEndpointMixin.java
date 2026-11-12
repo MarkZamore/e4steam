@@ -35,6 +35,7 @@ public abstract class NetworkSystemEndpointMixin {
     private void e4steam$addRelay(InetAddress address, int port, CallbackInfo info)
             throws IOException {
         if (Agnos.isClient() && !E4STEAM_ADDING_RELAY.get().booleanValue()) {
+            if (RetroBootstrap.launcherManagedLan() && RetroBootstrap.relayTicket() == null) return;
             E4STEAM_ADDING_RELAY.set(Boolean.TRUE);
             try { addEndpoint(InetAddress.getLoopbackAddress(), 0); }
             finally { E4STEAM_ADDING_RELAY.set(Boolean.FALSE); }
@@ -48,6 +49,9 @@ public abstract class NetworkSystemEndpointMixin {
         if (E4STEAM_ADDING_RELAY.get().booleanValue()) {
             return bootstrap.localAddress(InetAddress.getLoopbackAddress(), 0);
         }
+        if (Agnos.isClient() && RetroBootstrap.launcherManagedLan() && RetroBootstrap.relayTicket() != null) {
+            return bootstrap.localAddress(InetAddress.getLoopbackAddress(), port);
+        }
         return !Agnos.isClient() && RetroDedicatedBootstrap.enabled()
                 ? bootstrap.localAddress(InetAddress.getLoopbackAddress(), port)
                 : bootstrap.localAddress(address, port);
@@ -58,11 +62,14 @@ public abstract class NetworkSystemEndpointMixin {
     private ChannelFuture e4steam$publishRelay(ServerBootstrap bootstrap) {
         ChannelFuture future = bootstrap.bind();
         if (E4STEAM_ADDING_RELAY.get().booleanValue()) {
+            final Object ticket = RetroBootstrap.relayTicket();
             future.addListener(new ChannelFutureListener() {
                 @Override public void operationComplete(ChannelFuture completed) {
                     if (completed.isSuccess()) {
                         InetSocketAddress local = (InetSocketAddress) completed.channel().localAddress();
-                        RetroBootstrap.relayBound(local.getPort());
+                        if (!RetroBootstrap.relayBound(local.getPort(), ticket, () -> completed.channel().close())) {
+                            completed.channel().close();
+                        }
                     } else {
                         E4steamClient.LOGGER.error("Could not bind the e4steam loopback relay",
                                 completed.cause());

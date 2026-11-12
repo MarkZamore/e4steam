@@ -1,0 +1,14 @@
+LANMinecraft downstream e4steam modifications
+
+This artifact includes the e4steam project by Kamilchik and contributors,
+https://github.com/Kamilhik/e4steam, licensed under the Apache License 2.0.
+The upstream source revision is recorded in source/UPSTREAM.json in the
+LANMinecraft e4steam source repository. The original license and third-party
+notices remain bundled in META-INF.
+
+LANMinecraft modifies the Forge 1.12.2 and Forge 1.16.5 integrations to
+preserve saved integrated-world permissions on publication, show the native
+one-click Steam sharing action and list the names of Steam-hosted worlds.
+These changes are opt-in for launcher-managed worlds.
+
+Modified source and build instructions: https://github.com/MarkZamore/e4steam

@@ -57,12 +57,20 @@ public final class SteamSession {
                 activity = acquired;
             }
             runtime.awaitReady();
-            runtime.startHosting(this, localPort, 0, token, accessMode);
             SteamAddress provisional = new SteamAddress(
                     Long.parseUnsignedLong(runtime.steamId()), token);
-            runtime.createHostLobby(this, accessMode, provisional).get(75, TimeUnit.SECONDS);
-            address = provisional;
-            state = State.STARTED;
+            CompletableFuture<Long> lobby;
+            synchronized (lock) {
+                if (state != State.STARTING) return;
+                runtime.startHosting(this, localPort, 0, token, accessMode);
+                lobby = runtime.createHostLobby(this, accessMode, provisional);
+            }
+            lobby.get(75, TimeUnit.SECONDS);
+            synchronized (lock) {
+                if (state != State.STARTING) return;
+                address = provisional;
+                state = State.STARTED;
+            }
             E4steamClient.sessionReady(this);
         } catch (Throwable failure) {
             runtimeFailed(failure);
@@ -93,7 +101,10 @@ public final class SteamSession {
     }
 
     void runtimeFailed(Throwable failure) {
-        state = State.UNHEALTHY;
+        synchronized (lock) {
+            if (state == State.STOPPING || state == State.STOPPED) return;
+            state = State.UNHEALTHY;
+        }
         E4steamClient.sessionFailed(failure);
         stop();
     }

@@ -625,6 +625,42 @@ public final class SteamRuntime implements SteamBridgeRuntime {
         waitForSteamTask(task, STEAM_TASK_TIMEOUT, "opening the Steam friends overlay");
     }
 
+    public CompletableFuture<Void> openRecentPlayersOverlay() {
+        return submitSteamTaskIfRunning(() -> {
+            SteamLobbyManager current = lobbyManager;
+            if (current == null) throw new IOException("Steam social services are unavailable");
+            current.openRecentPlayersOverlay();
+            return null;
+        });
+    }
+
+    public CompletableFuture<List<SteamLanWorld>> discoverLauncherWorlds() {
+        return submitSteamTaskIfRunning(() -> {
+            SteamLobbyManager current = lobbyManager;
+            return current == null ? Collections.emptyList() : current.discoverLauncherWorlds();
+        });
+    }
+
+    /** Returns null for a normal saved or manually entered Minecraft address. */
+    public CompletableFuture<Boolean> connectLauncherWorld(String address) {
+        if (address == null || !address.startsWith("portable-steam-")) return null;
+        String[] ids = address.substring("portable-steam-".length()).split("-", -1);
+        if (ids.length != 2) return CompletableFuture.completedFuture(false);
+        final long lobby;
+        final long friend;
+        try {
+            lobby = Long.parseUnsignedLong(ids[0]);
+            friend = Long.parseUnsignedLong(ids[1]);
+        } catch (NumberFormatException invalidAddress) {
+            return CompletableFuture.completedFuture(false);
+        }
+        if (lobby == 0 || friend == 0) return CompletableFuture.completedFuture(false);
+        return submitSteamTaskIfRunning(() -> {
+            SteamLobbyManager current = lobbyManager;
+            return current != null && current.connectLauncherWorld(lobby, friend);
+        });
+    }
+
     /** Cancels the connection screen without touching bridges hosted for other players. */
     public void cancelClientConnection() {
         cancelGuestJoin();
