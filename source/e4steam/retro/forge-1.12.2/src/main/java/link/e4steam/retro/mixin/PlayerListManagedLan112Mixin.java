@@ -8,6 +8,7 @@ import net.minecraft.server.management.PlayerList;
 import net.minecraft.world.WorldServer;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
@@ -19,16 +20,19 @@ public abstract class PlayerListManagedLan112Mixin {
 
     @Inject(method = "setCommandsAllowedForAll", at = @At("HEAD"), cancellable = true)
     private void e4steam$rejectAllPlayerGrant(boolean requested, CallbackInfo result) {
-        if (requested && RetroBootstrap.launcherManagedLan() && getServerInstance() instanceof IntegratedServer) {
-            result.cancel();
-        }
+        if (requested && e4steam$worldCommandsDisabled()) result.cancel();
     }
 
     @Inject(method = "canSendCommands", at = @At("HEAD"), cancellable = true)
     private void e4steam$enforceSavedPermission(GameProfile player, CallbackInfoReturnable<Boolean> result) {
+        if (e4steam$worldCommandsDisabled()) result.setReturnValue(false);
+    }
+
+    @Unique private boolean e4steam$worldCommandsDisabled() {
+        if (!RetroBootstrap.launcherManagedLan()) return false;
         MinecraftServer server = getServerInstance();
-        if (!RetroBootstrap.launcherManagedLan() || !(server instanceof IntegratedServer)) return;
+        if (!(server instanceof IntegratedServer)) return false;
         WorldServer world = server.getWorld(0);
-        if (world == null || !world.getWorldInfo().areCommandsAllowed()) result.setReturnValue(false);
+        return world == null || !world.getWorldInfo().areCommandsAllowed();
     }
 }

@@ -3,7 +3,6 @@ package link.e4steam.retro.mixin;
 import link.e4steam.retro.RetroBootstrap;
 import link.e4steam.retro.forge.WorldCommandPolicy112;
 import net.minecraft.server.integrated.IntegratedServer;
-import net.minecraft.server.management.PlayerList;
 import net.minecraft.world.GameType;
 import net.minecraft.world.WorldType;
 import net.minecraft.world.storage.WorldInfo;
@@ -12,7 +11,6 @@ import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
 import org.spongepowered.asm.mixin.injection.Inject;
 import org.spongepowered.asm.mixin.injection.ModifyVariable;
-import org.spongepowered.asm.mixin.injection.Redirect;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import org.spongepowered.asm.mixin.injection.callback.CallbackInfoReturnable;
 
@@ -41,14 +39,8 @@ public abstract class IntegratedServerManagedLan112Mixin {
     }
 
     @ModifyVariable(method = "shareToLAN", at = @At("HEAD"), argsOnly = true, ordinal = 0)
-    private boolean e4steam$preserveHostPermission(boolean requested) {
+    private boolean e4steam$preserveWorldCommands(boolean requested) {
         return RetroBootstrap.launcherManagedLan() ? e4steam$world().areCommandsAllowed() : requested;
-    }
-
-    @Redirect(method = "shareToLAN", at = @At(value = "INVOKE",
-            target = "Lnet/minecraft/server/management/PlayerList;setCommandsAllowedForAll(Z)V"))
-    private void e4steam$preserveGuestPermissions(PlayerList players, boolean requested) {
-        players.setCommandsAllowedForAll(!RetroBootstrap.launcherManagedLan() && requested);
     }
 
     @Inject(method = "shareToLAN", at = @At("RETURN"))

@@ -27,8 +27,9 @@ public abstract class LauncherIntegratedServerMixin {
     }
 
     @ModifyVariable(method = "publishServer", at = @At("HEAD"), argsOnly = true, ordinal = 0)
-    private boolean e4steam$keepGuestCommandsDisabled(boolean requested) {
-        return !RetroBootstrap.launcherManagedLan() && requested;
+    private boolean e4steam$keepWorldCommands(boolean requested) {
+        if (!RetroBootstrap.launcherManagedLan()) return requested;
+        return ((IntegratedServer) (Object) this).getWorldData().getAllowCommands();
     }
 
     @Inject(method = "publishServer", at = @At("RETURN"))

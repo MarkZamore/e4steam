@@ -24,9 +24,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.util.text.Style;
 import net.minecraft.util.text.TextComponentString;
+import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.util.text.event.ClickEvent;
 import net.minecraft.util.text.event.HoverEvent;
+import net.minecraft.world.storage.WorldInfo;
 import net.minecraftforge.client.ClientCommandHandler;
 import net.minecraftforge.client.event.GuiScreenEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -132,9 +134,13 @@ public final class E4steamForge112Client implements RetroPlatform {
     }
 
     @Override public void showMessage(String message) {
+        printChat(new TextComponentString(message));
+    }
+
+    private void printChat(ITextComponent message) {
         Minecraft minecraft = Minecraft.getMinecraft();
         if (minecraft.ingameGUI != null) {
-            minecraft.ingameGUI.getChatGUI().printChatMessage(new TextComponentString(message));
+            minecraft.ingameGUI.getChatGUI().printChatMessage(message);
         }
     }
 
@@ -245,7 +251,8 @@ public final class E4steamForge112Client implements RetroPlatform {
         }
         String port = null;
         try {
-            port = server.shareToLAN(server.getWorld(0).getWorldInfo().getGameType(), false);
+            WorldInfo world = server.getWorld(0).getWorldInfo();
+            port = server.shareToLAN(world.getGameType(), world.areCommandsAllowed());
         } catch (RuntimeException exception) {
             link.e4steam.E4steamClient.LOGGER.error("Could not open the integrated world", exception);
         } finally {
@@ -257,7 +264,9 @@ public final class E4steamForge112Client implements RetroPlatform {
         }
         updateManagedPauseButton(event.getButton());
         client.displayGuiScreen(null);
-        showMessage(I18n.format("text.e4steam_minecraft.launcherLocalPort", port));
+        TextComponentString displayPort = new TextComponentString(port);
+        displayPort.setStyle(new Style().setColor(TextFormatting.GREEN));
+        printChat(new TextComponentTranslation("text.e4steam_minecraft.launcherLocalPort", displayPort));
     }
 
     private static void updateManagedPauseButton(GuiButton button) {

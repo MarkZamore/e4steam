@@ -3,8 +3,9 @@
 The launcher opts in with `link.e4steam.launcherManagedLan=true` and supplies
 `link.e4steam.launcherPlayerName`. The derivative applies to Forge 1.12.2 and
 1.16.5. A native publication uses the saved world game mode and command flag.
-It does not grant commands to all guests. A failed publication clears its own
-pending loopback relay before a new attempt can reserve one.
+When the world has commands disabled, both host and guests are denied.
+Worlds created with commands enabled retain vanilla sharing permissions.
+A failed publication clears its pending loopback relay before a retry.
 
 The pause button opens the integrated world in one click. After publication,
 the slot opens the Steam recent players overlay. These two Minecraft versions

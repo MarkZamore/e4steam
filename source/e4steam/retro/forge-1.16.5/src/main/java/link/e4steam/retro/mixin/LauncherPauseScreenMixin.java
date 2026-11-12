@@ -1,5 +1,6 @@
 package link.e4steam.retro.mixin;
 
+import link.e4steam.E4steamClient;
 import link.e4steam.retro.RetroBootstrap;
 import net.minecraft.ChatFormatting;
 import net.minecraft.client.gui.components.AbstractWidget;
@@ -11,6 +12,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.chat.TextComponent;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.util.HttpUtil;
+import net.minecraft.world.level.storage.WorldData;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -52,7 +54,15 @@ public abstract class LauncherPauseScreenMixin extends Screen {
             return;
         }
         int port = HttpUtil.getAvailablePort();
-        boolean published = server.publishServer(server.getWorldData().getGameType(), false, port);
+        WorldData world = server.getWorldData();
+        boolean published = false;
+        try {
+            published = server.publishServer(world.getGameType(), world.getAllowCommands(), port);
+        } catch (RuntimeException exception) {
+            E4steamClient.LOGGER.error("Could not open the integrated world", exception);
+        } finally {
+            RetroBootstrap.cancelPublication();
+        }
         minecraft.gui.getChat().addMessage(published
                 ? new TranslatableComponent("text.e4steam_lanmc.localPort",
                         new TextComponent(Integer.toString(port)).withStyle(ChatFormatting.GREEN))
