@@ -4,7 +4,7 @@
   "package": "link.e4steam.retro.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "ServerGamePacketListenerRetroMixin",
+    "ServerGamePacketListenerForge165Mixin",
     "ServerConnectionListenerMixin",
     "ServerLoginPacketListenerRetroMixin"
   ],

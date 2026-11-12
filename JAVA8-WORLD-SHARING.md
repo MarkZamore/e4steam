@@ -7,6 +7,10 @@ When the world has commands disabled, both host and guests are denied.
 Worlds created with commands enabled retain vanilla sharing permissions.
 A failed publication clears its pending loopback relay before a retry.
 
+Forge 1.16.5 defers to a higher-priority keep-alive timeout modification,
+including Connectivity in All in One. When vanilla still owns the constant,
+e4steam extends it only for Steam-authenticated connections.
+
 The pause button opens the integrated world in one click. After publication,
 the slot opens the Steam recent players overlay. These two Minecraft versions
 do not include the Mojang reporting screen. The existing e4steam chat actions
@@ -21,7 +25,10 @@ Java 8 JDK path and use a Java 21 Gradle JVM. The output is the remapped
 cd source/e4steam
 .\gradlew.bat -p retro "-Porg.gradle.java.installations.paths=$java8" `
   -PlanminecraftRetroVersion=0.3.2-lanmc.1 `
-  :forge-1.12.2:build :forge-1.16.5:build :core:test
+  :forge-1.12.2:build :core:test
+.\gradlew.bat -p retro "-Porg.gradle.java.installations.paths=$java8" `
+  -PlanminecraftRetroVersion=0.3.2-lanmc.2 `
+  :forge-1.16.5:build :core:test
 ```
 
 When refreshing the author source, replay the downstream commits from the

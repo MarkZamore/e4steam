@@ -10,6 +10,7 @@ import zipfile
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 VERSION = "0.3.2-lanmc.1"
+FORGE_165_VERSION = "0.3.2-lanmc.2"
 MIXIN_ROOT = "link/e4steam/retro/mixin/"
 REQUIRED_CLASSES = {
     "link/e4steam/retro/RetroBootstrap.class",
@@ -55,6 +56,10 @@ def verify_jar(jar, metadata, expected_mixins, version):
                 or mixins.get("refmap") != "e4steam.retro.mixins-refmap.json"
                 or not expected_mixins.issubset(mixins.get("client", ()))):
             raise ValueError(f"Missing required client mixins in {jar.name}")
+        if metadata == "META-INF/mods.toml":
+            timeout = "ServerGamePacketListenerForge165Mixin"
+            if timeout not in mixins.get("mixins", ()) or MIXIN_ROOT + timeout + ".class" not in names:
+                raise ValueError(f"Missing the Forge 1.16.5 timeout compatibility mixin in {jar.name}")
         properties = contents.read("e4steam-version.properties").decode("utf-8").splitlines()
         if f"version={version}" not in properties:
             raise ValueError(f"Unexpected e4steam version in {jar.name}")
@@ -80,15 +85,16 @@ def revision():
     return subprocess.check_output([*git, "rev-parse", "HEAD"], text=True).strip()
 
 
-def build_rows(artifacts, profile, tag, source, upstream, version):
+def build_rows(artifacts, profile, tag, source, upstream, version, forge_165_version):
     for game, (metadata, mixins) in PLATFORMS.items():
+        lane_version = forge_165_version if game == "1.16.5" else version
         major, minor, patch = map(int, game.split("."))
-        file = f"e4steam-forge-mc{major}.{minor}.x-v{version}.jar"
+        file = f"e4steam-forge-mc{major}.{minor}.x-v{lane_version}.jar"
         jar = artifacts / f"forge-{game}" / "libs" / file
         data = jar.read_bytes()
-        pins = verify_jar(jar, metadata, mixins, version)
+        pins = verify_jar(jar, metadata, mixins, lane_version)
         yield {
-            "version": version, "authorVersion": version, "profile": profile,
+            "version": lane_version, "authorVersion": lane_version, "profile": profile,
             "fileName": file, "sizeBytes": len(data), "sha256": sha256(data),
             "deliveryTag": tag, "metadataPath": metadata, "loaders": ["Forge"],
             "downloadUrl": f"https://github.com/MarkZamore/e4steam/releases/download/{tag}/{file}",
@@ -106,17 +112,20 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--build-output", required=True, type=pathlib.Path)
     parser.add_argument("--version", default=VERSION)
+    parser.add_argument("--forge-165-version", default=FORGE_165_VERSION)
     parser.add_argument("--delivery-tag", required=True)
     parser.add_argument("--base-index", required=True, type=pathlib.Path)
     parser.add_argument("--output", required=True, type=pathlib.Path)
     args = parser.parse_args()
     if not re.fullmatch("[a-zA-Z0-9][a-zA-Z0-9._+-]{0,99}", args.delivery_tag):
         parser.error("Use an immutable GitHub release tag")
-    if not re.fullmatch(r"[0-9]+(?:\.[0-9]+){1,3}-lanmc\.[0-9]+", args.version):
-        parser.error("Use the downstream version passed to Gradle")
+    for version in (args.version, args.forge_165_version):
+        if not re.fullmatch(r"[0-9]+(?:\.[0-9]+){1,3}-lanmc\.[0-9]+", version):
+            parser.error("Use the downstream versions passed to Gradle")
     index = json.loads(args.base_index.read_text(encoding="utf-8"))
     upstream = json.loads((ROOT / "source/UPSTREAM.json").read_text(encoding="utf-8"))["upstreamCommit"]
-    rows = list(build_rows(args.build_output, index["profile"], args.delivery_tag, revision(), upstream, args.version))
+    rows = list(build_rows(args.build_output, index["profile"], args.delivery_tag, revision(), upstream,
+                           args.version, args.forge_165_version))
     kind = "source-built-java8-forge-world-sharing"
     index["builds"] = [row for row in index["builds"] if row["derivation"]["type"] != kind] + rows
     args.output.write_text(json.dumps(index, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
