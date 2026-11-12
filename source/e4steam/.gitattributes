@@ -2,8 +2,12 @@
 
 *.java text eol=lf
 *.gradle text eol=lf
+*.kts text eol=lf
 *.json text eol=lf
+*.js text eol=lf
+*.lang text eol=lf
 *.mcmeta text eol=lf
+mcmod.info text eol=lf
 *.md text eol=lf
 *.properties text eol=lf
 *.toml text eol=lf
@@ -11,6 +15,8 @@
 .gitattributes text eol=lf
 .gitignore text eol=lf
 LICENSE text eol=lf
+NOTICE text eol=lf
+LANMINECRAFT-LAN-NOTICE.txt text eol=lf
 steam_appid.txt text eol=lf
 gradlew text eol=lf
 gradlew.bat text eol=crlf
