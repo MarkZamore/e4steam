@@ -127,7 +127,8 @@ def main():
     rows = list(build_rows(args.build_output, index["profile"], args.delivery_tag, revision(), upstream,
                            args.version, args.forge_165_version))
     kind = "source-built-java8-forge-world-sharing"
-    index["builds"] = [row for row in index["builds"] if row["derivation"]["type"] != kind] + rows
+    index["builds"] = [row for row in index["builds"] if row["derivation"]["type"] != kind]
+    index["java8Builds"] = rows
     args.output.write_text(json.dumps(index, ensure_ascii=False, sort_keys=True, indent=2) + "\n",
                            encoding="utf-8", newline="\n")
     for row in rows:
