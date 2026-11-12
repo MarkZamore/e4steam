@@ -10,7 +10,7 @@ import zipfile
 
 ROOT = pathlib.Path(__file__).resolve().parent.parent
 VERSION = "0.3.2-lanmc.1"
-FORGE_165_VERSION = "0.3.2-lanmc.2"
+FORGE_165_VERSION = "0.3.2-lanmc.3"
 MIXIN_ROOT = "link/e4steam/retro/mixin/"
 REQUIRED_CLASSES = {
     "link/e4steam/retro/RetroBootstrap.class",
@@ -57,8 +57,9 @@ def verify_jar(jar, metadata, expected_mixins, version):
                 or not expected_mixins.issubset(mixins.get("client", ()))):
             raise ValueError(f"Missing required client mixins in {jar.name}")
         if metadata == "META-INF/mods.toml":
-            timeout = "ServerGamePacketListenerForge165Mixin"
-            if timeout not in mixins.get("mixins", ()) or MIXIN_ROOT + timeout + ".class" not in names:
+            timeouts = {"ServerGamePacketListenerForge165Mixin", "ServerLoginPacketListenerRetroMixin"}
+            if not timeouts.issubset(mixins.get("mixins", ())) or any(
+                    MIXIN_ROOT + timeout + ".class" not in names for timeout in timeouts):
                 raise ValueError(f"Missing the Forge 1.16.5 timeout compatibility mixin in {jar.name}")
         properties = contents.read("e4steam-version.properties").decode("utf-8").splitlines()
         if f"version={version}" not in properties:
@@ -108,6 +109,25 @@ def build_rows(artifacts, profile, tag, source, upstream, version, forge_165_ver
         }
 
 
+def preserve_unchanged_row(row, previous):
+    for old in previous:
+        if old.get("fileName") != row["fileName"]:
+            continue
+        comparable = {**old, "deliveryTag": row["deliveryTag"], "downloadUrl": row["downloadUrl"],
+                      "derivation": {**old["derivation"],
+                                     "sourceCommit": row["derivation"]["sourceCommit"]}}
+        if comparable != row:
+            raise ValueError(f"Published Java 8 filename has changed bytes or metadata: {row['fileName']}")
+        old_tag = old["deliveryTag"]
+        if (not re.fullmatch("[a-zA-Z0-9][a-zA-Z0-9._+-]{0,99}", old_tag)
+                or not re.fullmatch("[a-f0-9]{40}", old["derivation"]["sourceCommit"])
+                or old["downloadUrl"] != (f"https://github.com/MarkZamore/e4steam/releases/download/"
+                                          f"{old_tag}/{row['fileName']}")):
+            raise ValueError(f"Published Java 8 source or URL is invalid: {row['fileName']}")
+        return old
+    return row
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--build-output", required=True, type=pathlib.Path)
@@ -126,6 +146,7 @@ def main():
     upstream = json.loads((ROOT / "source/UPSTREAM.json").read_text(encoding="utf-8"))["upstreamCommit"]
     rows = list(build_rows(args.build_output, index["profile"], args.delivery_tag, revision(), upstream,
                            args.version, args.forge_165_version))
+    rows = [preserve_unchanged_row(row, index.get("java8Builds", ())) for row in rows]
     kind = "source-built-java8-forge-world-sharing"
     index["builds"] = [row for row in index["builds"] if row["derivation"]["type"] != kind]
     index["java8Builds"] = rows

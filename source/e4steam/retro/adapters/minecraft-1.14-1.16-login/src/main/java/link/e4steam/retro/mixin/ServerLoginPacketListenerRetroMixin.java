@@ -72,7 +72,9 @@ public abstract class ServerLoginPacketListenerRetroMixin {
         );
     }
 
-    @ModifyConstant(method = "tick", constant = @Constant(intValue = 600))
+    // A higher-priority timeout mod can already own this constant.
+    @ModifyConstant(method = "tick", constant = @Constant(intValue = 600),
+            require = 0, expect = 0, allow = 1)
     private int e4steam$extendSteamLoginTimeout(int vanillaTimeout) {
         return e4steam$authenticatedSteamId() == 0L
                 ? vanillaTimeout
