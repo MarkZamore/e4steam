@@ -350,16 +350,15 @@ final class SteamLobbyManager implements AutoCloseable {
     }
 
     void clientMinecraftJoined(SteamConnectionBridge bridge) {
-        if (guestLobbyId != 0 && guestJoinState.ownsBridge(bridge)) {
-            guestJoinState.connected();
+        if (guestLobbyId != 0 && guestJoinState.connected(bridge)) {
             if (guestDirectoryJoin) {
                 runtime.publicJoinActive(guestLobbyId);
             }
         }
     }
 
-    void clientBridgeClosed(SteamConnectionBridge bridge, boolean anotherBridgeExists) {
-        if (guestLobbyId != 0 && guestJoinState.ownsBridge(bridge) && !anotherBridgeExists) {
+    void clientBridgeClosed(SteamConnectionBridge bridge) {
+        if (guestLobbyId != 0 && guestJoinState.bridgeClosed(bridge)) {
             leaveGuestLobby();
         }
     }

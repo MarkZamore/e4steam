@@ -1197,11 +1197,10 @@ public final class SteamRuntime implements SteamBridgeRuntime {
                         System.currentTimeMillis() + CLIENT_RECONNECT_GRACE_MILLIS
                 );
             }
-            boolean finalAnotherBridgeExists = anotherBridgeExists;
             submitSteamTaskIfRunning(() -> {
                 SteamLobbyManager current = lobbyManager;
                 if (current != null) {
-                    current.clientBridgeClosed(bridge, finalAnotherBridgeExists);
+                    current.clientBridgeClosed(bridge);
                 }
                 return null;
             });

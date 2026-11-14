@@ -1,5 +1,9 @@
 package link.e4steam.steam;
 
+import java.util.Collections;
+import java.util.IdentityHashMap;
+import java.util.Set;
+
 /** Testable guest invitation and lobby lifecycle, independent of native callbacks. */
 final class SteamGuestJoinState {
     enum Phase {
@@ -14,7 +18,8 @@ final class SteamGuestJoinState {
     private Phase phase = Phase.RESOLVING;
     private long deadlineMillis;
     private boolean claimed;
-    private Object bridge;
+    private final Set<Object> pendingBridges = Collections.newSetFromMap(new IdentityHashMap<>());
+    private Object connectedBridge;
 
     SteamGuestJoinState(long deadlineMillis) {
         this.deadlineMillis = deadlineMillis;
@@ -46,18 +51,25 @@ final class SteamGuestJoinState {
     }
 
     void bridgeOpened(Object bridge) {
-        if (phase == Phase.CONNECTING) this.bridge = bridge;
+        if (phase == Phase.CONNECTING) pendingBridges.add(bridge);
     }
 
-    boolean ownsBridge(Object bridge) {
-        return bridge != null && this.bridge == bridge;
+    /** Returns true only when the Minecraft connection that completed login closes. */
+    boolean bridgeClosed(Object bridge) {
+        pendingBridges.remove(bridge);
+        return phase == Phase.CONNECTED && connectedBridge == bridge;
     }
 
-    void connected() {
-        if (phase == Phase.CONNECTING) {
-            phase = Phase.CONNECTED;
-            deadlineMillis = Long.MAX_VALUE;
-        }
+    boolean connected(Object bridge) {
+        if (phase != Phase.CONNECTING || !pendingBridges.contains(bridge)) return false;
+
+        // Multiplayer status probes can open more bridges while Forge is logging in.
+        // Only the bridge that Minecraft actually used for login owns the session.
+        pendingBridges.clear();
+        connectedBridge = bridge;
+        phase = Phase.CONNECTED;
+        deadlineMillis = Long.MAX_VALUE;
+        return true;
     }
 
     boolean expired(long nowMillis) {
@@ -72,14 +84,16 @@ final class SteamGuestJoinState {
     void cancel() {
         if (phase != Phase.LOST) {
             phase = Phase.CANCELED;
-            bridge = null;
+            pendingBridges.clear();
+            connectedBridge = null;
             deadlineMillis = Long.MIN_VALUE;
         }
     }
 
     void loseLobby() {
         phase = Phase.LOST;
-        bridge = null;
+        pendingBridges.clear();
+        connectedBridge = null;
         deadlineMillis = Long.MIN_VALUE;
     }
 
