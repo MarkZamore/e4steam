@@ -21,3 +21,5 @@
 /releases/legacy-fabric-164-v4/*.json text eol=lf
 /tools/active_profile.py text eol=lf
 /tools/test_active_profile.py text eol=lf
+/tools/ForgeGuestTimeout.java text eol=lf
+/tools/forge_guest_timeout_build.py text eol=lf

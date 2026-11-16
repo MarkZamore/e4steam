@@ -21,6 +21,9 @@ For an author update:
 2. Rebase both retained features. Review the native publish aliases, descriptor
    and actual Mixin application on a concrete supported target. Do not call the
    full settings applier or reset the native world options.
+   For modern Forge, retain the guest login ownership fix from
+   [the guest timeout release](FORGE-GUEST-TIMEOUT.md). Rerun the guest login
+   regression when changing its source or Forge compatibility range.
 3. Update explicit source pins and tests. If a retro author adds a new panel or
    settings applier, reassess that variant; do not keep its old no-op exemption.
 4. Allocate a new immutable downstream profile/tag for changed payloads. Never

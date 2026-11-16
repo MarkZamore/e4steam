@@ -8,6 +8,7 @@ from unittest import mock
 
 import active_profile as active
 import components
+import forge_guest_profile as guest
 import legacy_fabric_164 as build
 
 
@@ -28,14 +29,18 @@ class ActiveProfileDispatcherTests(unittest.TestCase):
         data=(self.root/'profiles'/f'{profile}.json').read_bytes()
         (self.root/'components.json').write_bytes(data)
         document=json.loads(data)
-        (self.root/'SHA256SUMS.txt').write_bytes(components.checksums(document['builds']).encode())
+        self.write_checksums(document)
         return document
+
+    def write_checksums(self, document):
+        rows = guest.all_rows(document) if document['profile'] == guest.PROFILE else document['builds']
+        (self.root/'SHA256SUMS.txt').write_bytes(components.checksums(rows).encode())
 
     def rewrite_frozen_and_active(self,document):
         payload=(json.dumps(document,indent=2,sort_keys=True)+'\n').encode()
         (self.root/'profiles'/f'{document["profile"]}.json').write_bytes(payload)
         (self.root/'components.json').write_bytes(payload)
-        (self.root/'SHA256SUMS.txt').write_bytes(components.checksums(document['builds']).encode())
+        self.write_checksums(document)
 
     def test_v2_dispatch_retains_historical_builder_provenance_checks(self):
         document=self.select(active.V2)
@@ -78,18 +83,75 @@ class ActiveProfileDispatcherTests(unittest.TestCase):
                                     downloadUrl=url + 'build-receipt.json'),
         )
         self.rewrite_frozen_and_active(candidate)
-        self.assertEqual(candidate, active.verify_active(self.root))
+        if profile == active.V6:
+            active.verify_legacy_profile(self.root, candidate)
+        else:
+            self.assertEqual(candidate, active.verify_active(self.root))
         self.assertEqual(previous, json.loads((self.root/'profiles'/f'{active.V3}.json').read_bytes()))
         legacy['deliveryTag'] = prior_legacy['deliveryTag']
         self.rewrite_frozen_and_active(candidate)
         with self.assertRaisesRegex(ValueError, 'immutable legacy delivery'):
-            active.verify_active(self.root)
+            if profile == active.V6:
+                active.verify_legacy_profile(self.root, candidate)
+            else:
+                active.verify_active(self.root)
 
     def test_v5_only_replaces_the_legacy_artifact(self):
         self.assert_new_legacy_revision(active.V5,3)
 
     def test_v6_only_replaces_the_legacy_artifact(self):
         self.assert_new_legacy_revision(active.V6,4)
+
+    def select_published_v6(self):
+        snapshot = Path('profiles') / f'{guest.BASE_SNAPSHOT}.json'
+        receipt = Path('releases/legacy-fabric-164-v4/build-receipt.json')
+        (self.root / receipt).parent.mkdir(parents=True)
+        for path in (snapshot, receipt):
+            (self.root / path).write_bytes((active.ROOT / path).read_bytes())
+        return self.select(guest.BASE_SNAPSHOT)
+
+    def test_published_v6_preserves_both_optional_java8_selections(self):
+        document = self.select_published_v6()
+        self.assertEqual(2, len(active.verify_active(self.root)['java8Builds']))
+        document['java8Builds'].pop()
+        (self.root / 'components.json').write_text(json.dumps(document), encoding='utf-8')
+        with self.assertRaisesRegex(ValueError, 'index bytes'):
+            active.verify_active(self.root)
+
+    def test_guest_profile_only_changes_the_modern_forge_artifact(self):
+        baseline = self.select_published_v6()
+        receipt_dir = self.root / 'releases' / guest.TAG
+        receipt_dir.mkdir()
+        receipt_data = json.dumps({
+            'schemaVersion': 1, 'stockSha256': guest.STOCK_SHA256,
+            'build': {'fileName': guest.FILE, 'sizeBytes': 10, 'sha256': '3' * 64},
+            'changedEntries': sorted(guest.GUEST_CLASSES),
+            'sourceBuiltClassSha256': {path: '4' * 64 for path in guest.GUEST_CLASSES},
+        }).encode()
+        (receipt_dir / guest.RECEIPT).write_bytes(receipt_data)
+        document = guest.candidate_index(baseline, receipt_data, '1' * 40)
+        self.rewrite_frozen_and_active(document)
+        self.assertEqual(document, active.verify_active(self.root))
+        self.assertEqual(22, len(guest.all_rows(document)))
+        for previous, current in zip(guest.all_rows(baseline), guest.all_rows(document)):
+            if previous['fileName'] != guest.FILE:
+                self.assertEqual({**previous, 'profile': guest.PROFILE}, current)
+        document['java8Builds'][0]['sha256'] = '5' * 64
+        self.rewrite_frozen_and_active(document)
+        with self.assertRaisesRegex(ValueError, 'single-row update'):
+            active.verify_active(self.root)
+
+    def test_guest_receipt_cannot_include_an_unrelated_class(self):
+        classes = {path: '4' * 64 for path in guest.GUEST_CLASSES}
+        classes['link/e4steam/Mirror.class'] = '5' * 64
+        receipt = {
+            'schemaVersion': 1, 'stockSha256': guest.STOCK_SHA256,
+            'build': {'fileName': guest.FILE, 'sizeBytes': 10, 'sha256': '3' * 64},
+            'changedEntries': sorted(classes),
+            'sourceBuiltClassSha256': classes,
+        }
+        with self.assertRaisesRegex(ValueError, 'exactly three'):
+            guest.read_receipt(json.dumps(receipt).encode())
 
     def test_semantically_equal_but_byte_different_active_index_is_rejected(self):
         self.select(active.V3)

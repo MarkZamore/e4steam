@@ -6,6 +6,7 @@ from pathlib import Path
 import re
 
 import components
+import forge_guest_profile
 import legacy_fabric_164
 import native_ui_v2
 
@@ -24,13 +25,21 @@ def verify_active(root=None):
     root=Path(root) if root is not None else ROOT
     active_bytes=(root/'components.json').read_bytes();active=json.loads(active_bytes)
     profile=active.get('profile')
-    require(profile in {V2,V3,V4,V5,V6},'Unsupported active profile; author fallback is forbidden')
-    frozen_bytes=(root/'profiles'/f'{profile}.json').read_bytes();frozen=json.loads(frozen_bytes)
+    require(profile in {V2,V3,V4,V5,V6,forge_guest_profile.PROFILE},'Unsupported active profile; author fallback is forbidden')
+    snapshot = forge_guest_profile.BASE_SNAPSHOT if profile == V6 else profile
+    frozen_bytes=(root/'profiles'/f'{snapshot}.json').read_bytes();frozen=json.loads(frozen_bytes)
+    if profile == V6:
+        forge_guest_profile.read_baseline(root)
     require(active_bytes==frozen_bytes,'Active index bytes differ from the reviewed frozen profile')
     require(active.get('schemaVersion')==2 and active.get('componentId')=='e4steam','Invalid shared component index')
-    require((root/'SHA256SUMS.txt').read_bytes()==components.checksums(frozen['builds']).encode(),'Active checksum bytes differ from the frozen profile')
+    rows = forge_guest_profile.all_rows(frozen) if profile == forge_guest_profile.PROFILE else frozen['builds']
+    require((root/'SHA256SUMS.txt').read_bytes()==components.checksums(rows).encode(),'Active checksum bytes differ from the frozen profile')
     if profile==V2:
         return native_ui_v2.verify_active()
+    if profile == forge_guest_profile.PROFILE:
+        baseline = forge_guest_profile.verify_active(root, active)
+        verify_legacy_profile(root, baseline)
+        return active
     verify_legacy_profile(root, active)
     return active
 
