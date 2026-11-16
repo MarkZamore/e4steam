@@ -1,9 +1,11 @@
 # Shared e4steam component for LANMinecraft
 
 This is MarkZamore's GitHub delivery location for the shared e4steam component.
-The active `native-lan-ui-v8-forge-guest-chat` index selects twenty regular
+The active `native-lan-ui-v9-forge112-login` index selects twenty regular
 loader/Minecraft targets and two optional Java 8 builds. Modern Forge includes
-the guest timeout and host chat fixes. The index retains the other V6 artifacts, including
+the guest timeout and host chat fixes. The Java 8 Forge 1.12.2 selection orders
+the login success packet before the Forge handshake for authenticated Steam guests.
+The index retains the other V8 artifacts, including
 the Legacy Fabric 1.6.4 port described in [the platform notes](LEGACY-FABRIC-164.md).
 Six modern derivatives hide the extra LAN Settings button/form and apply only
 current configured `lanOnlineMode` before native integrated publication.
@@ -37,18 +39,24 @@ are declared downstream distributions, not unmodified author releases.
 | `forge-modern-guest-v1` | Immutable Forge 1.18.2–1.20.2 guest timeout fix and build receipt |
 | `native-lan-ui-v7-forge-guest` | Historical index with the [Forge guest fix](FORGE-GUEST-TIMEOUT.md) |
 | `forge-modern-guest-v2` | Immutable modern Forge guest timeout and [host chat fix](FORGE-GUEST-CHAT.md) |
-| `native-lan-ui-v8-forge-guest-chat` | Current canonical index |
+| `native-lan-ui-v8-forge-guest-chat` | Historical index with the modern Forge guest and host chat fixes |
+| `forge-java8-login-v1` | Immutable Forge 1.12.2 Java 8 login ordering fix and build receipt |
+| `native-lan-ui-v9-forge112-login` | Current canonical index |
 
 `components.json` is the canonical schema2 index, and `SHA256SUMS.txt` covers its
 exact selections. Rows retain author provenance separately from delivery
 filename/SHA/size/URL/tag. Three capabilities preserve hidden or absent extra LAN
 UI, configured modern native-publish online mode, and original Steam authentication.
-[The frozen V8 profile](profiles/native-lan-ui-v8-forge-guest-chat.json) must match the active
-selection. Author inventories and older profiles remain immutable history.
+[The frozen V9 profile](profiles/native-lan-ui-v9-forge112-login.json) must match the active
+selection. The verifier reconstructs V9 from the frozen V8 index and the exact
+Forge 1.12.2 build receipt. Author inventories and older profiles remain immutable history.
 
 The canonical index is
 `https://raw.githubusercontent.com/MarkZamore/e4steam/main/components.json`.
-The fixed Forge transport uses `forge-modern-guest-v2`. Other modern payloads
+The modern Forge fix uses `forge-modern-guest-v2`. The Java 8 Forge 1.12.2
+world-sharing artifact uses `forge-java8-login-v1`. Its
+[source build instructions](https://github.com/MarkZamore/e4steam/blob/495c1c8f27ff7a2498c42bd3ccd57d652d002365/JAVA8-WORLD-SHARING.md)
+describe the login ordering check. Other modern payloads
 use `native-lan-ui-v2`, and unchanged retro payloads retain `v0.3.2` URLs.
 The source port uses `legacy-fabric-164-v4` URLs and
 does not claim a nonexistent original author JAR. A compatible launcher verifies/caches this shared index and

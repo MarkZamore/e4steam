@@ -131,11 +131,12 @@ class ActiveProfileDispatcherTests(unittest.TestCase):
         v8, _ = forge112.frozen_v8(self.root)
         stock = next(row for row in v8["java8Builds"] if row["fileName"] == forge112.STOCK_FILE)
         classes = stock["derivation"]["sourceBuiltClassSha256"]
+        new_classes = {**classes, **{name: "3" * 64 for name in forge112.ORDERING_CLASSES}}
         receipt = {
-            "schemaVersion": 1, "stockSha256": forge112.STOCK_SHA256, "sourceCommit": "1" * 40,
+            "schemaVersion": 1, "stockSha256": forge112.STOCK_SHA256, "sourceCommit": forge112.BUILD_SOURCE,
             "upstreamSourceCommit": forge112.UPSTREAM,
             "build": {"fileName": forge112.FILE, "sizeBytes": 100, "sha256": "2" * 64},
-            "sourceBuiltClassSha256": {**classes, next(iter(classes)): "3" * 64},
+            "sourceBuiltClassSha256": new_classes,
         }
         path = self.root / "releases" / forge112.TAG / forge112.RECEIPT
         path.parent.mkdir()
@@ -147,6 +148,15 @@ class ActiveProfileDispatcherTests(unittest.TestCase):
         for previous, current in zip(guest.all_rows(v8), guest.all_rows(candidate)):
             if previous["fileName"] != forge112.STOCK_FILE:
                 self.assertEqual({**previous, "profile": forge112.PROFILE}, current)
+        for invalid in (
+            classes,
+            {**new_classes, next(iter(classes)): "4" * 64},
+            {**new_classes, "link/e4steam/Unrelated.class": "5" * 64},
+        ):
+            with self.subTest(class_count=len(invalid)):
+                altered = {**receipt, "sourceBuiltClassSha256": invalid}
+                with self.assertRaisesRegex(ValueError, "retain every published class"):
+                    forge112.candidate_index(v8, forge112.canonical_json(altered))
         next(row for row in candidate["java8Builds"] if row["fileName"] != forge112.FILE)["sha256"] = "4" * 64
         self.rewrite_frozen_and_active(candidate)
         with self.assertRaisesRegex(ValueError, "single-row update"):

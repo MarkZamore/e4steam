@@ -21,6 +21,12 @@ V8_SHA256 = "0fb12fd15cffef72d8504fea81a6f90cf109f2c10a7227598573358bfba35427"
 STOCK_FILE = "e4steam-forge-mc1.12.x-v0.3.2-lanmc.1.jar"
 STOCK_SHA256 = "a0e0593ec5bc45ab098b0b30711edc3c4167f9bac4c65cad296d612a6c242f40"
 UPSTREAM = "bdcea00e30ca519fa8190c0c5c04785d42b31dbc"
+BUILD_SOURCE = "495c1c8f27ff7a2498c42bd3ccd57d652d002365"
+ORDERING_MIXIN = "NetHandlerLoginOrdering112Mixin"
+ORDERING_CLASSES = {
+    "link/e4steam/retro/forge/Forge112LoginHandshake.class",
+    f"link/e4steam/retro/mixin/{ORDERING_MIXIN}.class",
+}
 
 
 def canonical_json(data):
@@ -40,7 +46,7 @@ def verify_receipt(data):
     guest.require(receipt.get("schemaVersion") == 1
                   and receipt.get("stockSha256") == STOCK_SHA256
                   and receipt.get("upstreamSourceCommit") == UPSTREAM
-                  and guest.is_sha(receipt.get("sourceCommit"), 40),
+                  and receipt.get("sourceCommit") == BUILD_SOURCE,
                   "Invalid Forge 1.12.2 login receipt provenance")
     build = receipt["build"]
     guest.require(set(build) == {"fileName", "sizeBytes", "sha256"}
@@ -60,14 +66,16 @@ def read_jar(path):
     guest.require(path.name == FILE, "Unexpected Forge 1.12.2 login artifact filename")
     with ZipFile(path) as archive:
         names = archive.namelist()
-        required = {"mcmod.info", "META-INF/LICENSE-e4steam.txt", "META-INF/NOTICE-e4steam.txt",
-                    "e4steam.retro.mixins.json", "e4steam.retro.mixins-refmap.json", "e4steam-version.properties"}
+        required = ORDERING_CLASSES | {
+            "mcmod.info", "META-INF/LICENSE-e4steam.txt", "META-INF/NOTICE-e4steam.txt",
+            "e4steam.retro.mixins.json", "e4steam.retro.mixins-refmap.json", "e4steam-version.properties",
+        }
         guest.require(len(names) == len(set(names)) and required.issubset(names) and archive.testzip() is None,
                       "Forge 1.12.2 login JAR is missing required entries or is corrupt")
         version = archive.read("e4steam-version.properties").decode("utf-8").splitlines()
         mixins = json.loads(archive.read("e4steam.retro.mixins.json"))
         guest.require(f"version={VERSION}" in version and mixins.get("compatibilityLevel") == "JAVA_8"
-                      and "NetHandlerLoginServerMixin" in mixins["mixins"],
+                      and {"NetHandlerLoginServerMixin", ORDERING_MIXIN}.issubset(mixins["mixins"]),
                       "Unexpected Java 8 version or login mixin metadata")
         classes = {}
         for name in names:
@@ -111,8 +119,9 @@ def candidate_index(v8, receipt_data):
                   and row["exclusiveMaximumMinecraftVersion"] == [1, 12, 3]
                   and row["derivation"]["upstreamSourceCommit"] == UPSTREAM,
                   "The V8 Forge 1.12.2 build pin differs from the reviewed publication")
-    guest.require(old_pins.keys() <= pins.keys() and old_pins != pins,
-                  "The Forge 1.12.2 derivative must retain the published class inventory and contain a source change")
+    guest.require(pins.keys() == old_pins.keys() | ORDERING_CLASSES
+                  and all(pins[path] == digest for path, digest in old_pins.items()),
+                  "The Forge 1.12.2 derivative must retain every published class and add only the login ordering classes")
     url = f"{guest.RELEASE_URL}{TAG}/"
     row.update(receipt["build"], version=VERSION, authorVersion=VERSION,
                deliveryTag=TAG, downloadUrl=url + FILE)
