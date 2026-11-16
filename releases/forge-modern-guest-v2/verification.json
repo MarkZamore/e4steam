@@ -1,0 +1,19 @@
+{
+  "buildSource": "1302c30df5db8aba9a6f9f944a5e23118ae03c21",
+  "exactBinaryJUnitPassed": 18,
+  "guestsTests": 10,
+  "chatTests": 8,
+  "injectedError": "NoClassDefFoundError: link/e4steam/MinecraftUiCompat",
+  "sameMirrorPreviouslyNativeTested": [
+    "1.18.2 Forge 40.2.34",
+    "1.19.2 Forge 43.2.10",
+    "1.20.1 Forge 47.4.10"
+  ],
+  "previousGuestLifecycleJar": "0d907d5b24c6b28b1872926849c5cb363f79aac9071e485caa02b35e5ffd5e55",
+  "changedFromGuestOnly": [
+    "link/e4steam/Mirror.class"
+  ],
+  "actualPublishedBytes": "PASS",
+  "combinedMinecraftLaunch": false,
+  "twoAccountSteam": "NOT RUN"
+}

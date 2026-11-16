@@ -1,0 +1,71 @@
+{
+  "build": {
+    "fileName": "e4steam-forge-mc1.18.2-1.20.2-v0.3.4-lanmc-native-ui.2.jar",
+    "sha256": "6739b9feec81bc49e77bcb3e7e5ed58edec37ef50c64c5a3d88d432ee29bf179",
+    "sizeBytes": 3801830
+  },
+  "byteIdenticalOtherEntries": 1019,
+  "changedEntries": [
+    "link/e4steam/Mirror.class",
+    "link/e4steam/steam/SteamGuestJoinState.class",
+    "link/e4steam/steam/SteamLobbyManager.class",
+    "link/e4steam/steam/SteamRuntime.class"
+  ],
+  "changedEntriesFromGuestOnly": [
+    "link/e4steam/Mirror.class"
+  ],
+  "forgeChatSourceRecipeSha256": "46de6f3d8c82d00c818d3080bccdfd85b4f789e3bcd7a65af884e8b12811093d",
+  "gameLinkage": {
+    "1.18.2": {
+      "resolvedMembers": [
+        "net/minecraft/client/Minecraft.execute(Ljava/lang/Runnable;)V",
+        "net/minecraft/client/Minecraft.f_91065_Lnet/minecraft/client/gui/Gui;",
+        "net/minecraft/client/Minecraft.m_91087_()Lnet/minecraft/client/Minecraft;",
+        "net/minecraft/client/gui/Gui.m_93076_()Lnet/minecraft/client/gui/components/ChatComponent;",
+        "net/minecraft/client/gui/components/ChatComponent.m_93785_(Lnet/minecraft/network/chat/Component;)V"
+      ],
+      "srgSha256": "c6cb2530269663ed0d4b9b53815abc521e26b4cc895aef58257763e1ae87a12f"
+    },
+    "1.19.2": {
+      "resolvedMembers": [
+        "net/minecraft/client/Minecraft.execute(Ljava/lang/Runnable;)V",
+        "net/minecraft/client/Minecraft.f_91065_Lnet/minecraft/client/gui/Gui;",
+        "net/minecraft/client/Minecraft.m_91087_()Lnet/minecraft/client/Minecraft;",
+        "net/minecraft/client/gui/Gui.m_93076_()Lnet/minecraft/client/gui/components/ChatComponent;",
+        "net/minecraft/client/gui/components/ChatComponent.m_93785_(Lnet/minecraft/network/chat/Component;)V"
+      ],
+      "srgSha256": "844f5333e261c3bf6a4b99c9fa3872e7beb913d087d0d759c08b3a6d236e0179"
+    },
+    "1.20.1": {
+      "resolvedMembers": [
+        "net/minecraft/client/Minecraft.execute(Ljava/lang/Runnable;)V",
+        "net/minecraft/client/Minecraft.f_91065_Lnet/minecraft/client/gui/Gui;",
+        "net/minecraft/client/Minecraft.m_91087_()Lnet/minecraft/client/Minecraft;",
+        "net/minecraft/client/gui/Gui.m_93076_()Lnet/minecraft/client/gui/components/ChatComponent;",
+        "net/minecraft/client/gui/components/ChatComponent.m_93785_(Lnet/minecraft/network/chat/Component;)V"
+      ],
+      "srgSha256": "e2e940fe7ca0a9fba5a5c11ad2cf3e2f7df91bbf51d12af22cdde7af18adc344"
+    },
+    "1.20.2": {
+      "resolvedMembers": [
+        "net/minecraft/client/Minecraft.execute(Ljava/lang/Runnable;)V",
+        "net/minecraft/client/Minecraft.f_91065_Lnet/minecraft/client/gui/Gui;",
+        "net/minecraft/client/Minecraft.m_91087_()Lnet/minecraft/client/Minecraft;",
+        "net/minecraft/client/gui/Gui.m_93076_()Lnet/minecraft/client/gui/components/ChatComponent;",
+        "net/minecraft/client/gui/components/ChatComponent.m_93785_(Lnet/minecraft/network/chat/Component;)V"
+      ],
+      "srgSha256": "16c4b658503655b8a8f207bde28ab3bb5d1d3d842b4388c65dde457a280f19f6"
+    }
+  },
+  "guestOnlySha256": "0d907d5b24c6b28b1872926849c5cb363f79aac9071e485caa02b35e5ffd5e55",
+  "java": "openjdk version \"17.0.20.1\" 2026-08-18",
+  "mirrorSourceSha256": "74930c9abb52401ae7dcc4ae09604fc80d236111c833ee852afd598a71ad929d",
+  "schemaVersion": 1,
+  "sourceBuiltClassSha256": {
+    "link/e4steam/Mirror.class": "079d726686f5c9b02d601a4743d286ed2deeff930e4516cc03b7dc319cc426bc",
+    "link/e4steam/steam/SteamGuestJoinState.class": "c136700b3878013ac207aa06b26bd49998eabe72a6389a85badc7f61c53e8f9a",
+    "link/e4steam/steam/SteamLobbyManager.class": "a5f7bc1d2d31f9f7dc4d6f964dd1a39d314abec05cf6ea681b14df0058599eab",
+    "link/e4steam/steam/SteamRuntime.class": "796d5694c356d3a6e87576f7f6f5e6770bd93b2630b24559a3230d16b1620e15"
+  },
+  "stockSha256": "3f397fc193f14d3c543b5ef9b4613bc149a21ca8e14bd93c39de3d1bc6f9553c"
+}

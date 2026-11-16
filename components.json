@@ -25,7 +25,7 @@
         1,
         7
       ],
-      "profile": "native-lan-ui-v7-forge-guest",
+      "profile": "native-lan-ui-v8-forge-guest-chat",
       "sha256": "c44434c31a5bbfcf5cc34a9327f2c6c08e8ae633e34727486146d8f0ffb03c9c",
       "sizeBytes": 2107709,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.7.x-v0.3.2.jar",
@@ -57,7 +57,7 @@
         1,
         8
       ],
-      "profile": "native-lan-ui-v7-forge-guest",
+      "profile": "native-lan-ui-v8-forge-guest-chat",
       "sha256": "35caf65a4d97904066e2f1f6454d1ba4661bc73130305ffdb3917f90b3449972",
       "sizeBytes": 3039265,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.8.x-v0.3.2.jar",
@@ -89,7 +89,7 @@
         1,
         9
       ],
-      "profile": "native-lan-ui-v7-forge-guest",
+      "profile": "native-lan-ui-v8-forge-guest-chat",
       "sha256": "263b4b6f75f06aa0c5c8380d8ae34415e4ae735925bb952f9718c2bc24539e66",
       "sizeBytes": 3038887,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.9.x-v0.3.2.jar",
@@ -121,7 +121,7 @@
         1,
         10
       ],
-      "profile": "native-lan-ui-v7-forge-guest",
+      "profile": "native-lan-ui-v8-forge-guest-chat",
       "sha256": "ede466e6c19878c513419d971ca860b533eaa1ea756bf2c34a0adfbe80ad82ba",
       "sizeBytes": 3038892,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.10.x-v0.3.2.jar",
@@ -153,7 +153,7 @@
         1,
         11
       ],
-      "profile": "native-lan-ui-v7-forge-guest",
+      "profile": "native-lan-ui-v8-forge-guest-chat",
       "sha256": "3371478eac829f01a879962d1c2e0f3b31684aa16ab8e8ac3ec06e46bcf5a26f",
       "sizeBytes": 3038892,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.11.x-v0.3.2.jar",
@@ -185,7 +185,7 @@
         1,
         12
       ],
-      "profile": "native-lan-ui-v7-forge-guest",
+      "profile": "native-lan-ui-v8-forge-guest-chat",
       "sha256": "f554e6d20f037dbf8a2596eb0c3aaa3cf3ba0625d1caca9a3925cad297506e24",
       "sizeBytes": 3038928,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.12.x-v0.3.2.jar",
@@ -217,7 +217,7 @@
         1,
         13
       ],
-      "profile": "native-lan-ui-v7-forge-guest",
+      "profile": "native-lan-ui-v8-forge-guest-chat",
       "sha256": "0cdb0ef6ce450faf2583ffd75b43e17426b20b402628e7c38466ce84d080f2ec",
       "sizeBytes": 2901410,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.13.x-v0.3.2.jar",
@@ -249,7 +249,7 @@
         1,
         14
       ],
-      "profile": "native-lan-ui-v7-forge-guest",
+      "profile": "native-lan-ui-v8-forge-guest-chat",
       "sha256": "b7d08bbfadbee160f37eeb1e665d55c4a50b4682806dd63f3db5879b8fa5e1c7",
       "sizeBytes": 2903985,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.14.x-v0.3.2.jar",
@@ -281,7 +281,7 @@
         1,
         15
       ],
-      "profile": "native-lan-ui-v7-forge-guest",
+      "profile": "native-lan-ui-v8-forge-guest-chat",
       "sha256": "5de9df05e6834a1279631eedfa5879bf8abfa955226dc127fffd2a4292768b91",
       "sizeBytes": 2899585,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.15.x-v0.3.2.jar",
@@ -313,7 +313,7 @@
         1,
         16
       ],
-      "profile": "native-lan-ui-v7-forge-guest",
+      "profile": "native-lan-ui-v8-forge-guest-chat",
       "sha256": "a0e6a1ab6b29c36733c929e86905521e58b2943307fab4fda7da05b51b3449ca",
       "sizeBytes": 2899902,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-forge-mc1.16.x-v0.3.2.jar",
@@ -345,7 +345,7 @@
         1,
         14
       ],
-      "profile": "native-lan-ui-v7-forge-guest",
+      "profile": "native-lan-ui-v8-forge-guest-chat",
       "sha256": "c9467b97bfa7691007b4226af0ba7d776393fd013a0ddc908f36e63d818e85f2",
       "sizeBytes": 3590675,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-fabric-mc1.14.x-v0.3.2.jar",
@@ -377,7 +377,7 @@
         1,
         15
       ],
-      "profile": "native-lan-ui-v7-forge-guest",
+      "profile": "native-lan-ui-v8-forge-guest-chat",
       "sha256": "61e7c1783a3338bee600660ac630ed3d6fcb220831f110661e01dbdfee7679b2",
       "sizeBytes": 3589233,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-fabric-mc1.15.x-v0.3.2.jar",
@@ -409,7 +409,7 @@
         1,
         16
       ],
-      "profile": "native-lan-ui-v7-forge-guest",
+      "profile": "native-lan-ui-v8-forge-guest-chat",
       "sha256": "b387a2b076527dd2f1ccbb3cf44ac97d3f4ce89722becb5e3bc57ad7933ba70f",
       "sizeBytes": 3589535,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.2/e4steam-fabric-mc1.16.x-v0.3.2.jar",
@@ -458,7 +458,7 @@
         17,
         1
       ],
-      "profile": "native-lan-ui-v7-forge-guest",
+      "profile": "native-lan-ui-v8-forge-guest-chat",
       "sha256": "1344aa71d9fe824dd9b01210f58f28569631f4c5747d6f040d82f65c7010a8d7",
       "sizeBytes": 3805024,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.4/e4steam-forge-mc1.17.1-1.18.1-v0.3.4.jar",
@@ -470,22 +470,23 @@
       "authorSha256": "33421acbea4d904ac3cefa62ac1d4bd5f62f9e9169b81a4d16a052d2330bc6fc",
       "authorSizeBytes": 3817117,
       "authorVersion": "0.3.4",
-      "deliveryTag": "forge-modern-guest-v1",
+      "deliveryTag": "forge-modern-guest-v2",
       "derivation": {
         "addedEntries": [
           "META-INF/NOTICE-LANMinecraft-native-ui.txt"
         ],
         "allOtherEntriesByteIdentical": true,
         "baseline": {
-          "deliveryTag": "native-lan-ui-v2",
-          "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/native-lan-ui-v2/e4steam-forge-mc1.18.2-1.20.2-v0.3.4-lanmc-native-ui.2.jar",
+          "deliveryTag": "forge-modern-guest-v1",
+          "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/forge-modern-guest-v1/e4steam-forge-mc1.18.2-1.20.2-v0.3.4-lanmc-native-ui.2.jar",
           "fileName": "e4steam-forge-mc1.18.2-1.20.2-v0.3.4-lanmc-native-ui.2.jar",
-          "sha256": "3f397fc193f14d3c543b5ef9b4613bc149a21ca8e14bd93c39de3d1bc6f9553c",
-          "sizeBytes": 3801632,
-          "sourceCommit": "bdcea00e30ca519fa8190c0c5c04785d42b31dbc"
+          "sha256": "0d907d5b24c6b28b1872926849c5cb363f79aac9071e485caa02b35e5ffd5e55",
+          "sizeBytes": 3801710,
+          "sourceCommit": "44e0bcfdbc351b46ad11e80f4afd8e0125dae508"
         },
         "changedEntries": [
           "e4steam.mixins.json",
+          "link/e4steam/Mirror.class",
           "link/e4steam/lan/LanServerSettingsApplier.class",
           "link/e4steam/mixin/IntegratedServerLanMixin.class",
           "link/e4steam/mixin/PauseScreenMixin.class",
@@ -494,12 +495,13 @@
           "link/e4steam/steam/SteamRuntime.class"
         ],
         "sourceBuildReceipt": {
-          "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/forge-modern-guest-v1/build-receipt.json",
+          "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/forge-modern-guest-v2/build-receipt.json",
           "fileName": "build-receipt.json",
-          "sha256": "6af362c03e87c8520b3a970e8771cb4cf2fb273fd442d219dfb209776143b0ce",
-          "sizeBytes": 1440
+          "sha256": "de7c04cd2a476b5bd7939acbae47f57ae101742b1cbb8b0f63d407e9ff7462df",
+          "sizeBytes": 3857
         },
         "sourceBuiltClassSha256": {
+          "link/e4steam/Mirror.class": "079d726686f5c9b02d601a4743d286ed2deeff930e4516cc03b7dc319cc426bc",
           "link/e4steam/lan/LanServerSettingsApplier.class": "023c51b7b4bd7b70b1126d68aaaf87e7967d22e6183dc90679c4c9d30c0fc882",
           "link/e4steam/mixin/IntegratedServerLanMixin.class": "96bda0f1548691346d60f0a0b616f78741771d96e3892a39c4c72a4483743086",
           "link/e4steam/mixin/PauseScreenMixin.class": "8ddb76b46524295ba079c323575ade36cd866e7c81ccfbe3cfc142a5caf6df99",
@@ -507,11 +509,11 @@
           "link/e4steam/steam/SteamLobbyManager.class": "a5f7bc1d2d31f9f7dc4d6f964dd1a39d314abec05cf6ea681b14df0058599eab",
           "link/e4steam/steam/SteamRuntime.class": "796d5694c356d3a6e87576f7f6f5e6770bd93b2630b24559a3230d16b1620e15"
         },
-        "sourceCommit": "44e0bcfdbc351b46ad11e80f4afd8e0125dae508",
+        "sourceCommit": "1302c30df5db8aba9a6f9f944a5e23118ae03c21",
         "type": "source-built-native-ui-and-lan-online-mode",
         "unchangedOriginalEntries": 1018
       },
-      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/forge-modern-guest-v1/e4steam-forge-mc1.18.2-1.20.2-v0.3.4-lanmc-native-ui.2.jar",
+      "downloadUrl": "https://github.com/MarkZamore/e4steam/releases/download/forge-modern-guest-v2/e4steam-forge-mc1.18.2-1.20.2-v0.3.4-lanmc-native-ui.2.jar",
       "exclusiveMaximumMinecraftVersion": [
         1,
         20,
@@ -527,9 +529,9 @@
         18,
         2
       ],
-      "profile": "native-lan-ui-v7-forge-guest",
-      "sha256": "0d907d5b24c6b28b1872926849c5cb363f79aac9071e485caa02b35e5ffd5e55",
-      "sizeBytes": 3801710,
+      "profile": "native-lan-ui-v8-forge-guest-chat",
+      "sha256": "6739b9feec81bc49e77bcb3e7e5ed58edec37ef50c64c5a3d88d432ee29bf179",
+      "sizeBytes": 3801830,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.4/e4steam-forge-mc1.18.2-1.20.2-v0.3.4.jar",
       "upstreamReleaseUrl": "https://github.com/Kamilhik/e4steam/releases/tag/v0.3.4",
       "version": "0.3.4"
@@ -575,7 +577,7 @@
         20,
         2
       ],
-      "profile": "native-lan-ui-v7-forge-guest",
+      "profile": "native-lan-ui-v8-forge-guest-chat",
       "sha256": "2cfedc07ee3c84b9b980351ea094d5f898c858f37ff46dada24c621061761d2e",
       "sizeBytes": 3800314,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.4/e4steam-neoforge-mc1.20.2-26.3-v0.3.4.jar",
@@ -623,7 +625,7 @@
         1,
         17
       ],
-      "profile": "native-lan-ui-v7-forge-guest",
+      "profile": "native-lan-ui-v8-forge-guest-chat",
       "sha256": "7dde29204bc3f50649bbf3b50163e96677a62467507d1218f9e58caa7785d006",
       "sizeBytes": 3800700,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.4/e4steam-fabric-quilt-mc1.17-1.18.2-v0.3.4.jar",
@@ -671,7 +673,7 @@
         1,
         19
       ],
-      "profile": "native-lan-ui-v7-forge-guest",
+      "profile": "native-lan-ui-v8-forge-guest-chat",
       "sha256": "67d43d3047cf7d349b38d1addf024ef69de44d79d2b19f5f0092b024a565f1bd",
       "sizeBytes": 3797496,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.4/e4steam-fabric-quilt-mc1.19-1.21.11-v0.3.4.jar",
@@ -719,7 +721,7 @@
         26,
         1
       ],
-      "profile": "native-lan-ui-v7-forge-guest",
+      "profile": "native-lan-ui-v8-forge-guest-chat",
       "sha256": "248fe6c4bf8f4decd0eea2c0883f15559eedd7491e6a9b5859b3bd1cafdcb26d",
       "sizeBytes": 3798124,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/releases/download/v0.3.4/e4steam-fabric-quilt-mc26.1-26.3-v0.3.4.jar",
@@ -1187,7 +1189,7 @@
         6,
         4
       ],
-      "profile": "native-lan-ui-v7-forge-guest",
+      "profile": "native-lan-ui-v8-forge-guest-chat",
       "sha256": "38a24bca7cc27769e79bfcf349ed23cd549638caa6961ac57a6e9f79bd0423a8",
       "sizeBytes": 2291728,
       "upstreamDownloadUrl": "https://github.com/Kamilhik/e4steam/tree/bdcea00e30ca519fa8190c0c5c04785d42b31dbc",
@@ -1471,7 +1473,7 @@
         12,
         2
       ],
-      "profile": "native-lan-ui-v7-forge-guest",
+      "profile": "native-lan-ui-v8-forge-guest-chat",
       "sha256": "a0e0593ec5bc45ab098b0b30711edc3c4167f9bac4c65cad296d612a6c242f40",
       "sizeBytes": 3108368,
       "version": "0.3.2-lanmc.1"
@@ -1743,16 +1745,16 @@
         16,
         5
       ],
-      "profile": "native-lan-ui-v7-forge-guest",
+      "profile": "native-lan-ui-v8-forge-guest-chat",
       "sha256": "0188f8a9d5c22a13efcdae8b8e353b5144cc02407c935b04c3bee7516ce3d185",
       "sizeBytes": 2970778,
       "version": "0.3.2-lanmc.3"
     }
   ],
-  "profile": "native-lan-ui-v7-forge-guest",
+  "profile": "native-lan-ui-v8-forge-guest-chat",
   "publisher": "MarkZamore",
   "schemaVersion": 2,
-  "sourceCommit": "44e0bcfdbc351b46ad11e80f4afd8e0125dae508",
+  "sourceCommit": "1302c30df5db8aba9a6f9f944a5e23118ae03c21",
   "sourcePatches": [
     {
       "path": "source/native-ui.patch",
