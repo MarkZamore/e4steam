@@ -286,14 +286,17 @@ public class Mirror {
 
     public static void addMessageIf(Component message, BooleanSupplier condition) {
         Minecraft.getInstance().execute(() -> {
-            if (!condition.getAsBoolean()) {
-                return;
-            }
-            try {
-                MinecraftUiCompat.addChatMessage(Minecraft.getInstance(), message);
-            } catch (RuntimeException failure) {
-                E4steamClient.LOGGER.error("Failed to add message to client chat", failure);
+            if (condition.getAsBoolean()) {
+                runChatNotification(() -> MinecraftUiCompat.addChatMessage(Minecraft.getInstance(), message));
             }
         });
+    }
+
+    static void runChatNotification(Runnable notification) {
+        try {
+            notification.run();
+        } catch (RuntimeException | LinkageError failure) {
+            E4steamClient.LOGGER.error("Failed to add message to client chat", failure);
+        }
     }
 }

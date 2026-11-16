@@ -20,7 +20,10 @@
 /releases/legacy-fabric-164-v3/*.json text eol=lf
 /releases/legacy-fabric-164-v4/*.json text eol=lf
 /releases/forge-modern-guest-v1/*.json text eol=lf
+/releases/forge-modern-guest-v2/*.json text eol=lf
 /tools/active_profile.py text eol=lf
 /tools/test_active_profile.py text eol=lf
 /tools/ForgeGuestTimeout.java text eol=lf
 /tools/forge_guest_timeout_build.py text eol=lf
+/tools/forge_guest_chat_build.py text eol=lf
+/tools/ForgeChatMirror.java text eol=lf

@@ -2,7 +2,12 @@ package link.e4steam;
 
 import org.junit.jupiter.api.Test;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 class MinecraftUiCompatTest {
     @Test
@@ -45,6 +50,26 @@ class MinecraftUiCompatTest {
         TextFieldProbe field = new TextFieldProbe();
         MinecraftUiCompat.tooltip(field, Mirror.literal("help"));
         assertEquals("25565", field.value);
+    }
+
+    @Test
+    void optionalChatNotificationContainsClassLoadingAndDisplayFailures() {
+        assertDoesNotThrow(() -> Mirror.runChatNotification(() -> {
+            throw new NoClassDefFoundError("link/e4steam/MinecraftUiCompat");
+        }));
+        assertDoesNotThrow(() -> Mirror.runChatNotification(() -> {
+            throw new IllegalStateException("chat unavailable");
+        }));
+        AtomicInteger displayed = new AtomicInteger();
+        Mirror.runChatNotification(displayed::incrementAndGet);
+        assertEquals(1, displayed.get());
+    }
+
+    @Test
+    void optionalChatNotificationDoesNotSuppressUnrelatedErrors() {
+        AssertionError failure = new AssertionError("other error");
+        assertSame(failure, assertThrows(AssertionError.class, () ->
+                Mirror.runChatNotification(() -> { throw failure; })));
     }
 
     public static final class TextFieldProbe {

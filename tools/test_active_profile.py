@@ -33,7 +33,7 @@ class ActiveProfileDispatcherTests(unittest.TestCase):
         return document
 
     def write_checksums(self, document):
-        rows = guest.all_rows(document) if document['profile'] == guest.PROFILE else document['builds']
+        rows = guest.all_rows(document) if document['profile'] in active.FORGE_GUEST_PROFILES else document['builds']
         (self.root/'SHA256SUMS.txt').write_bytes(components.checksums(rows).encode())
 
     def rewrite_frozen_and_active(self,document):
@@ -152,6 +152,42 @@ class ActiveProfileDispatcherTests(unittest.TestCase):
         }
         with self.assertRaisesRegex(ValueError, 'exactly three'):
             guest.read_receipt(json.dumps(receipt).encode())
+
+    def test_guest_chat_extends_only_the_published_forge_row(self):
+        self.select_published_v6()
+        snapshot = Path('profiles') / f'{guest.PROFILE}.json'
+        previous_receipt = Path('releases') / guest.TAG / guest.RECEIPT
+        (self.root / previous_receipt).parent.mkdir(parents=True)
+        for path in (snapshot, previous_receipt):
+            (self.root / path).write_bytes((active.ROOT / path).read_bytes())
+        base = guest.read_guest_only(self.root)
+        target = next(row for row in base['builds'] if row['fileName'] == guest.FILE)
+        classes = {name: target['derivation']['sourceBuiltClassSha256'][name] for name in guest.GUEST_CLASSES}
+        classes[guest.CHAT_CLASS] = '5' * 64
+        receipt = {
+            'schemaVersion': 1, 'stockSha256': guest.STOCK_SHA256,
+            'build': {'fileName': guest.FILE, 'sizeBytes': 10, 'sha256': '3' * 64},
+            'changedEntries': sorted(classes), 'sourceBuiltClassSha256': classes,
+            'guestOnlySha256': guest.GUEST_ONLY_SHA256,
+            'changedEntriesFromGuestOnly': [guest.CHAT_CLASS],
+        }
+        receipt_data = json.dumps(receipt).encode()
+        current_receipt = self.root / 'releases' / guest.TAG_WITH_CHAT / guest.RECEIPT
+        current_receipt.parent.mkdir(parents=True)
+        current_receipt.write_bytes(receipt_data)
+        document, _ = guest.candidate_with_chat(self.root, base, receipt_data, '2' * 40)
+        self.rewrite_frozen_and_active(document)
+        self.assertEqual(document, active.verify_active(self.root))
+        for previous, current in zip(guest.all_rows(base), guest.all_rows(document)):
+            if previous['fileName'] != guest.FILE:
+                self.assertEqual({**previous, 'profile': guest.PROFILE_WITH_CHAT}, current)
+        classes[next(iter(guest.GUEST_CLASSES))] = '6' * 64
+        with self.assertRaisesRegex(ValueError, 'changes the verified guest timeout'):
+            guest.candidate_with_chat(self.root, base, json.dumps(receipt).encode(), '2' * 40)
+        with (self.root / snapshot).open('ab') as handle:
+            handle.write(b'\n')
+        with self.assertRaisesRegex(ValueError, 'Frozen V7 selection'):
+            active.verify_active(self.root)
 
     def test_semantically_equal_but_byte_different_active_index_is_rejected(self):
         self.select(active.V3)
