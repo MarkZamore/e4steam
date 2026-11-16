@@ -1,0 +1,28 @@
+{
+  "buildSource": "44e0bcfdbc351b46ad11e80f4afd8e0125dae508",
+  "buildReproduced": "PASS",
+  "forgeBuild": "1.19.2-43.2.10",
+  "packRelease": "d79d2244c0b91dea0e3d1ec1c19fb04784888586",
+  "stock": {
+    "status": "PASS",
+    "mode": "stock",
+    "sha256": "3f397fc193f14d3c543b5ef9b4613bc149a21ca8e14bd93c39de3d1bc6f9553c",
+    "deadlineMillis": 120000,
+    "loggedInSessionAfterDeadline": "closed",
+    "externalSteamPeers": 0,
+    "failure": ""
+  },
+  "fixed": {
+    "status": "PASS",
+    "mode": "candidate",
+    "sha256": "0d907d5b24c6b28b1872926849c5cb363f79aac9071e485caa02b35e5ffd5e55",
+    "deadlineMillis": 120000,
+    "loggedInSessionAfterDeadline": "retained",
+    "externalSteamPeers": 0,
+    "failure": ""
+  },
+  "junitPassed": 10,
+  "launcher505CatalogSelection": "PASS",
+  "publicBytes": "PASS",
+  "externalSteamSession": "NOT RUN"
+}

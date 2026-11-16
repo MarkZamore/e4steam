@@ -1,9 +1,10 @@
 # Shared e4steam component for LANMinecraft
 
 This is MarkZamore's GitHub delivery location for the shared e4steam component.
-The active `native-lan-ui-v6` index selects twenty loader/Minecraft targets.
-It retains all nineteen V5 non-legacy selections and updates the declared source-built
-Legacy Fabric 1.6.4 port described in [the platform notes](LEGACY-FABRIC-164.md).
+The active `native-lan-ui-v7-forge-guest` index selects twenty regular
+loader/Minecraft targets and two optional Java 8 builds. It updates the
+modern Forge guest connection and retains the other V6 artifacts, including
+the Legacy Fabric 1.6.4 port described in [the platform notes](LEGACY-FABRIC-164.md).
 Six modern derivatives hide the extra LAN Settings button/form and apply only
 current configured `lanOnlineMode` before native integrated publication.
 The thirteen older variants never had that form/applier and retain exact author
@@ -32,19 +33,22 @@ are declared downstream distributions, not unmodified author releases.
 | `legacy-fabric-164-v3` | Immutable Legacy Fabric 1.6.4 native sharing controls and command display names |
 | `native-lan-ui-v5` | Historical twenty-target canonical index and frozen profile |
 | `legacy-fabric-164-v4` | Immutable native operator command sender display names |
-| `native-lan-ui-v6` | Current twenty-target canonical index and frozen profile |
+| `native-lan-ui-v6` | Historical twenty-target canonical index and optional Java 8 builds |
+| `forge-modern-guest-v1` | Immutable Forge 1.18.2–1.20.2 guest timeout fix and build receipt |
+| `native-lan-ui-v7-forge-guest` | Current canonical index with the [Forge guest fix](FORGE-GUEST-TIMEOUT.md) |
 
 `components.json` is the canonical schema2 index, and `SHA256SUMS.txt` covers its
 exact selections. Rows retain author provenance separately from delivery
 filename/SHA/size/URL/tag. Three capabilities preserve hidden or absent extra LAN
 UI, configured modern native-publish online mode, and original Steam authentication.
-[The frozen V6 profile](profiles/native-lan-ui-v6.json) must match the active
+[The frozen V7 profile](profiles/native-lan-ui-v7-forge-guest.json) must match the active
 selection. Author inventories and older profiles remain immutable history.
 
 The canonical index is
 `https://raw.githubusercontent.com/MarkZamore/e4steam/main/components.json`.
-Modern payloads use this account's `native-lan-ui-v2` URLs; unchanged retro payloads
-retain `v0.3.2` URLs. The source port uses `legacy-fabric-164-v4` URLs and
+The fixed Forge transport uses `forge-modern-guest-v1`. Other modern payloads
+use `native-lan-ui-v2`, and unchanged retro payloads retain `v0.3.2` URLs.
+The source port uses `legacy-fabric-164-v4` URLs and
 does not claim a nonexistent original author JAR. A compatible launcher verifies/caches this shared index and
 JAR pins. Launcher429 predates the index consumer and requires the separate
 launcher update; publishing V2 does not change its compiled V1 pins. UI/auth

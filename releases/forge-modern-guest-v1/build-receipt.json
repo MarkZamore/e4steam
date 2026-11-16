@@ -1,0 +1,28 @@
+{
+  "build": {
+    "fileName": "e4steam-forge-mc1.18.2-1.20.2-v0.3.4-lanmc-native-ui.2.jar",
+    "sha256": "0d907d5b24c6b28b1872926849c5cb363f79aac9071e485caa02b35e5ffd5e55",
+    "sizeBytes": 3801710
+  },
+  "byteIdenticalOtherEntries": 1020,
+  "changedEntries": [
+    "link/e4steam/steam/SteamGuestJoinState.class",
+    "link/e4steam/steam/SteamLobbyManager.class",
+    "link/e4steam/steam/SteamRuntime.class"
+  ],
+  "forgeSrgSha256": "844f5333e261c3bf6a4b99c9fa3872e7beb913d087d0d759c08b3a6d236e0179",
+  "java": "openjdk version \"17.0.20.1\" 2026-08-18",
+  "schemaVersion": 1,
+  "sourceBuiltClassSha256": {
+    "link/e4steam/steam/SteamGuestJoinState.class": "c136700b3878013ac207aa06b26bd49998eabe72a6389a85badc7f61c53e8f9a",
+    "link/e4steam/steam/SteamLobbyManager.class": "a5f7bc1d2d31f9f7dc4d6f964dd1a39d314abec05cf6ea681b14df0058599eab",
+    "link/e4steam/steam/SteamRuntime.class": "796d5694c356d3a6e87576f7f6f5e6770bd93b2630b24559a3230d16b1620e15"
+  },
+  "sourceSha256": {
+    "SteamGuestJoinState": "fbe00ac90be23fe13b7954c2e230267f2cc5ccc1ca21b02e088d1752e4cac520",
+    "SteamLobbyManager": "48d0e8d32232da5f1058965193223c180095ab641dd065a7490200a2b19bf9aa",
+    "SteamRuntime": "42f9175032d784a907def8f7978155b696d74cccfe6106cde200b08a68b6f9ce"
+  },
+  "stockSha256": "3f397fc193f14d3c543b5ef9b4613bc149a21ca8e14bd93c39de3d1bc6f9553c",
+  "transplantSha256": "5d798c085abecb6882f7a1c70ba2d81f524e289db06cd2258775bdf9212a955d"
+}

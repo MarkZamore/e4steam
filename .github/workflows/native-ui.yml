@@ -76,7 +76,12 @@ jobs:
           java-version: '25.0.2'
       - name: Build pinned Legacy Fabric port in a fresh directory
         shell: bash
-        run: python -B tools/legacy_fabric_164.py --java-home "$JAVA_HOME" --out dist/ci-legacy-${{ runner.os }}
+        run: |
+          legacy_source="$(python -c 'import json; from pathlib import Path; rows = json.loads(Path("components.json").read_bytes())["builds"]; print(next(row["derivation"]["sourceCommit"] for row in rows if row["loaders"] == ["LegacyFabric"]))')"
+          [[ "$legacy_source" =~ ^[a-f0-9]{40}$ ]]
+          legacy_checkout="$RUNNER_TEMP/e4steam-legacy-source"
+          git worktree add --detach "$legacy_checkout" "$legacy_source"
+          python -B "$legacy_checkout/tools/legacy_fabric_164.py" --java-home "$JAVA_HOME" --out "dist/ci-legacy-${{ runner.os }}"
       - name: Compare exact JAR, receipt and profile to the frozen selection
         run: python -B tools/legacy_fabric_164_profile.py --out dist/ci-legacy-${{ runner.os }} --verify-frozen
       - uses: actions/upload-artifact@v4
