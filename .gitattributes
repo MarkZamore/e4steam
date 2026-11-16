@@ -27,3 +27,5 @@
 /tools/forge_guest_timeout_build.py text eol=lf
 /tools/forge_guest_chat_build.py text eol=lf
 /tools/ForgeChatMirror.java text eol=lf
+/releases/forge-java8-login-v1/*.json text eol=lf
+/tools/forge112_login_profile.py text eol=lf

@@ -8,6 +8,7 @@ from unittest import mock
 
 import active_profile as active
 import components
+import forge112_login_profile as forge112
 import forge_guest_profile as guest
 import legacy_fabric_164 as build
 
@@ -33,7 +34,7 @@ class ActiveProfileDispatcherTests(unittest.TestCase):
         return document
 
     def write_checksums(self, document):
-        rows = guest.all_rows(document) if document['profile'] in active.FORGE_GUEST_PROFILES else document['builds']
+        rows = guest.all_rows(document) if document['profile'] in active.FORGE_COMPONENT_PROFILES else document['builds']
         (self.root/'SHA256SUMS.txt').write_bytes(components.checksums(rows).encode())
 
     def rewrite_frozen_and_active(self,document):
@@ -116,6 +117,39 @@ class ActiveProfileDispatcherTests(unittest.TestCase):
         document['java8Builds'].pop()
         (self.root / 'components.json').write_text(json.dumps(document), encoding='utf-8')
         with self.assertRaisesRegex(ValueError, 'index bytes'):
+            active.verify_active(self.root)
+
+    def test_forge112_login_activates_only_the_receipted_v8_lane(self):
+        self.select_published_v6()
+        for profile in (guest.PROFILE, guest.PROFILE_WITH_CHAT):
+            path = Path("profiles") / f"{profile}.json"
+            (self.root / path).write_bytes((active.ROOT / path).read_bytes())
+        for tag in (guest.TAG, guest.TAG_WITH_CHAT):
+            path = Path("releases") / tag / guest.RECEIPT
+            (self.root / path).parent.mkdir()
+            (self.root / path).write_bytes((active.ROOT / path).read_bytes())
+        v8, _ = forge112.frozen_v8(self.root)
+        stock = next(row for row in v8["java8Builds"] if row["fileName"] == forge112.STOCK_FILE)
+        classes = stock["derivation"]["sourceBuiltClassSha256"]
+        receipt = {
+            "schemaVersion": 1, "stockSha256": forge112.STOCK_SHA256, "sourceCommit": "1" * 40,
+            "upstreamSourceCommit": forge112.UPSTREAM,
+            "build": {"fileName": forge112.FILE, "sizeBytes": 100, "sha256": "2" * 64},
+            "sourceBuiltClassSha256": {**classes, next(iter(classes)): "3" * 64},
+        }
+        path = self.root / "releases" / forge112.TAG / forge112.RECEIPT
+        path.parent.mkdir()
+        receipt_bytes = forge112.canonical_json(receipt)
+        path.write_bytes(receipt_bytes)
+        candidate = forge112.candidate_index(v8, receipt_bytes)
+        self.rewrite_frozen_and_active(candidate)
+        self.assertEqual(candidate, active.verify_active(self.root))
+        for previous, current in zip(guest.all_rows(v8), guest.all_rows(candidate)):
+            if previous["fileName"] != forge112.STOCK_FILE:
+                self.assertEqual({**previous, "profile": forge112.PROFILE}, current)
+        next(row for row in candidate["java8Builds"] if row["fileName"] != forge112.FILE)["sha256"] = "4" * 64
+        self.rewrite_frozen_and_active(candidate)
+        with self.assertRaisesRegex(ValueError, "single-row update"):
             active.verify_active(self.root)
 
     def test_guest_profile_only_changes_the_modern_forge_artifact(self):
