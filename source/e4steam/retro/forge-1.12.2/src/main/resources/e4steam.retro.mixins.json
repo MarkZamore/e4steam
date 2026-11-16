@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_8",
   "mixins": [
     "NetHandlerLoginServerMixin",
+    "NetHandlerLoginOrdering112Mixin",
     "NetworkSystemEndpointMixin"
   ],
   "client": [

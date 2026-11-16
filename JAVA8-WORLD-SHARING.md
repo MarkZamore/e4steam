@@ -11,6 +11,14 @@ Forge 1.16.5 defers to a higher-priority keep-alive timeout modification,
 including Connectivity in All in One. When vanilla still owns the constant,
 e4steam extends it only for Steam-authenticated connections.
 
+On Forge 1.12.2, the server thread queues `SPacketLoginSuccess` for the Netty
+event loop. Forge can start its handshake on the server thread before that
+write runs, switching the channel to PLAY while the LOGIN packet is pending.
+For Steam-authenticated connections, the 1.12.2 derivative waits for the
+successful write and schedules Forge's handshake back on the server thread.
+Reads stay paused until Forge starts the handshake. The same ordering applies
+when the previous session for that player is still being closed.
+
 The pause button opens the integrated world in one click. After publication,
 the slot opens the Steam recent players overlay. These two Minecraft versions
 do not include the Mojang reporting screen. The existing e4steam chat actions
@@ -24,7 +32,7 @@ Java 8 JDK path and use a Java 21 Gradle JVM. The output is the remapped
 ```powershell
 cd source/e4steam
 .\gradlew.bat -p retro "-Porg.gradle.java.installations.paths=$java8" `
-  -PlanminecraftRetroVersion=0.3.2-lanmc.1 `
+  -PlanminecraftRetroVersion=0.3.2-lanmc.2 `
   :forge-1.12.2:build :core:test
 .\gradlew.bat -p retro "-Porg.gradle.java.installations.paths=$java8" `
   -PlanminecraftRetroVersion=0.3.2-lanmc.2 `
@@ -39,3 +47,9 @@ with `tools/java8_world_sharing.py` from the committed source and freshly built
 JARs. The tool verifies the required classes, mixins, Java 8 bytecode and notices.
 Repeat a clean build and compare both complete SHA256 hashes before publishing.
 Use a new immutable delivery tag for new bytes.
+
+`tools/Test-Forge112LoginOrder.ps1` uses the installed Java 8 runtime, the
+Minecraft 1.12.2 client JAR and the Forge 14.23.5.2859 binary patches. It
+reproduces the old encoder failure, then checks the LOGIN packet ID and
+handshake ordering with the fix. It also covers a failed write and a channel
+closed before the server runs the queued task.
